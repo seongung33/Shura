@@ -12,11 +12,17 @@ public class EnemyAttack : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-        PlayerHealth playerHealth =
-            collision.gameObject.GetComponent<PlayerHealth>();
-
+        
         // 부딪힌 대상이 플레이어가 아니면 종료
-        if (playerHealth == null)
+        if (!collision.gameObject.CompareTag("Player"))
+        {
+            return;
+        }
+        IDamageable damageable =
+            collision.gameObject.GetComponent<IDamageable>();
+
+        // 위에서 검사했지만 Player에 IDamageable 이 없는 것을 알 수 있다.
+        if (damageable == null)
         {
             return;
         }
@@ -27,7 +33,7 @@ public class EnemyAttack : MonoBehaviour
             return;
         }
 
-        playerHealth.TakeDamage(damage);
+        damageable.TakeDamage(damage);
 
         nextAttackTime = Time.time + attackInterval;
     }
