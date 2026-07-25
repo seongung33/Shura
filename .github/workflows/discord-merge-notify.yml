@@ -47,7 +47,13 @@ jobs:
           request = urllib.request.Request(
               os.environ["DISCORD_WEBHOOK_URL"],
               data=payload,
-              headers={"Content-Type": "application/json"},
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": (
+                      f"DiscordBot "
+                      f"(https://github.com/{os.environ['REPOSITORY']}, 1.0)"
+                  ),
+              },
               method="POST"
           )
 
