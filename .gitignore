@@ -1,7 +1,8 @@
 .env
 .env.*
 !.env.example
-
+venv/
+.venv
 # Unity .gitignore Template
 # Source: https://github.com/github/gitignore/blob/main/Unity.gitignore
 # Last synced: 2025-12-18
