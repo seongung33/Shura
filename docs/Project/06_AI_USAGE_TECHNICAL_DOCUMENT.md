@@ -128,6 +128,7 @@ Console 로그:
 | 날짜 | 도구 | 담당자 | 목적 | 주요 프롬프트 요약 | 생성 결과 | 사람의 검토·수정 | 관련 파일·커밋 |
 |---|---|---|---|---|---|---|---|
 | 2026-07-25 | ChatGPT/Codex | TBD | 프로젝트 초기 구조와 문서 작성 | Unity 2D 협동 생존 게임의 폴더·문서·일정 구성 | 프로젝트 문서 초안 | 팀 상황에 맞춰 MVP, 역할, 폴백 범위 검토 | 초기 문서 커밋 |
+| 2026-07-26 | Claude Code | 미리 (개발자 A) | 플레이어 기본 이동 구현 (feat/player-movement) | PlayerTest 테스트 씬 생성, Rigidbody2D/Collider2D 기반 WASD 이동, Input System(Player Input, Send Messages)으로 구현, 속도 Inspector 노출, 대각선 이동 정규화, Player.prefab 저장 | `PlayerController.cs` 전체 코드 작성 + Unity 에디터 내 GameObject/컴포넌트 구성, 씬 생성, PR 작성 단계별 가이드 | 코드는 그대로 채택. Play 모드에서 WASD 이동·대각선 속도 동일 여부·Inspector 속도 변경·다른 씬에서의 Prefab 동작을 직접 테스트로 확인. Prefab 저장 경로는 지시받은 `Prefabs/Player` 대신 기존 컨벤션인 `Prefabs/Players`로 조정 | `Assets/_Project/Scripts/Player/PlayerController.cs`, 커밋 3408a2b·b27ada9, PR #7 |
 | YYYY-MM-DD |  |  |  |  |  |  |  |
 
 ## 7. AI 생성 코드 검증표
