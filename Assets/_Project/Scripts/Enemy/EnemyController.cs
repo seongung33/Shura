@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class EnemyController : MonoBehaviour
 {
@@ -18,10 +19,33 @@ public class EnemyController : MonoBehaviour
         rigidBody = GetComponent<Rigidbody2D>();
     }
 
+    private void Start()
+    {
+        if (target != null)
+        {
+            return;
+        }
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (target == null)
+        {
+            Debug.Log("Player 태그를 가진 오브젝트를 찾지 못했습니다.");
+            return;
+        }
+        target = player.transform;
+    }
+
     private void FixedUpdate()
     {
         if (target == null)
         {
+            GameObject player= GameObject.FindGameObjectWithTag("Player");
+
+            if (player != null)
+            {
+                target = player.transform;
+            }
             return;
         }
 

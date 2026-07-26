@@ -16,9 +16,10 @@ GameObject:
   - component: {fileID: 2052952093116639064}
   - component: {fileID: -2610181249393096913}
   - component: {fileID: 4142575937817224345}
+  - component: {fileID: 2687659161147983114}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -225,11 +226,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 252b4644a0b91d74b957ff14479dabb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAutoAttack
-  basicSkill: {fileID: 0}
-  skillRunner: {fileID: 0}
+  basicSkill: {fileID: 11400000, guid: c4a43cb44ec15d14691af68e73fd83f7, type: 2}
+  skillRunner: {fileID: 4142575937817224345}
   enemyLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
 --- !u!114 &4142575937817224345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,3 +244,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillRunner
   firePoint: {fileID: 0}
+--- !u!114 &2687659161147983114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450941720886569887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb6ee622a386e4547a8939cdd08fe692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  maxHealth: 100
