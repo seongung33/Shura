@@ -3,74 +3,66 @@ using UnityEngine;
 public class PlayerAutoAttack : MonoBehaviour
 {
     [SerializeField]
-    private float attackRange = 5f;
+    private SkillData basicSkill;
 
     [SerializeField]
-    private float attackDamage = 25f;
+    private SkillRunner skillRunner;
 
     [SerializeField]
-    private float attackInterval = 1f;
+    private LayerMask enemyLayer;
 
-    [SerializeField]
-    private Projectile projectilePrefab;
-    
     private float nextAttackTime;
+
+    private void Awake()
+    {
+        if (skillRunner == null)
+        {
+            skillRunner = GetComponent<SkillRunner>();
+        }
+    }
 
     private void Update()
     {
-        // 다음 공격 시간이 아직 되지 않았다면 종료
+        if (basicSkill == null)
+        {
+            return;
+        }
+
+        if (skillRunner == null)
+        {
+            return;
+        }
+
         if (Time.time < nextAttackTime)
         {
             return;
         }
 
-        EnemyHealth nearestEnemy = FindNearestEnemy();
+        Transform target = EnemyTargetFinder.FindNearestEnemy(
+            transform.position,
+            basicSkill.Range,
+            enemyLayer
+            );
+        
 
-        // 범위 안에 적이 없으면 공격하지 않음
-        if (nearestEnemy == null)
+
+        if (target == null)
         {
             return;
         }
 
-        FireProjectile(nearestEnemy);
-
-        // 다음 공격 가능 시간 설정
-        nextAttackTime = Time.time + attackInterval;
-    }
-
-    private void FireProjectile(EnemyHealth target)
-    {
-        Projectile newProjectile = Instantiate(
-            projectilePrefab,
-            transform.position,
-            Quaternion.identity
+        bool wasUsed = skillRunner.TryRun(
+            basicSkill,
+            target
         );
-        newProjectile.Initialize(target, attackDamage);
-    } 
-        
-    // 가까운 적 1개 찾는 코드
-    private EnemyHealth FindNearestEnemy()
-    {
-        EnemyHealth[] enemies =
-            FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None);
 
-        EnemyHealth nearestEnemy = null;
-        float nearestDistance = attackRange;
-
-        foreach (EnemyHealth enemy in enemies)
+        if (!wasUsed)
         {
-            float distance = Vector2.Distance(
-                transform.position,
-                enemy.transform.position
-            );
-
-            if (distance <= nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestEnemy = enemy;
-            }
+            return;
         }
 
-        return nearestEnemy;
+        nextAttackTime =
+            Time.time + basicSkill.Cooldown;
     }
+
 }

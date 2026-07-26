@@ -15,10 +15,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     [SerializeField]
     private int experienceReward = 1;
 
-    private bool isDead;
+    private bool IsDead;
     private void Awake()
     {
         currentHealth = maxHealth;
+        IsDead = false;
     }
 
     public void TakeDamage(float damage)
@@ -35,11 +36,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        if (isDead)
+        if (IsDead)
         {
             return;
         }
-        isDead = true;
+        IsDead = true;
         if (experienceOrbPrefab != null)
         {
             ExperienceOrb experienceOrb = Instantiate(
