@@ -86,10 +86,10 @@ public class Projectile : MonoBehaviour
         bool isEnemyLayer =
             (enemyLayer.value & (1 << hitRoot.gameObject.layer)) != 0;
 
-        //if (!isEnemyLayer)
-        //{
-        //    return;
-        //}
+        if (!isEnemyLayer)
+        {
+            return;
+        }
 
         IDamageable damageable =
             other.GetComponentInParent<IDamageable>();
