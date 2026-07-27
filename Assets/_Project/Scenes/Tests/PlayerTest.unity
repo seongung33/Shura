@@ -124,6 +124,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4081730810902360702, guid: e36121d3fdb73274b851a99492026c03, type: 3}
   m_PrefabInstance: {fileID: 4217119234202783383}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &989667484 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7450941720886569887, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+  m_PrefabInstance: {fileID: 4217119234202783383}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &989667485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 989667484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5ac289aaf7c7a240aee0c5109a182ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerExperience
+  currentLevel: 1
+  currentExperience: 0
+  experienceToNextLevel: 10
+  experienceGrowthPerLevel: 5
 --- !u!1 &1437269126
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,7 +357,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7450941720886569887, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 989667485}
   m_SourcePrefab: {fileID: 100100000, guid: e36121d3fdb73274b851a99492026c03, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
