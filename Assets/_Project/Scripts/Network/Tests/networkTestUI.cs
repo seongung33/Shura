@@ -22,6 +22,7 @@ public class NetworkTestUI : MonoBehaviour
     private bool servicesReady;
     private bool operationInProgress;
 
+    private ISession currentSession;
     private async void Start()
     {
         await InitializeServicesAsync();
@@ -82,7 +83,11 @@ public class NetworkTestUI : MonoBehaviour
         {
             return;
         }
-
+        if (currentSession != null)
+        {
+            SetStatus("이미 참가 중인 방이 있습니다. 먼저 나가주세요.");
+            return;
+        }
         operationInProgress = true;
 
         try
@@ -97,11 +102,13 @@ public class NetworkTestUI : MonoBehaviour
                 }
                 .WithRelayNetwork();
 
-            var session =
+            currentSession =
                 await MultiplayerService.Instance
                     .CreateSessionAsync(options);
 
-            string joinCode = session.Code;
+            currentSession.Network.StateChanged += HandleNetworkStateChanged;
+
+            string joinCode = currentSession.Code;
 
             if (joinCodeText != null)
             {
@@ -136,6 +143,12 @@ public class NetworkTestUI : MonoBehaviour
     /// </summary>
     public async void JoinRelaySession()
     {
+        if (currentSession != null)
+        {
+            SetStatus("이미 참가 중인 방이 있습니다. 먼저 나가주세요.");
+            return;
+        }
+
         if (!CanStartOperation())
         {
             return;
@@ -172,8 +185,11 @@ public class NetworkTestUI : MonoBehaviour
         {
             SetStatus("방 참가 중...");
 
-            await MultiplayerService.Instance
-                .JoinSessionByCodeAsync(joinCode);
+            currentSession =
+                await MultiplayerService.Instance
+                    .JoinSessionByCodeAsync(joinCode);
+
+                        currentSession.Network.StateChanged += HandleNetworkStateChanged;
 
             SetStatus("방 참가 완료");
 
@@ -193,6 +209,18 @@ public class NetworkTestUI : MonoBehaviour
         {
             operationInProgress = false;
         }
+    }
+    private void HandleNetworkStateChanged(
+    NetworkState state
+    )
+    {
+        SetStatus(
+            $"네트워크 상태: {state}"
+        );
+
+        Debug.Log(
+            $"세션 네트워크 상태 변경: {state}"
+        );
     }
 
     private bool CanStartOperation()
@@ -226,5 +254,106 @@ public class NetworkTestUI : MonoBehaviour
         }
 
         Debug.Log(message);
+    }
+
+    public async void LeaveRelaySession()
+    {
+        if (!CanStartOperation())
+        {
+            return;
+        }
+
+        if (currentSession == null)
+        {
+            SetStatus("참가 중인 방이 없습니다.");
+            return;
+        }
+
+        operationInProgress = true;
+
+        try
+        {
+            SetStatus("방에서 나가는 중...");
+
+            ISession leavingSession = currentSession;
+
+            await leavingSession.LeaveAsync();
+
+            leavingSession.Network.StateChanged -=
+                HandleNetworkStateChanged;
+
+            currentSession = null;
+
+            SetStatus("방에서 나왔습니다.");
+        }
+        catch (SessionException exception)
+        {
+            SetStatus($"방 나가기 실패: {exception.Message}");
+            Debug.LogException(exception);
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"방 나가기 중 오류: {exception.Message}");
+            Debug.LogException(exception);
+        }
+        finally
+        {
+            operationInProgress = false;
+        }
+    }
+
+
+    public async void ReconnectRelaySession()
+    {
+        if (!CanStartOperation())
+        {
+            return;
+        }
+
+        if (currentSession == null)
+        {
+            SetStatus(
+                "재접속할 세션 정보가 없습니다."
+            );
+
+            return;
+        }
+
+        operationInProgress = true;
+
+        try
+        {
+            SetStatus("기존 세션에 재접속 중...");
+
+            await currentSession.ReconnectAsync();
+
+            SetStatus("세션 재접속 요청 완료");
+        }
+        catch (SessionException exception)
+        {
+            SetStatus(
+                "재접속 실패 - 다시 참가 코드를 입력하세요."
+            );
+
+            Debug.LogException(exception);
+        }
+        catch (Exception exception)
+        {
+            SetStatus("재접속 중 오류 발생");
+
+            Debug.LogException(exception);
+        }
+        finally
+        {
+            operationInProgress = false;
+        }
+    }
+    private void OnDestroy()
+    {
+        if (currentSession?.Network != null)
+        {
+            currentSession.Network.StateChanged -=
+                HandleNetworkStateChanged;
+        }
     }
 }
