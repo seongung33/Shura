@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4869045673074526580}
   - component: {fileID: 839163915178555543}
   - component: {fileID: 5895634244134648444}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 8930158983480263104}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.69, y: 1.76, z: 0}
+  m_LocalPosition: {x: -2.908, y: 1.739, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -151,6 +151,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 100
+  experienceOrbPrefab: {fileID: 9144952894622143770, guid: a46fd4ce12b8fdb4a942ac769960accd, type: 3}
+  experienceReward: 1
 --- !u!61 &839163915178555543
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -209,3 +211,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147537f949b5fb24ea67f4613e515684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
+  damage: 10
+  attackInterval: 1

@@ -3,17 +3,17 @@ using UnityEngine.Events;
 
 namespace Shura.Player
 {
-    public class PlayerHealth : MonoBehaviour
+    public class PlayerHealth : MonoBehaviour, IDamageable
     {
-        [SerializeField] private int maxHealth = 100;
+        [SerializeField] private float maxHealth = 100;
         [SerializeField] private UnityEvent onDeath;
 
         [Header("Debug (읽기 전용, Play 모드에서 확인용)")]
-        [SerializeField] private int currentHealth;
+        [SerializeField] private float currentHealth;
         [SerializeField] private bool isDead;
 
-        public int CurrentHealth => currentHealth;
-        public int MaxHealth => maxHealth;
+        public float CurrentHealth => currentHealth;
+        public float MaxHealth => maxHealth;
         public bool IsDead => isDead;
 
         private void Awake()
@@ -21,7 +21,7 @@ namespace Shura.Player
             currentHealth = maxHealth;
         }
 
-        public void TakeDamage(int amount)
+        public void TakeDamage(float amount)
         {
             if (isDead || amount <= 0) return;
 
