@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4869045673074526580}
   - component: {fileID: 839163915178555543}
   - component: {fileID: 5895634244134648444}
+  - component: {fileID: -7156711137147839822}
   m_Layer: 8
   m_Name: Enemy
   m_TagString: Untagged
@@ -213,3 +214,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
   damage: 10
   attackInterval: 1
+--- !u!114 &-7156711137147839822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8930158983480263104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1936d97596c135c4982a0cad3ee0a8f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ExperienceOrb
+  experienceAmount: 5
