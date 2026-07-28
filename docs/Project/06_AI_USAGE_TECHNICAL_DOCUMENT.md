@@ -84,10 +84,15 @@ Unity 6.3 LTS Universal 2D 프로젝트다.
 [관련 스크립트와 데이터 구조]
 
 제약:
+- 먼저 `docs/Project/04_TECHNICAL_DESIGN.md`의 현재 구현 코드 계약과 실제 관련 스크립트·프리팹 연결을 확인한다.
+- 공격 생성은 기존 `SkillRunner.TryRun` 흐름을 사용하고, 발동 측은 대상과 쿨다운만 관리한다.
+- 피해는 구체 Health 클래스를 직접 호출하지 않고 `IDamageable.TakeDamage`로 전달한다.
+- 적 탐색과 명중 판정에 사용하는 `Enemy` 레이어, `Player` 태그, Collider·컴포넌트 계층 계약을 유지한다.
 - 기존 공개 API를 불필요하게 변경하지 않는다.
 - 에디터 전용 코드를 런타임 코드에 넣지 않는다.
 - 매 프레임 전체 오브젝트 검색을 사용하지 않는다.
 - 새로운 외부 패키지를 설치하지 않는다.
+- 문서에만 있는 계획 클래스가 이미 구현됐다고 가정하지 않는다.
 
 완료 조건:
 - Unity 컴파일 오류가 없다.
@@ -95,6 +100,7 @@ Unity 6.3 LTS Universal 2D 프로젝트다.
 - 변경 파일과 테스트 방법을 보고한다.
 
 먼저 관련 파일을 읽고 구조를 설명한 뒤 수정하라.
+새 병렬 시스템을 만들기 전에 기존 확장 지점을 사용할 수 있는지 확인하라.
 ```
 
 ### 버그 분석 요청 템플릿
@@ -128,10 +134,6 @@ Console 로그:
 | 날짜 | 도구 | 담당자 | 목적 | 주요 프롬프트 요약 | 생성 결과 | 사람의 검토·수정 | 관련 파일·커밋 |
 |---|---|---|---|---|---|---|---|
 | 2026-07-25 | ChatGPT/Codex | TBD | 프로젝트 초기 구조와 문서 작성 | Unity 2D 협동 생존 게임의 폴더·문서·일정 구성 | 프로젝트 문서 초안 | 팀 상황에 맞춰 MVP, 역할, 폴백 범위 검토 | 초기 문서 커밋 |
-| 2026-07-26 | Claude Code | 미리 (개발자 A) | 플레이어 기본 이동 구현 (feat/player-movement) | PlayerTest 테스트 씬 생성, Rigidbody2D/Collider2D 기반 WASD 이동, Input System(Player Input, Send Messages)으로 구현, 속도 Inspector 노출, 대각선 이동 정규화, Player.prefab 저장 | `PlayerController.cs` 전체 코드 작성 + Unity 에디터 내 GameObject/컴포넌트 구성, 씬 생성, PR 작성 단계별 가이드 | 코드는 그대로 채택. Play 모드에서 WASD 이동·대각선 속도 동일 여부·Inspector 속도 변경·다른 씬에서의 Prefab 동작을 직접 테스트로 확인. Prefab 저장 경로는 지시받은 `Prefabs/Player` 대신 기존 컨벤션인 `Prefabs/Players`로 조정 | `Assets/_Project/Scripts/Player/PlayerController.cs`, 커밋 3408a2b·b27ada9, PR #7 |
-| 2026-07-26 | Claude Code | 미리 (개발자 A) | 카메라 플레이어 추적 구현 (feat/camera-follow) | Main Camera가 LateUpdate에서 Vector3.Lerp로 Player를 부드럽게 추적, followSpeed·offset Inspector 노출 | `CameraFollow.cs` 전체 코드 작성 + Unity 에디터 내 컴포넌트 연결 가이드 | 코드는 그대로 채택. Play 모드에서 Main Camera Transform 좌표 변화로 실제 추적 동작 확인 | `Assets/_Project/Scripts/Camera/CameraFollow.cs`, 커밋 2b0b39a |
-| 2026-07-27 | Claude Code | 미리 (개발자 A) | 플레이어 체력·사망 구현 (feat/player-health) | 체력 추적·TakeDamage·사망 시 UnityEvent 발동 구조, 실제 적이 없어 Space 키로 데미지를 주는 임시 디버그 스크립트 포함 | `PlayerHealth.cs`, `PlayerHealthDebugTester.cs` 작성 | 코드는 그대로 채택. 최초 버전에서 currentHealth/isDead가 Inspector에 안 보이는 실수가 있어 SerializeField 추가로 수정 후, Play 모드에서 Space로 데미지 주며 Current Health가 정확히 감소(100→70 등)하고 0에서 Is Dead가 체크되는 것을 확인 | `Assets/_Project/Scripts/Player/PlayerHealth.cs`, `PlayerHealthDebugTester.cs`, 커밋 897b94c |
-| 2026-07-27 | Claude Code | 미리 (개발자 A) | 플레이어 경험치 수집·레벨업 구현 (feat/player-experience) | ExperienceOrb 트리거 충돌 시 경험치 획득, 누적 경험치가 임계값 넘으면 레벨업·다음 레벨 임계값 증가 | `PlayerExperience.cs` 작성 (팀 코드 컨벤션 확인 후 namespace 생략, `[ContextMenu]` 테스트 방식 적용) | 코드는 그대로 채택. develop에 이미 merge된 팀 버전 `PlayerHealth.cs`(IDamageable 구현)를 확인해 기존 자체 버전은 폐기하고 실제 구조에 맞춰 작업 방향 조정. Play 모드에서 ContextMenu로 경험치 5씩 추가·10에서 레벨업(레벨 2, 다음 임계값 15)까지 확인 | `Assets/_Project/Scripts/Player/PlayerExperience.cs`, 커밋 106001d |
 | YYYY-MM-DD |  |  |  |  |  |  |  |
 
 ## 7. AI 생성 코드 검증표
@@ -156,4 +158,3 @@ Console 로그:
 - AI 사용으로 단축된 작업과 한계
 - 외부 에셋·오픈소스 목록
 - AI가 게임 플레이 자체에 사용되었다면 런타임 구조
-
