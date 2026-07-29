@@ -1,64 +1,42 @@
 using UnityEngine;
+using UnityEngine.Events;
 
-public class PlayerHealth : MonoBehaviour, IDamageable
+namespace Shura.Player
 {
-    [SerializeField]
-    private float maxHealth = 100f;
-
-    private float currentHealth;
-    private bool IsDead;
-
-    public float CurrentHealth => currentHealth;
-    public float MaxHealth => maxHealth;
-    private void Awake()
+    public class PlayerHealth : MonoBehaviour, IDamageable
     {
-        currentHealth = maxHealth;
-        IsDead = false;
-    }
+        [SerializeField] private float maxHealth = 100;
+        [SerializeField] private UnityEvent onDeath;
 
-    public void TakeDamage(float damage)
-    {
-        if (IsDead)
+        [Header("Debug (읽기 전용, Play 모드에서 확인용)")]
+        [SerializeField] private float currentHealth;
+        [SerializeField] private bool isDead;
+
+        public float CurrentHealth => currentHealth;
+        public float MaxHealth => maxHealth;
+        public bool IsDead => isDead;
+
+        private void Awake()
         {
-            return;
+            currentHealth = maxHealth;
         }
 
-        if (damage <= 0f)
+        public void TakeDamage(float amount)
         {
-            return;
+            if (isDead || amount <= 0) return;
+
+            currentHealth = Mathf.Max(0, currentHealth - amount);
+
+            if (currentHealth == 0)
+            {
+                Die();
+            }
         }
 
-        currentHealth -= damage;
-
-        if (currentHealth < 0f)
+        private void Die()
         {
-            currentHealth = 0f;
+            isDead = true;
+            onDeath.Invoke();
         }
-
-        Debug.Log($"플레이어 체력: {currentHealth} / {maxHealth}");
-
-        if (currentHealth <= 0f)
-        {
-            Die();
-        }
-    }
-
-    private void Die()
-    {
-        if (IsDead)
-        {
-            return;
-        }
-
-        IsDead = true;
-
-        Debug.Log("플레이어 사망");
-        Destroy(gameObject);
-    }
-
-    [ContextMenu("Test Damage")]
-    private void TestDamage()
-    {
-        TakeDamage(10f);
     }
 }
