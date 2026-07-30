@@ -20,7 +20,9 @@ public class NetworkTestUI : MonoBehaviour
     private TMP_Text statusText;
 
     private bool servicesReady;
+    private bool initializationInProgress;
     private bool operationInProgress;
+    private bool isDestroyed;
 
     private ISession currentSession;
     private async void Start()
@@ -34,6 +36,14 @@ public class NetworkTestUI : MonoBehaviour
     /// </summary>
     private async Task InitializeServicesAsync()
     {
+        if (initializationInProgress)
+        {
+            SetStatus("온라인 서비스 초기화가 이미 진행 중입니다.");
+            return;
+        }
+
+        initializationInProgress = true;
+
         try
         {
             SetStatus("온라인 서비스 초기화 중...");
@@ -71,6 +81,22 @@ public class NetworkTestUI : MonoBehaviour
 
             Debug.LogException(exception);
         }
+        finally
+        {
+            initializationInProgress = false;
+        }
+    }
+
+    public async void RetryInitializeServices()
+    {
+        if (initializationInProgress || operationInProgress)
+        {
+            SetStatus("현재 초기화 또는 네트워크 작업이 진행 중입니다.");
+            return;
+        }
+
+        servicesReady = false;
+        await InitializeServicesAsync();
     }
 
     /// <summary>
@@ -102,11 +128,10 @@ public class NetworkTestUI : MonoBehaviour
                 }
                 .WithRelayNetwork();
 
-            currentSession =
+            ISession createdSession =
                 await MultiplayerService.Instance
                     .CreateSessionAsync(options);
-
-            currentSession.Network.StateChanged += HandleNetworkStateChanged;
+            AttachSession(createdSession);
 
             string joinCode = currentSession.Code;
 
@@ -128,8 +153,8 @@ public class NetworkTestUI : MonoBehaviour
         catch (Exception exception)
         {
             SetStatus("방 생성 실패");
-
             Debug.LogException(exception);
+            await CleanupFailedSessionAsync();
         }
         finally
         {
@@ -185,11 +210,10 @@ public class NetworkTestUI : MonoBehaviour
         {
             SetStatus("방 참가 중...");
 
-            currentSession =
+            ISession joinedSession =
                 await MultiplayerService.Instance
                     .JoinSessionByCodeAsync(joinCode);
-
-                        currentSession.Network.StateChanged += HandleNetworkStateChanged;
+            AttachSession(joinedSession);
 
             SetStatus("방 참가 완료");
 
@@ -202,8 +226,8 @@ public class NetworkTestUI : MonoBehaviour
             SetStatus(
                 "방 참가 실패 - 코드와 호스트 상태를 확인하세요."
             );
-
             Debug.LogException(exception);
+            await CleanupFailedSessionAsync();
         }
         finally
         {
@@ -214,6 +238,11 @@ public class NetworkTestUI : MonoBehaviour
     NetworkState state
     )
     {
+        if (isDestroyed)
+        {
+            return;
+        }
+
         SetStatus(
             $"네트워크 상태: {state}"
         );
@@ -279,10 +308,8 @@ public class NetworkTestUI : MonoBehaviour
 
             await leavingSession.LeaveAsync();
 
-            leavingSession.Network.StateChanged -=
-                HandleNetworkStateChanged;
-
-            currentSession = null;
+            DetachSession(leavingSession);
+            ClearJoinCode();
 
             SetStatus("방에서 나왔습니다.");
         }
@@ -350,10 +377,74 @@ public class NetworkTestUI : MonoBehaviour
     }
     private void OnDestroy()
     {
-        if (currentSession?.Network != null)
+        isDestroyed = true;
+
+        if (currentSession != null)
         {
-            currentSession.Network.StateChanged -=
-                HandleNetworkStateChanged;
+            DetachSession(currentSession);
+        }
+    }
+
+    private void AttachSession(ISession session)
+    {
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (currentSession != null)
+        {
+            DetachSession(currentSession);
+        }
+
+        currentSession = session;
+        currentSession.Network.StateChanged += HandleNetworkStateChanged;
+    }
+
+    private void DetachSession(ISession session)
+    {
+        if (session?.Network != null)
+        {
+            session.Network.StateChanged -= HandleNetworkStateChanged;
+        }
+
+        if (ReferenceEquals(currentSession, session))
+        {
+            currentSession = null;
+        }
+    }
+
+    private async Task CleanupFailedSessionAsync()
+    {
+        ISession failedSession = currentSession;
+
+        if (failedSession == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await failedSession.LeaveAsync();
+        }
+        catch (Exception cleanupException)
+        {
+            Debug.LogWarning(
+                $"실패한 세션 정리 중 오류: {cleanupException.Message}"
+            );
+        }
+        finally
+        {
+            DetachSession(failedSession);
+            ClearJoinCode();
+        }
+    }
+
+    private void ClearJoinCode()
+    {
+        if (joinCodeText != null)
+        {
+            joinCodeText.text = string.Empty;
         }
     }
 }
