@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
   m_IgnoreLayout: 1
   m_MinWidth: -1
@@ -1419,6 +1419,7 @@ GameObject:
   - component: {fileID: 1344696223}
   - component: {fileID: 1344696225}
   - component: {fileID: 1344696224}
+  - component: {fileID: 1344696226}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -1514,6 +1515,30 @@ MonoBehaviour:
     OldPrefabList: []
   RunInBackground: 1
   LogLevel: 1
+--- !u!114 &1344696226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344696222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9bfbeac8e644af0b3aa9e6da1992a8a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkGameFlowController
+  networkManager: {fileID: 1344696225}
+  minimumPlayers: 2
+  gameplaySceneName: Main
+  onPlayerCountChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onStartAvailabilityChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onStatusChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1437794905
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,9 @@
 # Shura 기술 설계서
 
+> **2026-07-31 갱신 안내:** 3장 Combat 구조와 4장 SkillData, 5장 연계 흐름은
+> 실제 구현(7속성 기반)에 맞게 수정됐다. 기존 `SkillTag` 5종(Burn/Freeze/Impact/Wind/Shock) 구조는 D-010으로 폐기됐다.
+> 구현 상세는 `IMPL_2026-07-31_JUMONG_SKILLS.md` 참고.
+
 ## 1. 기술 목표
 
 현재 단계의 목표는 대규모 확장성이 아니라 초보 개발자 세 명이 해커톤 마감 전까지 이해하고 수정할 수 있는 구조를 만드는 것이다. 지나친 추상화와 범용 프레임워크를 피하고, 캐릭터·무기·공격·아이템·적 수치를 코드 수정 없이 바꿀 수 있는 정도만 데이터화한다.
@@ -36,17 +40,30 @@
 - `CharacterLoadout`: 고유 무기, 특수공격, 아이템, 속성 보유 상태
 - `ActiveSkillController`: 캐릭터 고유 액티브 입력, 충전 또는 쿨다운
 
-### Combat
+### Combat (2026-07-31 구현 반영)
 
 - `BasicAttackController`: 고유 무기의 기본공격 대상과 자동 발동 주기
 - `SpecialAttackRunner`: 보유 특수공격의 조건과 쿨다운 실행
-- `SkillRunner`: 현재 투사체형 공격 프리팹 생성과 피해 수치 전달
-- `Projectile`: 이동과 충돌
-- `IDamageable`: 피해를 받을 수 있는 대상의 공통 규약
 - `AttributeRoller`: 선택지에 무작위 속성 부여
 - `StatusEffectController`: 불, 얼음, 독 등의 속성 상태를 한 컴포넌트에서 관리
-- `SynergyResolver`: 최근 속성을 확인하고 긍정적인 시너지 반응 결정
 - `SupportItemController`: 보유 아이템의 지속·주기·조건부 효과 실행
+- `IDamageable`: 피해를 받을 수 있는 대상의 공통 규약 — 구현됨
+- `ISkillBehaviour` / `SkillCastContext`: 스킬 프리팹 공통 규약. 캐스터가 시전 정보를 넘긴다 — 구현됨
+- `StraightProjectile`: 직선 투사체. 관통 수·폭발 반경을 프리팹 설정으로 전환 — 구현됨
+- `ElementalZone`: 원소 장판 공용 시스템 — 구현됨
+- `AutoDestroyEffect`: 명중·폭발 이펙트 수명 관리 — 구현됨
+- `ElementType` / `ElementVisuals`: 7속성 정의와 속성별 색 적용 — 구현됨
+- `JeoktomaDash`: 캐릭터 전용 스킬 예시(버프+장판형) — 구현됨
+- `Projectile`(유도형), `SkillRunner`: 초기 구조. 현재 주몽에는 미사용하며 재사용 대비 보존
+- `ElementApplier`: 명중한 적에게 (속성, 플레이어 ID, 시간) 기록 — **미구현**
+- `SynergyResolver`: 기록된 속성을 확인해 연계 반응 결정 — **미구현**
+
+### Player
+
+- `PlayerAimDirection`: 마지막 이동 방향 추적 — 구현됨
+- `DirectionalAutoAttack`: 기본공격 자동 발사 — 구현됨
+- `AutoSkillCaster`: 보유 스킬 쿨다운 자동 시전 + 랜덤 속성 부여 — 구현됨
+>>>>>>> origin/feat/jumong-basic-attack-skills
 
 ### Enemy
 
@@ -81,10 +98,10 @@
 | 기능 영역 | 상태 | 현재 확인된 범위 | 다음 작업·담당 |
 |---|---|---|---|
 | 프로젝트 기반 | 구현 | Unity `6000.3.20f1`, Universal 2D, Input System, NGO와 Multiplayer Services 패키지 설정 | 세 명 모두 같은 버전 유지 |
-| 게임 실행·메뉴·입장 | 미구현 | 실제 `Boot`, `MainMenu`, 게임용 `Main` 씬 흐름 없음. Build Settings에는 `NetworkTest`만 활성화 | 진미리 |
-| Relay 방 생성·참가 | 부분 구현 | `NetworkTestUI`에 UGS 초기화, 익명 로그인, 2인 Relay 세션 생성·코드 참가·퇴장·재접속 API가 있음 | 실제 메뉴와 게임 입장에 연결: 진미리 |
-| 네트워크 플레이어 이동 | 부분 구현 | `NetworkPlayerMovement`가 소유자 입력과 위치 동기화 검증을 담당 | 일반 플레이어·카메라·체력·스킬과 통합: 진미리 |
-| 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현 | 네트워크 플레이어 통합: 진미리 / 성장 선택: 이재준 / 종료 연결: 문성웅 |
+| 게임 실행·메뉴·입장 | 부분 구현 | `NetworkTest`에서 호스트 권한·최소 접속 인원·Build Settings를 검증하고 NGO SceneManager로 게임용 `Main` 씬에 전환한다. `Main`은 현재 카메라만 있는 최소 통합 기반 | 시작 화면·메뉴 UI와 실제 전투 콘텐츠 연결: 진미리 |
+| Relay 방 생성·참가 | 부분 구현 | `NetworkTestUI`에 UGS 초기화·재시도, 익명 로그인, 2인 Relay 세션 생성·코드 참가·퇴장·재접속 API가 있음. 생성·참가 실패 시 남은 세션과 이벤트 구독을 정리해 재시도가 막히지 않도록 처리 | 실제 메뉴와 게임 입장에 연결: 진미리 |
+| 네트워크 플레이어 이동 | 부분 구현 | `NetworkPlayerMovement`가 소유자 Input Actions 입력과 위치 동기화를 담당하고, 로컬 소유 플레이어에 카메라를 자동 연결 | 체력·스킬·성장 상태 네트워크 동기화: 진미리 |
+| 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현. `NetworkPlayer.prefab`에도 충돌·체력·경험치·기본 공격 구성을 이관하고 소유자 전용 입력·공격·획득 처리를 적용 | 상태 동기화: 진미리 / 성장 선택: 이재준 / 종료 연결: 문성웅 |
 | 기본 전투 | 구현 | 가장 가까운 적 자동 탐색, `SkillRunner` 생성, 유도 투사체, 재탐색, `IDamageable` 피해 구현 | 실제 네트워크 게임에서 회귀 테스트 필요 |
 | 스킬 데이터 | 부분 구현 | `SkillData`와 `HomingShotData` 1개, 투사체형 기본공격 실행 가능 | 특수공격·캐릭터 액티브·추가 스킬·효과: 이재준 |
 | 스킬 연계 | 미구현 | 기획 문서만 있고 `SkillTag`, 상태 효과, `SynergyResolver` 코드 없음 | 이재준, 네트워크 연결은 진미리 협업 |
@@ -210,8 +227,8 @@ PlayerAutoAttack 또는 다른 발동 조건
 
 ### 4.7 현재 구현 시 주의점
 
-- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 아직 별도 구조다. `Network/Tests` 코드는 기술 검증용이므로 일반 전투가 네트워크 동기화되었다고 가정하지 않는다.
-- 일반 플레이어 이동은 Input Actions의 `OnMove` 콜백을 사용하지만 네트워크 테스트 이동은 `Keyboard.current`를 직접 읽는다. 테스트 코드를 본 게임 입력 표준으로 복사하지 않는다.
+- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·경험치·공격 결과의 네트워크 권한과 값 동기화는 아직 미구현이므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
+- 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·자동 공격·경험치 획득을 활성화하고 카메라 대상을 연결한다.
 - `PlayerController`, `PlayerHealth`, `CameraFollow`만 각각 `Shura.Player`, `Shura.Camera` 네임스페이스에 있고 나머지 현재 스크립트 다수는 전역 네임스페이스다. 클래스 위치를 추측하지 말고 실제 선언을 확인한다.
 - `EnemyController`는 `Start`와 `FixedUpdate`에서 플레이어를 찾는 현재 코드 흐름이 서로 다르므로 추적 로직을 수정할 때 두 경로를 함께 확인한다.
 - 로컬 작업트리에서는 `Enemy.prefab` 루트에 잘못 붙어 있던 `ExperienceOrb` 컴포넌트를 제거했다. 공식 드롭 흐름은 계속 `EnemyHealth`가 별도 `ExperienceOrb.prefab`을 생성하고 `Initialize`하는 경로다.
@@ -276,10 +293,11 @@ characterPrefab
 portrait
 ```
 
-### WeaponData
+
+### SkillData (구현 반영)
 
 ```text
-id
+skillId
 displayName
 description
 basicAttack
@@ -345,7 +363,12 @@ color
 statusEffect
 effectPrefab
 icon
+skillPrefab
 ```
+
+속성은 SkillData에 고정하지 않는다. 습득 시점에 랜덤으로 부여되어(D-010)
+`AutoSkillCaster`가 보유 스킬별로 들고 있다가 `SkillCastContext.Element`로 전달한다.
+관통 수·폭발 반경·장판 지속시간처럼 스킬 고유 특성은 프리팹의 컴포넌트 설정값으로 둔다.
 
 ### EnemyData
 
@@ -359,13 +382,13 @@ experienceReward
 enemyPrefab
 ```
 
-### SynergyData
+### SynergyData (미구현, 7속성 기준으로 갱신)
 
 ```text
 id
 displayName
-requiredFirstAttribute
-requiredSecondAttribute
+requiredFirstElement    // ElementType
+requiredSecondElement   // ElementType
 triggerWindowSeconds
 effectType
 damageMultiplierOrValue
@@ -374,6 +397,7 @@ internalCooldown
 ```
 
 부정적인 결과를 만드는 시너지 데이터는 등록하지 않는다.
+조합은 순서를 구분하지 않는다. 확정된 4조합은 D-015 참고.
 
 ### WaveData
 
@@ -395,6 +419,17 @@ healthMultiplier
 3. 특정 구간이면 특수공격 또는 아이템 후보를, 그 외 구간이면 기본공격 강화 또는 능력치 후보를 만든다.
 4. 공격형 후보에는 `AttributeRoller`가 허용된 속성 중 하나를 부여한다.
 5. 플레이어 선택 결과를 `CharacterLoadout`에 적용하고 HUD를 갱신한다.
+1. 스킬(투사체·폭발·장판)이 적에게 피해를 준다.
+2. 명중한 스킬의 **속성**, 플레이어 ID, 시간을 적의 속성 기록 컴포넌트에 남긴다.
+3. `SynergyResolver`가 기존 속성과 새 속성이 확정 조합에 해당하는지 확인한다.
+4. **서로 다른 플레이어**가 제한 시간 안에 적용했다면 반응을 실행한다.
+   동속성 중첩은 반응하지 않는다(D-017). 조합에 없으면 무반응이며 디버프도 없다(D-012).
+5. 피해, 상태 효과, 시각·음향 효과를 발생시킨다.
+6. 사용한 속성 기록을 소비하거나 내부 쿨다운을 적용한다.
+
+핵심 판정은 한 곳에서만 수행한다. 각 스킬 코드에 연계 조합을 직접 작성하지 않는다.
+현재 연동 지점은 `StraightProjectile.OnTriggerEnter2D`와 `ElementalZone.DamageEnemiesInside`의
+`TODO(연계)` 주석 위치다.
 
 무작위 속성은 공격이 발동할 때마다 다시 뽑지 않는다. 기본공격은 게임 시작 시, 특수공격·아이템은 선택지가 만들어질 때 결정하고 그 판의 빌드 데이터로 유지한다.
 
@@ -433,7 +468,9 @@ healthMultiplier
 
 전투 전체를 만들기 전에 이 장면으로 두 PC 연결과 Web 가능성을 검증한다.
 
-현재 Relay 기반 외부 접속과 정상 퇴장 후 동일 코드 재접속은 확인했다. 강제 종료 후 재접속을 실행하는 UI는 아직 연결하지 않았으므로 현재 제한으로 기록한다.
+현재 Relay 기반 외부 접속과 정상 퇴장 후 동일 코드 재접속은 확인했다. 생성·참가 실패 시 부분 생성된 세션을 정리하고 서비스 초기화를 다시 시도하는 API도 있다. 강제 종료 후 재접속을 실행하는 UI는 아직 연결하지 않았으므로 현재 제한으로 기록한다.
+
+`NetworkGameFlowController`는 NGO의 실제 연결 인원 변화를 구독하고, 호스트이며 최소 2명이 연결된 경우에만 게임 시작을 허용한다. `gameplaySceneName`은 Build Settings에 등록된 `Main`으로 연결되어 있다. 실제 시작 버튼의 `OnClick`과 전투 콘텐츠는 후속 통합에서 연결한다.
 
 ## 8. 네트워크 솔루션 결정
 
@@ -458,6 +495,7 @@ healthMultiplier
 | `Tests/NetworkTest.unity` | 멀티플레이 기술 검증 |
 | `Tests/StageTest.unity` | 스폰·60초 웨이브·임시 보스·승패·픽업 통합 검증 |
 | `Tests/ContentTest.unity` | UI·아트·데이터 |
+| `Main.unity` | 네트워크 입장 이후 실제 게임 통합 |
 
 MVP에서는 씬 수를 줄이기 위해 `Main` 안에 결과 패널을 넣어도 된다.
 
