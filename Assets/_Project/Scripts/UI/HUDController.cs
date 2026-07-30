@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using Shura.Player;
 
 public class HUDController : MonoBehaviour
 {
@@ -22,10 +23,6 @@ public class HUDController : MonoBehaviour
     {
         if (playerHealth == null)
         {
-            if (resultPanel != null && !resultPanel.activeSelf)
-            {
-                resultPanel.SetActive(true);
-            }
             return;
         }
 
@@ -37,6 +34,11 @@ public class HUDController : MonoBehaviour
         if (levelText != null && playerExperience != null)
         {
             levelText.text = $"Lv.{playerExperience.CurrentLevel}  EXP {playerExperience.CurrentExperience}/{playerExperience.ExperienceToNextLevel}";
+        }
+
+        if (playerHealth.IsDead && resultPanel != null && !resultPanel.activeSelf)
+        {
+            resultPanel.SetActive(true);
         }
     }
 }
