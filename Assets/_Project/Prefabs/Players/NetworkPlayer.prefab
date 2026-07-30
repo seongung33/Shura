@@ -21,6 +21,9 @@ GameObject:
   - component: {fileID: 880000000000000005}
   - component: {fileID: 880000000000000006}
   - component: {fileID: 880000000000000007}
+  - component: {fileID: 880000000000000008}
+  - component: {fileID: 880000000000000009}
+  - component: {fileID: 880000000000000010}
   m_Layer: 0
   m_Name: NetworkPlayer
   m_TagString: Player
@@ -367,3 +370,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6c4c6774d68435a92a2ed1f4acbd05f, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkPlayerOwnerSetup
+--- !u!114 &880000000000000008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3389326965975105325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cc3d9956466f8e4eba699649c2d2281, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAimDirection
+--- !u!114 &880000000000000009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3389326965975105325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e8c753b2df269e49b18c59885504c5c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::DirectionalAutoAttack
+  basicSkill: {fileID: 11400000, guid: 314896e113a3c04458d39cb923046d5e, type: 2}
+  firePoint: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  requireEnemyInRange: 1
+--- !u!114 &880000000000000010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3389326965975105325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22b05f5b572006a4f86e7aa422819423, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoSkillCaster
+  equippedSkills:
+  - data: {fileID: 11400000, guid: b94bc1cafa5e7c8488c3ac8bba38c81c, type: 2}
+    element: 0
+  firePoint: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  requireEnemyInRange: 1

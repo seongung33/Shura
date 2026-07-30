@@ -8,12 +8,18 @@ public class NetworkPlayerOwnerSetup : NetworkBehaviour
 {
     private PlayerInput playerInput;
     private PlayerAutoAttack autoAttack;
+    private PlayerAimDirection aimDirection;
+    private DirectionalAutoAttack directionalAutoAttack;
+    private AutoSkillCaster autoSkillCaster;
     private PlayerExperience playerExperience;
 
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
         autoAttack = GetComponent<PlayerAutoAttack>();
+        aimDirection = GetComponent<PlayerAimDirection>();
+        directionalAutoAttack = GetComponent<DirectionalAutoAttack>();
+        autoSkillCaster = GetComponent<AutoSkillCaster>();
         playerExperience = GetComponent<PlayerExperience>();
 
         SetLocalGameplayEnabled(false);
@@ -52,7 +58,22 @@ public class NetworkPlayerOwnerSetup : NetworkBehaviour
 
         if (autoAttack != null)
         {
-            autoAttack.enabled = isEnabled;
+            autoAttack.enabled = isEnabled && directionalAutoAttack == null;
+        }
+
+        if (aimDirection != null)
+        {
+            aimDirection.enabled = isEnabled;
+        }
+
+        if (directionalAutoAttack != null)
+        {
+            directionalAutoAttack.enabled = isEnabled;
+        }
+
+        if (autoSkillCaster != null)
+        {
+            autoSkillCaster.enabled = isEnabled;
         }
 
         if (playerExperience != null)
