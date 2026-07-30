@@ -17,6 +17,9 @@ GameObject:
   - component: {fileID: -2610181249393096913}
   - component: {fileID: 4142575937817224345}
   - component: {fileID: 2687659161147983114}
+  - component: {fileID: 5908950344647589251}
+  - component: {fileID: 750727122065354291}
+  - component: {fileID: 5584062228375040011}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -221,7 +224,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7450941720886569887}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 252b4644a0b91d74b957ff14479dabb2, type: 3}
   m_Name: 
@@ -253,7 +256,62 @@ MonoBehaviour:
   m_GameObject: {fileID: 7450941720886569887}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb6ee622a386e4547a8939cdd08fe692, type: 3}
+  m_Script: {fileID: 11500000, guid: a4b2b332cd7ea284d94856fe67e5a564, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   maxHealth: 100
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  currentHealth: 0
+  isDead: 0
+--- !u!114 &5908950344647589251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450941720886569887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cc3d9956466f8e4eba699649c2d2281, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAimDirection
+--- !u!114 &750727122065354291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450941720886569887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e8c753b2df269e49b18c59885504c5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DirectionalAutoAttack
+  basicSkill: {fileID: 11400000, guid: 314896e113a3c04458d39cb923046d5e, type: 2}
+  firePoint: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  requireEnemyInRange: 1
+--- !u!114 &5584062228375040011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450941720886569887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22b05f5b572006a4f86e7aa422819423, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoSkillCaster
+  equippedSkills:
+  - data: {fileID: 11400000, guid: b94bc1cafa5e7c8488c3ac8bba38c81c, type: 2}
+    element: 0
+  firePoint: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  requireEnemyInRange: 1
