@@ -2,6 +2,8 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
 public class NetworkGameFlowController : MonoBehaviour
 {
@@ -11,6 +13,8 @@ public class NetworkGameFlowController : MonoBehaviour
     [SerializeField] private UnityEvent<int> onPlayerCountChanged;
     [SerializeField] private UnityEvent<bool> onStartAvailabilityChanged;
     [SerializeField] private UnityEvent<string> onStatusChanged;
+    [SerializeField] private Button startGameButton;
+    [SerializeField] private TMP_Text playerCountText;
 
     private bool callbacksRegistered;
 
@@ -127,14 +131,27 @@ public class NetworkGameFlowController : MonoBehaviour
     private void RefreshState()
     {
         int playerCount = ConnectedPlayerCount;
+        bool canStartGame = CanStartGame;
+
+        if (startGameButton != null)
+        {
+            startGameButton.interactable = canStartGame;
+        }
+
+        if (playerCountText != null)
+        {
+            playerCountText.text =
+                $"접속 인원: {playerCount}/{minimumPlayers}";
+        }
+
         onPlayerCountChanged?.Invoke(playerCount);
-        onStartAvailabilityChanged?.Invoke(CanStartGame);
+        onStartAvailabilityChanged?.Invoke(canStartGame);
 
         if (networkManager == null || !networkManager.IsListening)
         {
             SetStatus("네트워크 연결을 기다리는 중입니다.");
         }
-        else if (CanStartGame)
+        else if (canStartGame)
         {
             SetStatus($"게임 시작 준비 완료 ({playerCount}/{minimumPlayers})");
         }
