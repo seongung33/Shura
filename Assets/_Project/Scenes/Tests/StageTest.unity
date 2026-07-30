@@ -374,9 +374,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   enemySpawner: {fileID: 1872421054}
-  roundDuration: 60
-  wave2StartTime: 20
-  wave3StartTime: 20
+  roundDuration: 10
+  wave2StartTime: 3
+  wave3StartTime: 4
   wave1SpawnInterval: 2
   wave1MaxAlive: 15
   wave2SpawnInterval: 1
