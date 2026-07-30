@@ -119,6 +119,55 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &171416072
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 171416074}
+  - component: {fileID: 171416073}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &171416073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171416072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e23c3c439d2538b48ab04d77810c5a67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  waveManager: {fileID: 1872421056}
+  playerHealth: {fileID: 583171238}
+  player: {fileID: 395130520}
+  bossPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
+  bossSpawnOffset: {x: 6, y: 0, z: 0}
+--- !u!4 &171416074
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171416072}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.0978, y: -0.86561, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &395130519
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -181,6 +230,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4081730810902360702, guid: e36121d3fdb73274b851a99492026c03, type: 3}
   m_PrefabInstance: {fileID: 395130519}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &583171238 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4696496361874097783, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+  m_PrefabInstance: {fileID: 395130519}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4b2b332cd7ea284d94856fe67e5a564, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Shura.Player.PlayerHealth
 --- !u!1001 &1513582424
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -260,6 +320,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1872421055}
   - component: {fileID: 1872421054}
+  - component: {fileID: 1872421056}
   m_Layer: 0
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -300,6 +361,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1872421056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872421053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5004b074cb1102646b1cb86737b747df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaveManager
+  enemySpawner: {fileID: 1872421054}
+  roundDuration: 60
+  wave2StartTime: 20
+  wave3StartTime: 20
+  wave1SpawnInterval: 2
+  wave1MaxAlive: 15
+  wave2SpawnInterval: 1
+  wave2MaxAlive: 25
+  wave3SpawnInterval: 0.5
+  wave3MaxAlive: 40
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -307,3 +390,4 @@ SceneRoots:
   - {fileID: 1513582424}
   - {fileID: 395130519}
   - {fileID: 1872421055}
+  - {fileID: 171416074}

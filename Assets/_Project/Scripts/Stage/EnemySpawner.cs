@@ -24,7 +24,9 @@ public class EnemySpawner : MonoBehaviour
     private int maxAlive = 15;
 
     private readonly List<GameObject> spawnedEnemies = new();
+
     private float spawnTimer;
+    private bool spawningEnabled = true;
 
     private void Start()
     {
@@ -34,6 +36,11 @@ public class EnemySpawner : MonoBehaviour
     private void Update()
     {
         RemoveDestroyedEnemies();
+
+        if (!spawningEnabled)
+        {
+            return;
+        }
 
         if (player == null)
         {
@@ -58,6 +65,32 @@ public class EnemySpawner : MonoBehaviour
         SpawnEnemy();
     }
 
+    public void ApplyWaveSettings(
+        float newSpawnInterval,
+        int newMaxAlive
+    )
+    {
+        spawnInterval = Mathf.Max(
+            0.1f,
+            newSpawnInterval
+        );
+
+        maxAlive = Mathf.Max(
+            1,
+            newMaxAlive
+        );
+    }
+
+    public void SetSpawningEnabled(bool enabled)
+    {
+        spawningEnabled = enabled;
+
+        if (!enabled)
+        {
+            spawnTimer = 0f;
+        }
+    }
+
     private void TryFindPlayer()
     {
         GameObject playerObject =
@@ -75,7 +108,10 @@ public class EnemySpawner : MonoBehaviour
             Random.Range(0f, Mathf.PI * 2f);
 
         float distance =
-            Random.Range(minSpawnDistance, maxSpawnDistance);
+            Random.Range(
+                minSpawnDistance,
+                maxSpawnDistance
+            );
 
         Vector2 direction = new Vector2(
             Mathf.Cos(angle),
@@ -106,7 +142,8 @@ public class EnemySpawner : MonoBehaviour
     {
         if (maxSpawnDistance < minSpawnDistance)
         {
-            maxSpawnDistance = minSpawnDistance;
+            maxSpawnDistance =
+                minSpawnDistance;
         }
     }
 }
