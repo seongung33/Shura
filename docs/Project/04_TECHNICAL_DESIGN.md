@@ -85,12 +85,14 @@
 
 이 절은 `Assets/_Project/Scripts`와 관련 프리팹·ScriptableObject를 기준으로 확인한 현재 연결 규칙이다. 새 기능을 만들거나 AI에 코드 작업을 요청할 때 먼저 읽는다. 구조를 의도적으로 바꾸는 작업이 아니라면 같은 책임을 가진 코드를 새로 만들지 않고 이 흐름을 확장한다.
 
-### 4.1 2026년 7월 29일 구현 현황
+### 4.1 2026년 7월 31일 구현 현황
 
 상태 표시는 다음 기준을 사용한다.
 
 - **구현:** 현재 스크립트·프리팹 또는 테스트 씬에서 핵심 동작을 확인할 수 있음
 - **부분 구현:** 단독 기능은 있으나 실제 한 판이나 네트워크 흐름에 연결되지 않음
+- **원격 반영:** 팀 원격 브랜치에는 있으나 현재 작업 브랜치에 아직 통합되지 않음
+- **로컬 작업 중:** 커밋되지 않은 작업트리 변경으로 검증·통합 완료 전임
 - **미구현:** 해당 책임의 프로젝트 스크립트 또는 실제 연결이 없음
 
 | 기능 영역 | 상태 | 현재 확인된 범위 | 다음 작업·담당 |
@@ -103,17 +105,23 @@
 | 기본 전투 | 구현 | 가장 가까운 적 자동 탐색, `SkillRunner` 생성, 유도 투사체, 재탐색, `IDamageable` 피해 구현 | 실제 네트워크 게임에서 회귀 테스트 필요 |
 | 스킬 데이터 | 부분 구현 | `SkillData`와 `HomingShotData` 1개, 투사체형 기본공격 실행 가능 | 특수공격·캐릭터 액티브·추가 스킬·효과: 이재준 |
 | 스킬 연계 | 미구현 | 기획 문서만 있고 `SkillTag`, 상태 효과, `SynergyResolver` 코드 없음 | 이재준, 네트워크 연결은 진미리 협업 |
-| 기본 적 | 부분 구현 | 플레이어 추적, 접촉 공격, 체력, 사망, 경험치 구체 드롭 구현 | 적 종류·스폰·밸런스: 문성웅 / 네트워크: 진미리 |
+| 기본 적 | 부분 구현 | 플레이어 추적, 접촉 공격, 체력, 사망, 경험치 구체 드롭과 플레이어 주변 생성 구현 | 적 종류·스폰 안전성·밸런스: 문성웅 / 네트워크: 진미리 |
 | 경험치 | 부분 구현 | 적 사망 시 구체 생성, Trigger 습득, 누적 경험치와 복수 레벨업 구현 | 레벨업 선택: 이재준 / 자석 아이템: 문성웅 |
-| 맵·웨이브·15분 타이머 | 미구현 | `Stage` 폴더가 비어 있고 스포너·웨이브·타이머가 없음 | 문성웅 |
-| 보스·클리어·패배 | 미구현 | 보스, 15분 클리어 판정, 캐릭터 사망 시 게임 종료와 결과 화면 없음 | 문성웅 |
-| 회복·자석·기타 아이템 | 미구현 | 경험치 구체 외 획득 아이템 코드·데이터 없음 | 문성웅 |
-| UI | 부분 구현 | 네트워크 테스트 UI만 있음. 실제 메뉴·HUD·레벨업·결과 UI는 없음 | 메뉴: 진미리 / 스킬·성장: 이재준 / 타이머·결과: 문성웅 |
-| Windows/Web 최종 빌드 | 미확인 | 문서상 목표만 있으며 현재 저장소에서 최종 게임 빌드 결과를 확인하지 않음 | 진미리 통합 후 팀 전체 검증 |
+| 맵·웨이브·15분 타이머 | 부분 구현 | 현재 기능 브랜치에 `StageTest`, `EnemySpawner`, 60초 3단계 `WaveManager`가 있음. 15분 데이터·다양한 적은 없음 | 문성웅 |
+| 보스·클리어·패배 | 부분 구현 | `GameManager`에 플레이어 사망 패배, 라운드 종료 후 보스 생성, 보스 제거 승리, 정지·재시작 코드가 있음 | 전용 보스·결과 UI·통합 Play 검증: 문성웅 |
+| 회복·자석 아이템 | 로컬 작업 중 | `HealthPickup`, `MagnetPickup`, 경험치 오브 유도와 프리팹·`StageTest` 배치가 작업트리에 있음 | Play 검증, 드롭·스폰, 커밋: 문성웅 |
+| HUD·결과 패널 | 원격 반영 | `origin/develop`에 HP·레벨·EXP와 사망 결과 패널이 있으나 현재 기능 브랜치에는 없음 | HUD 수정 브랜치 반영 후 통합: 진미리 |
+| 레벨업·스킬·타이머 UI | 미구현 | 선택지, 스킬 쿨다운, 라운드 타이머와 최종 결과 통계 UI 없음 | 이재준·문성웅·진미리 |
+| Windows 기술 검증 빌드 | 부분 구현 | 로컬 `Builds`에 Relay 테스트용 Windows 빌드 2종 존재 | 최신 코드로 재빌드·두 PC 회귀 테스트 |
+| Windows/Web 최종 빌드 | 미구현 | 최종 게임 씬 빌드와 Web 링크를 확인하지 못함 | 진미리 통합 후 팀 전체 검증 |
 
 현재 구현률을 숫자 하나로 표현하지 않는다. 테스트용 단독 기능이 있어도 게임 실행부터 15분 라운드 종료까지 이어지지 않으면 전체 게임 기능은 완료가 아니다.
 
 역할과 통합 책임은 `03_TEAM_ROLES_AND_WORKFLOW.md`를 기준으로 한다. 기존 파일의 과거 작성자와 현재 기능 담당자는 다를 수 있으며, 이 표의 담당은 지금부터의 유지·확장 책임을 의미한다.
+
+현재 상태를 읽을 때 브랜치를 함께 확인한다. `feat/map_generate`에는 맵·웨이브 코드가, `origin/develop`에는 HUD가 각각 존재하며 둘은 아직 하나의 통합 상태가 아니다. 회복·자석 아이템은 로컬 작업 중이므로 최종 구현으로 주장하지 않는다.
+
+최신 로컬 Unity 로그에는 로컬 아이템 스크립트 반영 후 어셈블리 재로드와 레벨업·회복·라운드 종료·임시 보스·승패 실행 흔적이 있다. 이는 일부 동작 증거일 뿐 전체 체크리스트 통과나 최종 빌드 검증을 뜻하지 않는다.
 
 ### 4.2 현재 구현 파일과 책임
 
@@ -131,12 +139,20 @@
 | 적 | `Enemy/EnemyController.cs` | `Player` 태그 대상 탐색과 `Rigidbody2D` 추적 이동 |
 | 적 | `Enemy/EnemyAttack.cs` | 플레이어와 접촉 중 공격 간격에 따라 `IDamageable` 피해 적용 |
 | 적 | `Enemy/EnemyHealth.cs` | 적 체력·중복 사망 방지·경험치 구체 생성, `IDamageable` 구현 |
-| 경험치 | `Experience/ExperienceOrb.cs` | 적이 전달한 경험치 양 보관 |
+| 스테이지 | `Stage/EnemySpawner.cs` | 플레이어 주변 임의 거리에서 적 생성, 생성 간격과 최대 생존 수 적용 |
+| 스테이지 | `Stage/WaveManager.cs` | 테스트 라운드 시간 누적, 3단계 웨이브 수치 적용, 종료 시 스폰 정지 |
+| 게임 흐름 | `Core/GameManager.cs` | Playing·Result 상태, 플레이어 사망 패배, 라운드 후 보스 생성, 보스 제거 승리, 재시작 |
+| 경험치·아이템 | `Item/ExperienceOrb.cs` | 경험치 양 보관과 자석 획득용 목표 추적 이동. 현재 로컬 폴더 이동 작업 중 |
+| 아이템 | `Item/HealthPickup.cs` | 플레이어 체력을 회복하고 실제 회복 성공 시에만 픽업 제거. 현재 로컬 작업 중 |
+| 아이템 | `Item/MagnerPickup.cs` | 씬의 경험치 구체를 플레이어에게 유도. 파일명의 `Magner` 오탈자는 정리 필요 |
 | 카메라 | `Camera/CameraFollow.cs` | `LateUpdate`에서 지정 대상을 보간 추적 |
 | 네트워크 테스트 | `Network/Tests/NetworkPlayerMovement.cs` | 소유자만 입력·물리를 처리하는 네트워크 이동 검증 |
 | 네트워크 테스트 | `Network/Tests/networkTestUI.cs` | UGS 초기화, 익명 로그인, Relay 세션 생성·참가·퇴장·재접속 API 검증 |
+| UI | `UI/HUDController.cs` | HP·레벨·EXP와 사망 결과 패널. 현재 `origin/develop`에만 있으며 별도 수정 브랜치 존재 |
 
-`Core`, `Stage`, `UI` 스크립트 폴더는 현재 비어 있다. `GameManager`, `WaveManager`, `SynergyResolver` 등 이 문서에만 있는 이름은 계획이며 아직 구현된 API가 아니다.
+현재 작업 브랜치에는 `Core`와 `Stage` 구현이 있으며 `UI` 구현은 원격 develop에 있다. `SynergyResolver`, `StatusEffectController`, `LevelUpChoiceGenerator` 등 실제 파일이 없는 이름은 여전히 계획이다.
+
+`Item` 폴더의 세 파일과 픽업 프리팹은 현재 로컬 작업트리 기준이다. 커밋 전 이름·`.meta`·참조·Play 동작을 검증하고, 검증 전에는 다른 브랜치에서 재사용할 안정 API로 보지 않는다.
 
 ### 4.3 스킬 생성·실행 규칙
 
@@ -194,14 +210,71 @@ PlayerAutoAttack 또는 다른 발동 조건
 
 `Projectile.prefab`은 Trigger Collider와 `Projectile`이 필요하며, `ExperienceOrb.prefab`은 Trigger Collider와 `ExperienceOrb`가 같은 오브젝트에 있어야 한다. `PlayerExperience`가 충돌한 같은 오브젝트에서 `ExperienceOrb`를 찾기 때문이다.
 
+현재 로컬 작업 중인 `HealthPickup.prefab`과 `MagnetPickup.prefab`도 Trigger Collider와 해당 픽업 컴포넌트가 같은 오브젝트에 있다.
+
+- `HealthPickup`은 `Player` 태그를 확인하고 같은 오브젝트의 `PlayerHealth.Heal`을 호출한다. 체력이 실제로 증가한 경우에만 픽업을 제거한다.
+- `MagnetPickup`은 습득 시 현재 씬의 `ExperienceOrb`를 찾아 플레이어 Transform을 유도 목표로 지정한다.
+- 두 픽업은 현재 `StageTest`에 수동 배치되어 있을 뿐, 적 드롭이나 라운드 스폰 규칙에는 아직 연결되지 않았다.
+
+`StageTest.unity`에는 현재 일반 플레이어, 카메라, `EnemySpawner`, `WaveManager`, `GameManager`가 연결되어 있다.
+
+- 테스트 라운드: 60초
+- 웨이브별 기본 수치: 2초/15마리, 1초/25마리, 0.5초/40마리
+- 일반 적 스폰: 플레이어로부터 7~10 거리의 임의 방향
+- 라운드 종료: 일반 적 생성을 중지하고 `GameManager`가 보스 프리팹 생성
+- 현재 보스 프리팹: 전용 보스가 아닌 일반 `Enemy.prefab` 임시 재사용
+- 현재 씬 저장값: 2웨이브와 3웨이브 시작 시간이 모두 20초이므로 2웨이브가 건너뛰어지는지 검증·수정 필요
+
 ### 4.7 현재 구현 시 주의점
 
 - 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·경험치·공격 결과의 네트워크 권한과 값 동기화는 아직 미구현이므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
 - 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·자동 공격·경험치 획득을 활성화하고 카메라 대상을 연결한다.
 - `PlayerController`, `PlayerHealth`, `CameraFollow`만 각각 `Shura.Player`, `Shura.Camera` 네임스페이스에 있고 나머지 현재 스크립트 다수는 전역 네임스페이스다. 클래스 위치를 추측하지 말고 실제 선언을 확인한다.
 - `EnemyController`는 `Start`와 `FixedUpdate`에서 플레이어를 찾는 현재 코드 흐름이 서로 다르므로 추적 로직을 수정할 때 두 경로를 함께 확인한다.
-- 현재 `Enemy.prefab` 루트에는 전투에 필요하지 않은 `ExperienceOrb` 컴포넌트도 붙어 있다. 경험치 드롭의 공식 흐름은 `EnemyHealth`가 별도 `ExperienceOrb.prefab`을 생성하고 `Initialize`하는 경로이며, 새 기능은 적 루트의 해당 컴포넌트에 의존하지 않는다.
+- 로컬 작업트리에서는 `Enemy.prefab` 루트에 잘못 붙어 있던 `ExperienceOrb` 컴포넌트를 제거했다. 공식 드롭 흐름은 계속 `EnemyHealth`가 별도 `ExperienceOrb.prefab`을 생성하고 `Initialize`하는 경로다.
+- `ExperienceOrb.cs`를 `Scripts/Experience`에서 `Scripts/Item`으로 이동하는 로컬 작업이 있으므로 Unity에서 `.meta` GUID와 프리팹 참조 보존을 확인한 뒤 커밋한다.
+- `GameManager`는 현재 `PlayerHealth.IsDead`를 매 프레임 확인한다. `PlayerHealth.onDeath` 이벤트 기반으로 바꾸는 경우 관련 담당자와 공개 계약을 함께 갱신한다.
+- `HUDController`의 원격 develop 버전은 `PlayerHealth` 네임스페이스와 사망 판정 수정이 필요했고 `origin/fix/hud-namespace-compile-error`에 수정이 존재한다. 통합할 때 원본과 수정 브랜치를 함께 확인한다.
+- `GameManager`의 보스 사망 판정은 생성된 GameObject가 제거되었는지를 본다. 일반 적 프리팹 임시 연결은 흐름 검증용이며 보스 패턴 완료를 뜻하지 않는다.
+- 현재 `PlayerTest`에는 `Player.prefab`이 가진 `PlayerExperience` 외에 같은 컴포넌트가 씬 오버라이드로 한 번 더 추가된 정황이 있어 중복 경험치 처리를 회귀 테스트해야 한다.
+- 현재 `CombatTest`는 사실상 카메라만 있는 상태이므로 전투 회귀의 정본 씬으로 사용하기 전에 구성을 복구하거나 `PlayerTest`·`StageTest`로 테스트 기준을 통일한다.
 - `PlayerHealthDebugTester`는 Space 키 피해 확인용 테스트 컴포넌트다. 실제 공격 시스템의 필수 구성요소로 사용하지 않는다.
+
+### 4.8 스테이지·게임 종료 흐름
+
+```text
+StageTest 시작
+→ GameManager.StartGame
+→ WaveManager가 경과 시간에 따라 EnemySpawner 설정 변경
+→ EnemySpawner가 플레이어 주변에 적 생성
+→ 테스트 라운드 종료 시 일반 스폰 중지
+→ GameManager가 보스 프리팹 생성
+→ 보스 GameObject 제거 시 승리
+
+별도 경로:
+PlayerHealth.IsDead == true
+→ 패배
+→ Result 상태
+→ Time.timeScale = 0
+→ RestartGame 호출 시 현재 씬 재로드
+```
+
+- `WaveManager.RoundFinished`는 “보스까지 처치했다”가 아니라 “일반 라운드 시간이 끝났다”는 뜻이다.
+- `GameManager.CurrentState`가 `Result`가 되면 승패 중복 처리를 막는다.
+- 현재 스폰 목록과 게임 상태는 네트워크 변수가 아니다. 멀티플레이에서는 호스트가 스폰·웨이브·승패를 확정하도록 별도 통합이 필요하다.
+- 60초와 세 웨이브는 개발 속도를 위한 테스트 값이다. 최종 15분 라운드는 `WaveData` 또는 동등한 데이터 구조로 옮기기 전까지 계획 상태다.
+- 현재 코드에서 `GameManager`는 결과를 로그와 상태값으로만 남긴다. 실제 화면은 HUD 수정본과 연결해야 한다.
+
+### 4.9 브랜치별 확인 기준
+
+| 기준 | 포함된 핵심 변경 | 주의 |
+|---|---|---|
+| 현재 `feat/map_generate` | `StageTest`, 스포너, 웨이브, `GameManager` | HUD·최신 서사 문서가 없음 |
+| `origin/develop` | HUD·결과 패널, 환경·캐릭터 서사 문서 | 현재 맵·웨이브 코드가 없음 |
+| `origin/fix/hud-namespace-compile-error` | HUD 네임스페이스와 사망 판정 수정 | develop 반영 여부 확인 필요 |
+| 현재 로컬 작업트리 | 회복·자석 픽업, 경험치 오브 이동, 회복 API | 미커밋·미검증이므로 완료 처리 금지 |
+
+통합 전에는 어느 기준의 파일을 보고 있는지 확인한다. 특히 문서만 먼저 합친 상태와 실제 코드·프리팹까지 합친 상태를 구분한다.
 
 ## 5. 데이터 구조
 
@@ -420,10 +493,13 @@ healthMultiplier
 | `Tests/PlayerTest.unity` | 플레이어 기능 |
 | `Tests/CombatTest.unity` | 전투와 적 |
 | `Tests/NetworkTest.unity` | 멀티플레이 기술 검증 |
+| `Tests/StageTest.unity` | 스폰·60초 웨이브·임시 보스·승패·픽업 통합 검증 |
 | `Tests/ContentTest.unity` | UI·아트·데이터 |
 | `Main.unity` | 네트워크 입장 이후 실제 게임 통합 |
 
 MVP에서는 씬 수를 줄이기 위해 `Main` 안에 결과 패널을 넣어도 된다.
+
+2026년 7월 31일 현재 실제로 존재하는 테스트 씬은 `PlayerTest`, `CombatTest`, `NetworkTest`, `StageTest`다. `Boot`, `MainMenu`, 게임용 `Main`, `Result`, `ContentTest`는 계획 이름이며 현재 구현된 진입 흐름이 아니다. Build Settings에는 `NetworkTest`만 활성화되어 있다.
 
 ## 10. 성능 원칙
 
