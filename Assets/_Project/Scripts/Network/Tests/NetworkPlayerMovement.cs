@@ -49,54 +49,17 @@ public class NetworkPlayerMovement : NetworkBehaviour
         }
     }
 
-    private void Update()
+    public void OnMove(InputValue value)
     {
-        // 내가 소유하지 않은 상대방 캐릭터에는
-        // 내 키보드 입력을 적용하지 않는다.
         if (!IsOwner)
         {
             return;
         }
 
-        Keyboard keyboard = Keyboard.current;
-
-        if (keyboard == null)
-        {
-            moveInput = Vector2.zero;
-            return;
-        }
-
-        float horizontal = 0f;
-        float vertical = 0f;
-
-        if (keyboard.aKey.isPressed ||
-            keyboard.leftArrowKey.isPressed)
-        {
-            horizontal -= 1f;
-        }
-
-        if (keyboard.dKey.isPressed ||
-            keyboard.rightArrowKey.isPressed)
-        {
-            horizontal += 1f;
-        }
-
-        if (keyboard.sKey.isPressed ||
-            keyboard.downArrowKey.isPressed)
-        {
-            vertical -= 1f;
-        }
-
-        if (keyboard.wKey.isPressed ||
-            keyboard.upArrowKey.isPressed)
-        {
-            vertical += 1f;
-        }
-
-        moveInput = new Vector2(
-            horizontal,
-            vertical
-        ).normalized;
+        Vector2 input = value.Get<Vector2>();
+        moveInput = input.sqrMagnitude > 1f
+            ? input.normalized
+            : input;
     }
 
     private void FixedUpdate()

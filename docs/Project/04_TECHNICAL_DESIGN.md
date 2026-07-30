@@ -81,8 +81,8 @@
 | 프로젝트 기반 | 구현 | Unity `6000.3.20f1`, Universal 2D, Input System, NGO와 Multiplayer Services 패키지 설정 | 세 명 모두 같은 버전 유지 |
 | 게임 실행·메뉴·입장 | 미구현 | 실제 `Boot`, `MainMenu`, 게임용 `Main` 씬 흐름 없음. 현재는 기능별 테스트 씬 중심 | 진미리 |
 | Relay 방 생성·참가 | 부분 구현 | `NetworkTestUI`에 UGS 초기화, 익명 로그인, 2인 Relay 세션 생성·코드 참가·퇴장·재접속 API가 있음 | 실제 메뉴와 게임 입장에 연결: 진미리 |
-| 네트워크 플레이어 이동 | 부분 구현 | `NetworkPlayerMovement`가 소유자 입력과 위치 동기화 검증을 담당 | 일반 플레이어·카메라·체력·스킬과 통합: 진미리 |
-| 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현 | 네트워크 플레이어 통합: 진미리 / 성장 선택: 이재준 / 종료 연결: 문성웅 |
+| 네트워크 플레이어 이동 | 부분 구현 | `NetworkPlayerMovement`가 소유자 Input Actions 입력과 위치 동기화를 담당하고, 로컬 소유 플레이어에 카메라를 자동 연결 | 체력·스킬·성장 상태 네트워크 동기화: 진미리 |
+| 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현. `NetworkPlayer.prefab`에도 충돌·체력·경험치·기본 공격 구성을 이관하고 소유자 전용 입력·공격·획득 처리를 적용 | 상태 동기화: 진미리 / 성장 선택: 이재준 / 종료 연결: 문성웅 |
 | 기본 전투 | 구현 | 가장 가까운 적 자동 탐색, `SkillRunner` 생성, 유도 투사체, 재탐색, `IDamageable` 피해 구현 | 실제 네트워크 게임에서 회귀 테스트 필요 |
 | 스킬 데이터 | 부분 구현 | `SkillData`와 `HomingShotData` 1개, 투사체형 기본공격 실행 가능 | 특수공격·캐릭터 액티브·추가 스킬·효과: 이재준 |
 | 스킬 연계 | 미구현 | 기획 문서만 있고 `SkillTag`, 상태 효과, `SynergyResolver` 코드 없음 | 이재준, 네트워크 연결은 진미리 협업 |
@@ -179,8 +179,8 @@ PlayerAutoAttack 또는 다른 발동 조건
 
 ### 4.7 현재 구현 시 주의점
 
-- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 아직 별도 구조다. `Network/Tests` 코드는 기술 검증용이므로 일반 전투가 네트워크 동기화되었다고 가정하지 않는다.
-- 일반 플레이어 이동은 Input Actions의 `OnMove` 콜백을 사용하지만 네트워크 테스트 이동은 `Keyboard.current`를 직접 읽는다. 테스트 코드를 본 게임 입력 표준으로 복사하지 않는다.
+- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·경험치·공격 결과의 네트워크 권한과 값 동기화는 아직 미구현이므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
+- 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·자동 공격·경험치 획득을 활성화하고 카메라 대상을 연결한다.
 - `PlayerController`, `PlayerHealth`, `CameraFollow`만 각각 `Shura.Player`, `Shura.Camera` 네임스페이스에 있고 나머지 현재 스크립트 다수는 전역 네임스페이스다. 클래스 위치를 추측하지 말고 실제 선언을 확인한다.
 - `EnemyController`는 `Start`와 `FixedUpdate`에서 플레이어를 찾는 현재 코드 흐름이 서로 다르므로 추적 로직을 수정할 때 두 경로를 함께 확인한다.
 - 현재 `Enemy.prefab` 루트에는 전투에 필요하지 않은 `ExperienceOrb` 컴포넌트도 붙어 있다. 경험치 드롭의 공식 흐름은 `EnemyHealth`가 별도 `ExperienceOrb.prefab`을 생성하고 `Initialize`하는 경로이며, 새 기능은 적 루트의 해당 컴포넌트에 의존하지 않는다.
