@@ -79,7 +79,7 @@
 | 기능 영역 | 상태 | 현재 확인된 범위 | 다음 작업·담당 |
 |---|---|---|---|
 | 프로젝트 기반 | 구현 | Unity `6000.3.20f1`, Universal 2D, Input System, NGO와 Multiplayer Services 패키지 설정 | 세 명 모두 같은 버전 유지 |
-| 게임 실행·메뉴·입장 | 미구현 | 실제 `Boot`, `MainMenu`, 게임용 `Main` 씬 흐름 없음. 현재는 기능별 테스트 씬 중심 | 진미리 |
+| 게임 실행·메뉴·입장 | 부분 구현 | 실제 `Boot`, `MainMenu`, 게임용 `Main` 씬은 아직 없음. `NetworkTest`에는 호스트 권한·최소 접속 인원·Build Settings를 검증하고 NGO SceneManager로 전환하는 `NetworkGameFlowController`를 연결 | 실제 메뉴·게임 씬 제작과 시작 버튼 연결: 진미리 |
 | Relay 방 생성·참가 | 부분 구현 | `NetworkTestUI`에 UGS 초기화, 익명 로그인, 2인 Relay 세션 생성·코드 참가·퇴장·재접속 API가 있음 | 실제 메뉴와 게임 입장에 연결: 진미리 |
 | 네트워크 플레이어 이동 | 부분 구현 | `NetworkPlayerMovement`가 소유자 Input Actions 입력과 위치 동기화를 담당하고, 로컬 소유 플레이어에 카메라를 자동 연결 | 체력·스킬·성장 상태 네트워크 동기화: 진미리 |
 | 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현. `NetworkPlayer.prefab`에도 충돌·체력·경험치·기본 공격 구성을 이관하고 소유자 전용 입력·공격·획득 처리를 적용 | 상태 동기화: 진미리 / 성장 선택: 이재준 / 종료 연결: 문성웅 |
@@ -361,6 +361,8 @@ healthMultiplier
 전투 전체를 만들기 전에 이 장면으로 두 PC 연결과 Web 가능성을 검증한다.
 
 현재 Relay 기반 외부 접속과 정상 퇴장 후 동일 코드 재접속은 확인했다. 강제 종료 후 재접속을 실행하는 UI는 아직 연결하지 않았으므로 현재 제한으로 기록한다.
+
+`NetworkGameFlowController`는 NGO의 실제 연결 인원 변화를 구독하고, 호스트이며 최소 2명이 연결된 경우에만 게임 시작을 허용한다. `gameplaySceneName`이 비어 있거나 Build Settings에 없는 경우에는 씬 전환을 실행하지 않는다. 실제 게임용 `Main` 씬이 만들어진 뒤 해당 이름과 시작 버튼의 `OnClick`을 연결해야 한다.
 
 ## 8. 네트워크 솔루션 결정
 
