@@ -25,6 +25,15 @@
 | `09_HACKATHON_SUBMISSION_CHECKLIST.md` | NAN 2026 필수 제출물 점검 | 진미리(빌드·링크), 전원(자료) |
 | `10_TEST_PLAN.md` | 기능·멀티플레이·빌드 QA 기준 | 전원 |
 | `11_CHARACTER_SKILL_SYSTEM_CONCEPT.md` | 캐릭터 고유 무기·특수공격·속성·아이템 성장 방향 | 이재준 |
+| `06_AI_USAGE_TECHNICAL_DOCUMENT.md` | AI 사용 구조와 프롬프트 기록 | AI 문서 담당 |
+| `07_ASSET_SOURCES.md` | 외부 에셋 출처와 라이선스 기록 | 콘텐츠 담당 |
+| `08_DECISION_LOG.md` | 주요 결정과 변경 이유 기록 | 회의 기록 담당 |
+| `09_HACKATHON_SUBMISSION_CHECKLIST.md` | NAN 2026 필수 제출물 점검 | 제출 담당 |
+| `10_TEST_PLAN.md` | 기능·멀티플레이·빌드 QA 기준 | QA 담당 |
+| `11_CONCEPT_AND_HERO_DESIGN.md` | 확정 콘셉트, 속성 시스템, 영웅 설계 (최신 기준) | 전원 |
+| `GUIDE_JUMONG_SKILLS_SETUP.md` | 주몽 스킬 Unity 세팅 절차 (프리팹·컴포넌트) | 스킬 담당 |
+| `IMPL_2026-07-31_JUMONG_SKILLS.md` | 기본공격·P0 스킬 3종 구현·테스트 기록 | 스킬 담당 |
+| `HANDOFF_2026-07-30.md` | 세션 인수인계 (결정·미결 정리) | 전원 |
 
 ## 문서 운영 규칙
 

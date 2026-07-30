@@ -1,5 +1,9 @@
 # Shura 기술 설계서
 
+> **2026-07-31 갱신 안내:** 3장 Combat 구조와 4장 SkillData, 5장 연계 흐름은
+> 실제 구현(7속성 기반)에 맞게 수정됐다. 기존 `SkillTag` 5종(Burn/Freeze/Impact/Wind/Shock) 구조는 D-010으로 폐기됐다.
+> 구현 상세는 `IMPL_2026-07-31_JUMONG_SKILLS.md` 참고.
+
 ## 1. 기술 목표
 
 현재 단계의 목표는 대규모 확장성이 아니라 초보 개발자 세 명이 해커톤 마감 전까지 이해하고 수정할 수 있는 구조를 만드는 것이다. 지나친 추상화와 범용 프레임워크를 피하고, 캐릭터·무기·공격·아이템·적 수치를 코드 수정 없이 바꿀 수 있는 정도만 데이터화한다.
@@ -36,17 +40,30 @@
 - `CharacterLoadout`: 고유 무기, 특수공격, 아이템, 속성 보유 상태
 - `ActiveSkillController`: 캐릭터 고유 액티브 입력, 충전 또는 쿨다운
 
-### Combat
+### Combat (2026-07-31 구현 반영)
 
 - `BasicAttackController`: 고유 무기의 기본공격 대상과 자동 발동 주기
 - `SpecialAttackRunner`: 보유 특수공격의 조건과 쿨다운 실행
-- `SkillRunner`: 공통 공격 생성과 피해 수치 전달
-- `Projectile`: 이동과 충돌
-- `IDamageable`: 피해를 받을 수 있는 대상의 공통 규약
 - `AttributeRoller`: 선택지에 무작위 속성 부여
 - `StatusEffectController`: 불, 얼음, 독 등의 속성 상태를 한 컴포넌트에서 관리
-- `SynergyResolver`: 최근 속성을 확인하고 긍정적인 시너지 반응 결정
 - `SupportItemController`: 보유 아이템의 지속·주기·조건부 효과 실행
+- `IDamageable`: 피해를 받을 수 있는 대상의 공통 규약 — 구현됨
+- `ISkillBehaviour` / `SkillCastContext`: 스킬 프리팹 공통 규약. 캐스터가 시전 정보를 넘긴다 — 구현됨
+- `StraightProjectile`: 직선 투사체. 관통 수·폭발 반경을 프리팹 설정으로 전환 — 구현됨
+- `ElementalZone`: 원소 장판 공용 시스템 — 구현됨
+- `AutoDestroyEffect`: 명중·폭발 이펙트 수명 관리 — 구현됨
+- `ElementType` / `ElementVisuals`: 7속성 정의와 속성별 색 적용 — 구현됨
+- `JeoktomaDash`: 캐릭터 전용 스킬 예시(버프+장판형) — 구현됨
+- `Projectile`(유도형), `SkillRunner`: 초기 구조. 현재 주몽에는 미사용하며 재사용 대비 보존
+- `ElementApplier`: 명중한 적에게 (속성, 플레이어 ID, 시간) 기록 — **미구현**
+- `SynergyResolver`: 기록된 속성을 확인해 연계 반응 결정 — **미구현**
+
+### Player
+
+- `PlayerAimDirection`: 마지막 이동 방향 추적 — 구현됨
+- `DirectionalAutoAttack`: 기본공격 자동 발사 — 구현됨
+- `AutoSkillCaster`: 보유 스킬 쿨다운 자동 시전 + 랜덤 속성 부여 — 구현됨
+>>>>>>> origin/feat/jumong-basic-attack-skills
 
 ### Enemy
 
@@ -203,10 +220,11 @@ characterPrefab
 portrait
 ```
 
-### WeaponData
+
+### SkillData (구현 반영)
 
 ```text
-id
+skillId
 displayName
 description
 basicAttack
@@ -272,7 +290,12 @@ color
 statusEffect
 effectPrefab
 icon
+skillPrefab
 ```
+
+속성은 SkillData에 고정하지 않는다. 습득 시점에 랜덤으로 부여되어(D-010)
+`AutoSkillCaster`가 보유 스킬별로 들고 있다가 `SkillCastContext.Element`로 전달한다.
+관통 수·폭발 반경·장판 지속시간처럼 스킬 고유 특성은 프리팹의 컴포넌트 설정값으로 둔다.
 
 ### EnemyData
 
@@ -286,13 +309,13 @@ experienceReward
 enemyPrefab
 ```
 
-### SynergyData
+### SynergyData (미구현, 7속성 기준으로 갱신)
 
 ```text
 id
 displayName
-requiredFirstAttribute
-requiredSecondAttribute
+requiredFirstElement    // ElementType
+requiredSecondElement   // ElementType
 triggerWindowSeconds
 effectType
 damageMultiplierOrValue
@@ -301,6 +324,7 @@ internalCooldown
 ```
 
 부정적인 결과를 만드는 시너지 데이터는 등록하지 않는다.
+조합은 순서를 구분하지 않는다. 확정된 4조합은 D-015 참고.
 
 ### WaveData
 
@@ -322,6 +346,17 @@ healthMultiplier
 3. 특정 구간이면 특수공격 또는 아이템 후보를, 그 외 구간이면 기본공격 강화 또는 능력치 후보를 만든다.
 4. 공격형 후보에는 `AttributeRoller`가 허용된 속성 중 하나를 부여한다.
 5. 플레이어 선택 결과를 `CharacterLoadout`에 적용하고 HUD를 갱신한다.
+1. 스킬(투사체·폭발·장판)이 적에게 피해를 준다.
+2. 명중한 스킬의 **속성**, 플레이어 ID, 시간을 적의 속성 기록 컴포넌트에 남긴다.
+3. `SynergyResolver`가 기존 속성과 새 속성이 확정 조합에 해당하는지 확인한다.
+4. **서로 다른 플레이어**가 제한 시간 안에 적용했다면 반응을 실행한다.
+   동속성 중첩은 반응하지 않는다(D-017). 조합에 없으면 무반응이며 디버프도 없다(D-012).
+5. 피해, 상태 효과, 시각·음향 효과를 발생시킨다.
+6. 사용한 속성 기록을 소비하거나 내부 쿨다운을 적용한다.
+
+핵심 판정은 한 곳에서만 수행한다. 각 스킬 코드에 연계 조합을 직접 작성하지 않는다.
+현재 연동 지점은 `StraightProjectile.OnTriggerEnter2D`와 `ElementalZone.DamageEnemiesInside`의
+`TODO(연계)` 주석 위치다.
 
 무작위 속성은 공격이 발동할 때마다 다시 뽑지 않는다. 기본공격은 게임 시작 시, 특수공격·아이템은 선택지가 만들어질 때 결정하고 그 판의 빌드 데이터로 유지한다.
 
