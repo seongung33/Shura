@@ -18,6 +18,17 @@ public class PlayerExperience : MonoBehaviour
     public int CurrentExperience => currentExperience;
     public int ExperienceToNextLevel => experienceToNextLevel;
 
+    public void ApplyNetworkState(
+        int level,
+        int experience,
+        int nextLevelExperience
+    )
+    {
+        currentLevel = Mathf.Max(1, level);
+        currentExperience = Mathf.Max(0, experience);
+        experienceToNextLevel = Mathf.Max(1, nextLevelExperience);
+    }
+
     public void AddExperience(int amount)
     {
         if (amount <= 0)
@@ -50,6 +61,11 @@ public class PlayerExperience : MonoBehaviour
 
         if (orb != null)
         {
+            if (orb.TryCollect(this))
+            {
+                return;
+            }
+
             AddExperience(orb.ExperienceAmount);
             Destroy(other.gameObject);
         }

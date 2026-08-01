@@ -114,6 +114,7 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
         {
             if (IsServer)
             {
+                SpawnNetworkExperienceOrb();
                 NetworkObject.Despawn(true);
             }
 
@@ -131,6 +132,35 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
         }
 
         Destroy(gameObject);
+    }
+
+    private void SpawnNetworkExperienceOrb()
+    {
+        if (experienceOrbPrefab == null)
+        {
+            return;
+        }
+
+        ExperienceOrb experienceOrb = Instantiate(
+            experienceOrbPrefab,
+            transform.position,
+            Quaternion.identity
+        );
+        experienceOrb.Initialize(experienceReward);
+
+        NetworkObject orbNetworkObject =
+            experienceOrb.GetComponent<NetworkObject>();
+
+        if (orbNetworkObject == null)
+        {
+            Debug.LogError(
+                "ExperienceOrb에 NetworkObject가 없어 네트워크 생성할 수 없습니다."
+            );
+            Destroy(experienceOrb.gameObject);
+            return;
+        }
+
+        orbNetworkObject.Spawn();
     }
 
     private static bool IsValidDamage(float damage)
