@@ -1,9 +1,12 @@
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(NetworkGameResultState))]
+[RequireComponent(typeof(NetworkGameResultActions))]
 public class NetworkGameResultPresenter : NetworkBehaviour
 {
     private static readonly Color VictoryColor =
@@ -13,13 +16,18 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         new Color(0.95f, 0.3f, 0.3f, 1f);
 
     private NetworkGameResultState resultState;
+    private NetworkGameResultActions resultActions;
     private GameObject canvasObject;
     private GameObject resultPanel;
     private TMP_Text resultText;
+    private Button restartButton;
+    private Button lobbyButton;
+    private GameObject ownedEventSystem;
 
     private void Awake()
     {
         resultState = GetComponent<NetworkGameResultState>();
+        resultActions = GetComponent<NetworkGameResultActions>();
     }
 
     public override void OnNetworkSpawn()
@@ -45,6 +53,11 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         {
             Destroy(canvasObject);
         }
+
+        if (ownedEventSystem != null)
+        {
+            Destroy(ownedEventSystem);
+        }
     }
 
     private void CreateResultView()
@@ -53,7 +66,8 @@ public class NetworkGameResultPresenter : NetworkBehaviour
             "NetworkResultCanvas",
             typeof(RectTransform),
             typeof(Canvas),
-            typeof(CanvasScaler)
+            typeof(CanvasScaler),
+            typeof(GraphicRaycaster)
         );
 
         DontDestroyOnLoad(canvasObject);
@@ -78,7 +92,7 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         panelRect.anchorMin = new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = new Vector2(520f, 240f);
+        panelRect.sizeDelta = new Vector2(560f, 360f);
 
         Image panelImage = resultPanel.GetComponent<Image>();
         panelImage.color = new Color(0.04f, 0.06f, 0.1f, 0.9f);
@@ -91,8 +105,8 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         textObject.transform.SetParent(resultPanel.transform, false);
 
         RectTransform textRect = textObject.GetComponent<RectTransform>();
-        textRect.anchorMin = new Vector2(0.08f, 0.15f);
-        textRect.anchorMax = new Vector2(0.92f, 0.85f);
+        textRect.anchorMin = new Vector2(0.08f, 0.56f);
+        textRect.anchorMax = new Vector2(0.92f, 0.92f);
         textRect.offsetMin = Vector2.zero;
         textRect.offsetMax = Vector2.zero;
 
@@ -103,7 +117,73 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         resultText.fontSizeMax = 72f;
         resultText.fontStyle = FontStyles.Bold;
 
+        restartButton = CreateButton(
+            "RestartButton",
+            "다시 시작",
+            new Vector2(-125f, -70f),
+            resultActions.RestartGame
+        );
+
+        lobbyButton = CreateButton(
+            "LobbyButton",
+            "로비로",
+            new Vector2(125f, -70f),
+            resultActions.ReturnToLobby
+        );
+
         resultPanel.SetActive(false);
+    }
+
+    private Button CreateButton(
+        string objectName,
+        string label,
+        Vector2 position,
+        UnityEngine.Events.UnityAction onClick
+    )
+    {
+        GameObject buttonObject = new GameObject(
+            objectName,
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button)
+        );
+        buttonObject.transform.SetParent(resultPanel.transform, false);
+
+        RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
+        buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
+        buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
+        buttonRect.pivot = new Vector2(0.5f, 0.5f);
+        buttonRect.anchoredPosition = position;
+        buttonRect.sizeDelta = new Vector2(220f, 72f);
+
+        Image buttonImage = buttonObject.GetComponent<Image>();
+        buttonImage.color = new Color(0.88f, 0.9f, 0.95f, 1f);
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.onClick.AddListener(onClick);
+
+        GameObject labelObject = new GameObject(
+            "Label",
+            typeof(RectTransform),
+            typeof(TextMeshProUGUI)
+        );
+        labelObject.transform.SetParent(buttonObject.transform, false);
+
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(12f, 8f);
+        labelRect.offsetMax = new Vector2(-12f, -8f);
+
+        TMP_Text labelText = labelObject.GetComponent<TextMeshProUGUI>();
+        labelText.text = label;
+        labelText.color = new Color(0.08f, 0.1f, 0.16f, 1f);
+        labelText.alignment = TextAlignmentOptions.Center;
+        labelText.enableAutoSizing = true;
+        labelText.fontSizeMin = 20f;
+        labelText.fontSizeMax = 36f;
+
+        return button;
     }
 
     private void HandleResultChanged(NetworkGameResult result)
@@ -122,6 +202,28 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         bool victory = result == NetworkGameResult.Victory;
         resultText.text = victory ? "승리" : "패배";
         resultText.color = victory ? VictoryColor : DefeatColor;
+
+        bool hostCanControl = resultActions.CanControlResult;
+        restartButton.gameObject.SetActive(hostCanControl);
+        lobbyButton.gameObject.SetActive(hostCanControl);
+
+        EnsureEventSystem();
         resultPanel.SetActive(true);
+    }
+
+    private void EnsureEventSystem()
+    {
+        if (EventSystem.current != null)
+        {
+            return;
+        }
+
+        ownedEventSystem = new GameObject(
+            "NetworkResultEventSystem",
+            typeof(EventSystem),
+            typeof(InputSystemUIInputModule)
+        );
+
+        DontDestroyOnLoad(ownedEventSystem);
     }
 }
