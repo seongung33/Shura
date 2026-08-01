@@ -12,6 +12,8 @@ namespace Shura.Player
         [SerializeField] private float currentHealth;
         [SerializeField] private bool isDead;
 
+        private NetworkPlayerHealth networkPlayerHealth;
+
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
         public bool IsDead => isDead;
@@ -19,12 +21,20 @@ namespace Shura.Player
         private void Awake()
         {
             currentHealth = maxHealth;
+            networkPlayerHealth = GetComponent<NetworkPlayerHealth>();
         }
 
         public void TakeDamage(float amount)
         {
             if (isDead || amount <= 0f)
             {
+                return;
+            }
+
+            if (networkPlayerHealth != null &&
+                networkPlayerHealth.IsSpawned)
+            {
+                networkPlayerHealth.TakeDamageServer(amount);
                 return;
             }
 
@@ -49,6 +59,12 @@ namespace Shura.Player
                 return false;
             }
 
+            if (networkPlayerHealth != null &&
+                networkPlayerHealth.IsSpawned)
+            {
+                return networkPlayerHealth.RequestHeal(amount);
+            }
+
             currentHealth = Mathf.Min(
                 maxHealth,
                 currentHealth + amount
@@ -56,6 +72,19 @@ namespace Shura.Player
             Debug.Log($"Player 체력: {currentHealth}/ {maxHealth}");
 
             return true;
+        }
+
+        public void ApplyNetworkState(float health, bool dead)
+        {
+            bool wasDead = isDead;
+
+            currentHealth = Mathf.Clamp(health, 0f, maxHealth);
+            isDead = dead;
+
+            if (!wasDead && isDead)
+            {
+                onDeath?.Invoke();
+            }
         }
 
         private void Die()

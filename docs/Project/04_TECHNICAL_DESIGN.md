@@ -99,7 +99,7 @@
 | 게임 실행·메뉴·입장 | 부분 구현 | `NetworkTest`에서 호스트 권한·최소 접속 인원·Build Settings를 검증하고 NGO SceneManager로 게임용 `Main` 씬에 전환한다. `Main`은 현재 카메라만 있는 최소 통합 기반 | 시작 화면·메뉴 UI와 실제 전투 콘텐츠 연결: 진미리 |
 | Relay 방 생성·참가 | 부분 구현 | `NetworkTestUI`에 UGS 초기화·재시도, 익명 로그인, 2인 Relay 세션 생성·코드 참가·퇴장·재접속 API가 있음. 생성·참가 실패 시 남은 세션과 이벤트 구독을 정리해 재시도가 막히지 않도록 처리 | 실제 메뉴와 게임 입장에 연결: 진미리 |
 | 네트워크 플레이어 이동 | 부분 구현 | `NetworkPlayerMovement`가 소유자 Input Actions 입력과 위치 동기화를 담당하고, 로컬 소유 플레이어에 카메라를 자동 연결 | 체력·스킬·성장 상태 네트워크 동기화: 진미리 |
-| 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현. `NetworkPlayer.prefab`에도 충돌·체력·경험치와 주몽 방향 기본공격·자동 스킬 구성을 이관하고 소유자 전용 입력·공격·획득 처리를 적용 | 체력·경험치·투사체 판정 동기화: 진미리 / 성장 선택: 이재준 / 종료 연결: 문성웅 |
+| 일반 플레이어 | 부분 구현 | 이동, 카메라 추적, 체력, 사망 상태, 경험치 누적과 레벨 증가 구현. `NetworkPlayer.prefab`에도 전투 구성을 이관하고 체력·사망·경험치 수치를 서버 권한으로 동기화 | 투사체 판정·게임 종료 동기화: 진미리 / 성장 선택: 이재준 / 종료 규칙: 문성웅 |
 | 기본 전투 | 구현 | 가장 가까운 적 자동 탐색, `SkillRunner` 생성, 유도 투사체, 재탐색, `IDamageable` 피해 구현 | 실제 네트워크 게임에서 회귀 테스트 필요 |
 | 스킬 데이터 | 부분 구현 | `SkillData`와 `HomingShotData` 1개, 투사체형 기본공격 실행 가능 | 특수공격·캐릭터 액티브·추가 스킬·효과: 이재준 |
 | 스킬 연계 | 미구현 | 기획 문서만 있고 `SkillTag`, 상태 효과, `SynergyResolver` 코드 없음 | 이재준, 네트워크 연결은 진미리 협업 |
@@ -128,7 +128,7 @@
 |---|---|---|
 | 플레이어 | `Player/PlayerController.cs` | Input System의 `OnMove` 입력을 받아 `Rigidbody2D.linearVelocity`로 이동 |
 | 플레이어 | `Player/PlayerAutoAttack.cs` | 가장 가까운 적 탐색, 공격 가능 여부 확인, 공격 성공 후 쿨다운 갱신 |
-| 플레이어 | `Player/PlayerHealth.cs` | 플레이어 체력·사망 상태와 `onDeath`, `IDamageable` 구현 |
+| 플레이어 | `Player/PlayerHealth.cs` | 플레이어 체력·회복·사망 상태와 `onDeath`, `IDamageable` 구현. 네트워크 플레이어에서는 `NetworkPlayerHealth`의 동기화 상태 적용 |
 | 플레이어 | `Player/PlayerExperience.cs` | 경험치 구체 습득, 경험치 누적과 복수 레벨업 처리. 네트워크 플레이어에서는 `NetworkPlayerExperience`가 동기화 값을 적용 |
 | 전투 | `Combat/EnemyTargetFinder.cs` | 지정 위치·범위·레이어 안에서 `EnemyHealth`가 있는 가장 가까운 적 탐색 |
 | 전투 | `Combat/SkillRunner.cs` | `SkillData` 검증, 공격 프리팹 생성, `Projectile.Initialize` 호출 |
@@ -226,8 +226,9 @@ PlayerAutoAttack 또는 다른 발동 조건
 
 ### 4.7 현재 구현 시 주의점
 
-- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·경험치·공격 결과의 네트워크 권한과 값 동기화는 아직 미구현이므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
+- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·사망·경험치 수치는 서버 권한으로 동기화하지만, 투사체 생성·속성 판정과 전체 게임 상태는 아직 완전 동기화되지 않았으므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
 - 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·방향 추적·주몽 기본공격·자동 스킬·경험치 획득을 활성화하고 카메라 대상을 연결한다. 새 방향 공격이 있으면 기존 유도형 `PlayerAutoAttack`은 중복 실행하지 않는다.
+- `NetworkPlayerHealth`는 서버 쓰기 체력·사망 상태를 모든 클라이언트에 반영하고 기존 `PlayerHealth.CurrentHealth`, `MaxHealth`, `IsDead`, `onDeath` 계약을 유지한다. 적 접촉 피해는 서버에서 적용하며 소유 플레이어의 회복 요청은 서버 RPC를 거친다. 회복 픽업 자체의 생성·제거와 전체 승패 상태 동기화는 후속 작업이다.
 - `Enemy.prefab`은 기본 네트워크 프리팹 목록에 등록되어 있다. 네트워크 세션에서는 `EnemySpawner`와 적 이동·공격 시뮬레이션을 서버로 제한한다. 클라이언트 적은 Kinematic 충돌 대상으로 유지해 소유자 로컬 투사체가 명중 요청을 보낼 수 있고, 서버가 체력 감소와 제거를 최종 처리한다. 현재 요청은 피해량·명중 위치를 엄격히 재검증하지 않는 프로토타입 경계이며, 경험치 드롭과 투사체 자체의 네트워크 동기화는 후속 작업이다.
 - `ExperienceOrb.prefab`도 기본 네트워크 프리팹 목록에 등록되어 있다. 네트워크 적 사망 시 서버가 구체를 생성하고, 소유 플레이어가 접촉하면 서버가 요청자의 플레이어 소유권과 거리를 확인한 뒤 `NetworkPlayerExperience`에 경험치를 반영하고 구체를 제거한다. 로컬 `PlayerTest`와 `StageTest`는 기존 `PlayerExperience` 경로를 유지한다. 자석으로 움직이는 구체 위치의 네트워크 동기화와 실제 2인 획득 회귀는 아직 후속 작업이다.
 - `PlayerController`, `PlayerHealth`, `CameraFollow`만 각각 `Shura.Player`, `Shura.Camera` 네임스페이스에 있고 나머지 현재 스크립트 다수는 전역 네임스페이스다. 클래스 위치를 추측하지 말고 실제 선언을 확인한다.
