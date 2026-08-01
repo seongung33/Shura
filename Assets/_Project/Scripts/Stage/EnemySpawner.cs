@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
@@ -36,6 +37,11 @@ public class EnemySpawner : MonoBehaviour
     private void Update()
     {
         RemoveDestroyedEnemies();
+
+        if (!HasSpawnAuthority())
+        {
+            return;
+        }
 
         if (!spawningEnabled)
         {
@@ -128,7 +134,37 @@ public class EnemySpawner : MonoBehaviour
             Quaternion.identity
         );
 
+        if (IsNetworkSessionRunning())
+        {
+            NetworkObject networkObject =
+                enemy.GetComponent<NetworkObject>();
+
+            if (networkObject == null)
+            {
+                Debug.LogError(
+                    $"{enemyPrefab.name}에 NetworkObject가 없어 네트워크 스폰할 수 없습니다."
+                );
+
+                Destroy(enemy);
+                return;
+            }
+
+            networkObject.Spawn();
+        }
+
         spawnedEnemies.Add(enemy);
+    }
+
+    private static bool HasSpawnAuthority()
+    {
+        return !IsNetworkSessionRunning() ||
+            NetworkManager.Singleton.IsServer;
+    }
+
+    private static bool IsNetworkSessionRunning()
+    {
+        return NetworkManager.Singleton != null &&
+            NetworkManager.Singleton.IsListening;
     }
 
     private void RemoveDestroyedEnemies()
