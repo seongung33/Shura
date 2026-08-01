@@ -1,13 +1,12 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour, IDamageable
+public class EnemyHealth : NetworkBehaviour, IDamageable
 {
     [SerializeField]
     private float maxHealth = 100f;
 
     [Header("Experience Drop")]
-
-    private float currentHealth;
 
     [SerializeField]
     private ExperienceOrb experienceOrbPrefab;
@@ -15,20 +14,88 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     [SerializeField]
     private int experienceReward = 1;
 
-    private bool IsDead;
+    private readonly NetworkVariable<float> networkHealth =
+        new NetworkVariable<float>();
+
+    private float localHealth;
+    private bool isDead;
+
+    public float CurrentHealth
+    {
+        get
+        {
+            return IsSpawned ? networkHealth.Value : localHealth;
+        }
+    }
+
     private void Awake()
     {
-        currentHealth = maxHealth;
-        IsDead = false;
+        localHealth = maxHealth;
+        isDead = false;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            networkHealth.Value = maxHealth;
+        }
     }
 
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
+        if (!IsValidDamage(damage))
+        {
+            return;
+        }
 
-        Debug.Log($"적 체력: {currentHealth} / {maxHealth}");
+        if (!IsSpawned)
+        {
+            ApplyDamage(damage);
+            return;
+        }
 
-        if (currentHealth <= 0f)
+        if (IsServer)
+        {
+            ApplyDamage(damage);
+            return;
+        }
+
+        RequestDamageRpc(damage);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void RequestDamageRpc(float damage)
+    {
+        if (!IsValidDamage(damage))
+        {
+            return;
+        }
+
+        ApplyDamage(damage);
+    }
+
+    private void ApplyDamage(float damage)
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+        float nextHealth = Mathf.Max(0f, CurrentHealth - damage);
+
+        if (IsSpawned)
+        {
+            networkHealth.Value = nextHealth;
+        }
+        else
+        {
+            localHealth = nextHealth;
+        }
+
+        Debug.Log($"적 체력: {nextHealth} / {maxHealth}");
+
+        if (nextHealth <= 0f)
         {
             Die();
         }
@@ -36,11 +103,23 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        if (IsDead)
+        if (isDead)
         {
             return;
         }
-        IsDead = true;
+
+        isDead = true;
+
+        if (IsSpawned)
+        {
+            if (IsServer)
+            {
+                NetworkObject.Despawn(true);
+            }
+
+            return;
+        }
+
         if (experienceOrbPrefab != null)
         {
             ExperienceOrb experienceOrb = Instantiate(
@@ -49,9 +128,16 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 Quaternion.identity
             );
             experienceOrb.Initialize(experienceReward);
-
         }
+
         Destroy(gameObject);
+    }
+
+    private static bool IsValidDamage(float damage)
+    {
+        return damage > 0f &&
+            !float.IsNaN(damage) &&
+            !float.IsInfinity(damage);
     }
 
     [ContextMenu("Test Damage")]
