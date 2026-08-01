@@ -14,6 +14,8 @@ public class NetworkPlayerHealth : NetworkBehaviour
 
     private PlayerHealth playerHealth;
 
+    public bool IsDead => isDead.Value;
+
     private void Awake()
     {
         playerHealth = GetComponent<PlayerHealth>();
