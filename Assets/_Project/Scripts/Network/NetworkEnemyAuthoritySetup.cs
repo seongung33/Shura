@@ -8,6 +8,7 @@ public class NetworkEnemyAuthoritySetup : NetworkBehaviour
     private EnemyAttack enemyAttack;
     private Rigidbody2D rigidBody;
     private Collider2D[] colliders;
+    private RigidbodyType2D originalBodyType;
 
     private void Awake()
     {
@@ -15,38 +16,46 @@ public class NetworkEnemyAuthoritySetup : NetworkBehaviour
         enemyAttack = GetComponent<EnemyAttack>();
         rigidBody = GetComponent<Rigidbody2D>();
         colliders = GetComponents<Collider2D>();
+
+        if (rigidBody != null)
+        {
+            originalBodyType = rigidBody.bodyType;
+        }
     }
 
     public override void OnNetworkSpawn()
     {
-        SetSimulationEnabled(IsServer);
+        SetAuthorityState(IsServer);
     }
 
     public override void OnNetworkDespawn()
     {
-        SetSimulationEnabled(false);
+        SetAuthorityState(false);
     }
 
-    private void SetSimulationEnabled(bool isEnabled)
+    private void SetAuthorityState(bool hasServerAuthority)
     {
         if (enemyController != null)
         {
-            enemyController.enabled = isEnabled;
+            enemyController.enabled = hasServerAuthority;
         }
 
         if (enemyAttack != null)
         {
-            enemyAttack.enabled = isEnabled;
+            enemyAttack.enabled = hasServerAuthority;
         }
 
         if (rigidBody != null)
         {
-            rigidBody.simulated = isEnabled;
+            rigidBody.bodyType = hasServerAuthority
+                ? originalBodyType
+                : RigidbodyType2D.Kinematic;
+            rigidBody.simulated = true;
         }
 
         foreach (Collider2D enemyCollider in colliders)
         {
-            enemyCollider.enabled = isEnabled;
+            enemyCollider.enabled = true;
         }
     }
 }
