@@ -103,7 +103,7 @@
 | 기본 전투 | 구현 | 가장 가까운 적 자동 탐색, `SkillRunner` 생성, 유도 투사체, 재탐색, `IDamageable` 피해 구현 | 실제 네트워크 게임에서 회귀 테스트 필요 |
 | 스킬 데이터 | 부분 구현 | `SkillData`와 `HomingShotData` 1개, 투사체형 기본공격 실행 가능 | 특수공격·캐릭터 액티브·추가 스킬·효과: 이재준 |
 | 스킬 연계 | 미구현 | 기획 문서만 있고 `SkillTag`, 상태 효과, `SynergyResolver` 코드 없음 | 이재준, 네트워크 연결은 진미리 협업 |
-| 기본 적 | 부분 구현 | 플레이어 추적, 접촉 공격, 체력, 사망, 경험치 구체 드롭과 플레이어 주변 생성 구현 | 적 종류·스폰 안전성·밸런스: 문성웅 / 네트워크: 진미리 |
+| 기본 적 | 부분 구현 | 플레이어 추적, 접촉 공격, 체력, 사망, 경험치 구체 드롭과 플레이어 주변 생성 구현. 네트워크 세션에서는 서버만 적을 생성하고 위치를 동기화하는 기반을 연결 | 적 종류·스폰 안전성·밸런스: 문성웅 / 적 피해·사망·드롭 동기화: 진미리 |
 | 경험치 | 부분 구현 | 적 사망 시 구체 생성, Trigger 습득, 누적 경험치와 복수 레벨업 구현 | 레벨업 선택: 이재준 / 자석 아이템: 문성웅 |
 | 맵·웨이브·15분 타이머 | 부분 구현 | 현재 기능 브랜치에 `StageTest`, `EnemySpawner`, 60초 3단계 `WaveManager`가 있음. 15분 데이터·다양한 적은 없음 | 문성웅 |
 | 보스·클리어·패배 | 부분 구현 | `GameManager`에 플레이어 사망 패배, 라운드 종료 후 보스 생성, 보스 제거 승리, 정지·재시작 코드가 있음 | 전용 보스·결과 UI·통합 Play 검증: 문성웅 |
@@ -138,7 +138,7 @@
 | 적 | `Enemy/EnemyController.cs` | `Player` 태그 대상 탐색과 `Rigidbody2D` 추적 이동 |
 | 적 | `Enemy/EnemyAttack.cs` | 플레이어와 접촉 중 공격 간격에 따라 `IDamageable` 피해 적용 |
 | 적 | `Enemy/EnemyHealth.cs` | 적 체력·중복 사망 방지·경험치 구체 생성, `IDamageable` 구현 |
-| 스테이지 | `Stage/EnemySpawner.cs` | 플레이어 주변 임의 거리에서 적 생성, 생성 간격과 최대 생존 수 적용 |
+| 스테이지 | `Stage/EnemySpawner.cs` | 플레이어 주변 임의 거리에서 적 생성, 생성 간격과 최대 생존 수 적용. NGO 세션 중에는 서버만 생성하고 `NetworkObject.Spawn` 실행 |
 | 스테이지 | `Stage/WaveManager.cs` | 테스트 라운드 시간 누적, 3단계 웨이브 수치 적용, 종료 시 스폰 정지 |
 | 게임 흐름 | `Core/GameManager.cs` | Playing·Result 상태, 플레이어 사망 패배, 라운드 후 보스 생성, 보스 제거 승리, 재시작 |
 | 경험치·아이템 | `Item/ExperienceOrb.cs` | 경험치 양 보관과 자석 획득용 목표 추적 이동. 현재 로컬 폴더 이동 작업 중 |
@@ -201,7 +201,7 @@ PlayerAutoAttack 또는 다른 발동 조건
 - `SkillRunner.firePoint`: 현재 플레이어 자식 발사 위치
 - `PlayerHealth.onDeath`: 사망 시 실행할 UnityEvent
 
-`Enemy.prefab` 루트에는 현재 `Rigidbody2D`, Collider, `EnemyController`, `EnemyHealth`, `EnemyAttack`이 있다.
+`Enemy.prefab` 루트에는 현재 `Rigidbody2D`, Collider, `EnemyController`, `EnemyHealth`, `EnemyAttack`, `NetworkObject`, 서버 권한 `NetworkTransform`, `NetworkEnemyAuthoritySetup`이 있다. 로컬 `StageTest`에서는 기존 시뮬레이션을 유지하고, NGO 세션에서는 서버만 추적·공격·물리를 실행하며 클라이언트는 동기화된 위치를 표시한다.
 
 - `EnemyHealth.experienceOrbPrefab`: 사망 시 생성할 `ExperienceOrb.prefab`
 - `EnemyHealth.experienceReward`: 생성 직후 구체에 전달할 경험치
@@ -228,6 +228,7 @@ PlayerAutoAttack 또는 다른 발동 조건
 
 - 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·경험치·공격 결과의 네트워크 권한과 값 동기화는 아직 미구현이므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
 - 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·방향 추적·주몽 기본공격·자동 스킬·경험치 획득을 활성화하고 카메라 대상을 연결한다. 새 방향 공격이 있으면 기존 유도형 `PlayerAutoAttack`은 중복 실행하지 않는다.
+- `Enemy.prefab`은 기본 네트워크 프리팹 목록에 등록되어 있다. 네트워크 세션에서는 `EnemySpawner`와 적 이동·공격 시뮬레이션을 서버로 제한하지만, 적 체력·피해·사망·경험치 드롭과 투사체 판정의 네트워크 동기화는 아직 후속 작업이다.
 - `PlayerController`, `PlayerHealth`, `CameraFollow`만 각각 `Shura.Player`, `Shura.Camera` 네임스페이스에 있고 나머지 현재 스크립트 다수는 전역 네임스페이스다. 클래스 위치를 추측하지 말고 실제 선언을 확인한다.
 - `EnemyController`는 `Start`와 `FixedUpdate`에서 플레이어를 찾는 현재 코드 흐름이 서로 다르므로 추적 로직을 수정할 때 두 경로를 함께 확인한다.
 - 로컬 작업트리에서는 `Enemy.prefab` 루트에 잘못 붙어 있던 `ExperienceOrb` 컴포넌트를 제거했다. 공식 드롭 흐름은 계속 `EnemyHealth`가 별도 `ExperienceOrb.prefab`을 생성하고 `Initialize`하는 경로다.
