@@ -1,4 +1,5 @@
 using Shura.Player;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -78,6 +79,11 @@ public class GameManager : MonoBehaviour
 
     private void CheckPlayerDeath()
     {
+        if (IsNetworkSessionRunning())
+        {
+            return;
+        }
+
         if (playerHealth == null)
         {
             return;
@@ -114,6 +120,12 @@ public class GameManager : MonoBehaviour
     {
         bossSpawnAttempted = true;
 
+        if (IsNetworkSessionRunning() &&
+            !NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
         if (bossPrefab == null)
         {
             Debug.LogError(
@@ -141,6 +153,24 @@ public class GameManager : MonoBehaviour
             Quaternion.identity
         );
 
+        if (IsNetworkSessionRunning())
+        {
+            NetworkObject bossNetworkObject =
+                spawnedBoss.GetComponent<NetworkObject>();
+
+            if (bossNetworkObject == null)
+            {
+                Debug.LogError(
+                    "보스 프리팹에 NetworkObject가 없어 네트워크 스폰할 수 없습니다."
+                );
+                Destroy(spawnedBoss);
+                spawnedBoss = null;
+                return;
+            }
+
+            bossNetworkObject.Spawn();
+        }
+
         bossSpawned = true;
 
         Debug.Log("보스 등장");
@@ -148,6 +178,12 @@ public class GameManager : MonoBehaviour
 
     private void CheckBossDeath()
     {
+        if (IsNetworkSessionRunning() &&
+            !NetworkManager.Singleton.IsServer)
+        {
+            return;
+        }
+
         if (!bossSpawned)
         {
             return;
@@ -169,11 +205,40 @@ public class GameManager : MonoBehaviour
         CurrentState = GameState.Result;
         IsVictory = victory;
 
+        if (IsNetworkSessionRunning())
+        {
+            if (victory && NetworkManager.Singleton.IsServer)
+            {
+                NetworkGameResultState resultState =
+                    FindFirstObjectByType<NetworkGameResultState>();
+
+                if (resultState != null)
+                {
+                    resultState.SetVictoryServer();
+                }
+                else
+                {
+                    Debug.LogError(
+                        "NetworkGameResultState를 찾지 못해 승리를 동기화할 수 없습니다."
+                    );
+                }
+            }
+
+            Debug.Log(victory ? "네트워크 승리!" : "네트워크 패배!");
+            return;
+        }
+
         Time.timeScale = 0f;
 
         Debug.Log(
             victory ? "승리!" : "패배!"
         );
+    }
+
+    private static bool IsNetworkSessionRunning()
+    {
+        return NetworkManager.Singleton != null &&
+            NetworkManager.Singleton.IsListening;
     }
 
     private void FindReferences()

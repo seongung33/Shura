@@ -560,3 +560,10 @@ Assets/_Project/
 - 다시 시작은 NGO SceneManager로 `Main` 씬을 전원에게 다시 로드하고 결과·체력·사망·경험치·레벨 상태를 초기화한다.
 - 로비 복귀는 서버 RPC로 모든 참가자에게 종료를 알린 뒤 네트워크를 닫고 `NetworkTest` 씬을 새로 연다.
 - 결과 UI Canvas에는 `GraphicRaycaster`를 추가하고, 씬 전환 후 EventSystem이 없을 때 Input System용 EventSystem을 생성한다.
+
+### 네트워크 보스 승리
+
+- 네트워크 세션에서 `GameManager`의 보스 생성은 서버만 수행하며 생성 직후 `NetworkObject.Spawn()`으로 참가자에게 복제한다.
+- 클라이언트는 보스를 별도로 생성하거나 제거 여부를 판정하지 않는다.
+- 서버가 보스 NetworkObject의 제거를 확인하면 `NetworkGameResultState.SetVictoryServer()`로 참가자 전원의 결과를 `Victory`로 변경한다.
+- 네트워크 결과에서는 `Time.timeScale`을 멈추지 않아 NGO 메시지와 결과 UI 버튼 입력이 계속 처리되도록 한다.
