@@ -413,7 +413,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 765fe932ce2540b7a775a70ec94aac55, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkGameResultState
---- !u!114 &880000000000000008
+--- !u!114 &880000000000000016
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkPlayerHudPresenter
   gameplaySceneName: Main
---- !u!114 &880000000000000008
+--- !u!114 &880000000000000015
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -441,7 +441,7 @@ MonoBehaviour:
   gameplaySceneName: Main
   lobbySceneName: NetworkTest
   shutdownDelay: 0.25
---- !u!114 &880000000000000008
+--- !u!114 &880000000000000014
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

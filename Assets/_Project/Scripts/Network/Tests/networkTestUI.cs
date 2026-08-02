@@ -5,6 +5,7 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NetworkTestUI : MonoBehaviour
 {
@@ -19,6 +20,17 @@ public class NetworkTestUI : MonoBehaviour
     [SerializeField]
     private TMP_Text statusText;
 
+    [Header("Lobby Controls")]
+
+    [SerializeField]
+    private Button createRoomButton;
+
+    [SerializeField]
+    private Button joinRoomButton;
+
+    [SerializeField]
+    private Button leaveRoomButton;
+
     private bool servicesReady;
     private bool initializationInProgress;
     private bool operationInProgress;
@@ -27,6 +39,7 @@ public class NetworkTestUI : MonoBehaviour
     private ISession currentSession;
     private async void Start()
     {
+        RefreshLobbyControls();
         await InitializeServicesAsync();
     }
 
@@ -84,6 +97,7 @@ public class NetworkTestUI : MonoBehaviour
         finally
         {
             initializationInProgress = false;
+            RefreshLobbyControls();
         }
     }
 
@@ -115,6 +129,7 @@ public class NetworkTestUI : MonoBehaviour
             return;
         }
         operationInProgress = true;
+        RefreshLobbyControls();
 
         try
         {
@@ -159,6 +174,7 @@ public class NetworkTestUI : MonoBehaviour
         finally
         {
             operationInProgress = false;
+            RefreshLobbyControls();
         }
     }
 
@@ -205,6 +221,7 @@ public class NetworkTestUI : MonoBehaviour
         }
 
         operationInProgress = true;
+        RefreshLobbyControls();
 
         try
         {
@@ -232,6 +249,7 @@ public class NetworkTestUI : MonoBehaviour
         finally
         {
             operationInProgress = false;
+            RefreshLobbyControls();
         }
     }
     private void HandleNetworkStateChanged(
@@ -299,6 +317,7 @@ public class NetworkTestUI : MonoBehaviour
         }
 
         operationInProgress = true;
+        RefreshLobbyControls();
 
         try
         {
@@ -326,6 +345,7 @@ public class NetworkTestUI : MonoBehaviour
         finally
         {
             operationInProgress = false;
+            RefreshLobbyControls();
         }
     }
 
@@ -399,6 +419,7 @@ public class NetworkTestUI : MonoBehaviour
 
         currentSession = session;
         currentSession.Network.StateChanged += HandleNetworkStateChanged;
+        RefreshLobbyControls();
     }
 
     private void DetachSession(ISession session)
@@ -412,6 +433,8 @@ public class NetworkTestUI : MonoBehaviour
         {
             currentSession = null;
         }
+
+        RefreshLobbyControls();
     }
 
     private async Task CleanupFailedSessionAsync()
@@ -445,6 +468,46 @@ public class NetworkTestUI : MonoBehaviour
         if (joinCodeText != null)
         {
             joinCodeText.text = string.Empty;
+        }
+
+        if (joinCodeInput != null)
+        {
+            joinCodeInput.text = string.Empty;
+        }
+    }
+
+    private void RefreshLobbyControls()
+    {
+        bool hasSession = currentSession != null;
+        bool canStartSession =
+            servicesReady &&
+            !initializationInProgress &&
+            !operationInProgress &&
+            !hasSession;
+
+        if (createRoomButton != null)
+        {
+            createRoomButton.gameObject.SetActive(!hasSession);
+            createRoomButton.interactable = canStartSession;
+        }
+
+        if (joinRoomButton != null)
+        {
+            joinRoomButton.gameObject.SetActive(!hasSession);
+            joinRoomButton.interactable = canStartSession;
+        }
+
+        if (joinCodeInput != null)
+        {
+            joinCodeInput.gameObject.SetActive(!hasSession);
+            joinCodeInput.interactable = canStartSession;
+        }
+
+        if (leaveRoomButton != null)
+        {
+            leaveRoomButton.gameObject.SetActive(hasSession);
+            leaveRoomButton.interactable =
+                hasSession && !operationInProgress;
         }
     }
 }

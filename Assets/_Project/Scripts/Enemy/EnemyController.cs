@@ -28,11 +28,12 @@ public class EnemyController : MonoBehaviour
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
 
-        if (target == null)
+        if (player == null)
         {
             Debug.Log("Player 태그를 가진 오브젝트를 찾지 못했습니다.");
             return;
         }
+
         target = player.transform;
     }
 
