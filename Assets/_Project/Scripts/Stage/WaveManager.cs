@@ -46,6 +46,27 @@ public class WaveManager : MonoBehaviour
     public int CurrentWave => currentWave;
     public bool RoundFinished => roundFinished;
 
+    public void Configure(
+        EnemySpawner configuredSpawner,
+        float configuredRoundDuration,
+        float configuredWave2StartTime,
+        float configuredWave3StartTime
+    )
+    {
+        enemySpawner = configuredSpawner;
+        roundDuration = Mathf.Max(1f, configuredRoundDuration);
+        wave2StartTime = Mathf.Clamp(
+            configuredWave2StartTime,
+            0f,
+            roundDuration
+        );
+        wave3StartTime = Mathf.Clamp(
+            configuredWave3StartTime,
+            wave2StartTime,
+            roundDuration
+        );
+    }
+
     private void Start()
     {
         if (enemySpawner == null)

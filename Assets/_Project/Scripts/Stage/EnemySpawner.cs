@@ -34,6 +34,11 @@ public class EnemySpawner : MonoBehaviour
         TryFindPlayer();
     }
 
+    public void Configure(GameObject configuredEnemyPrefab)
+    {
+        enemyPrefab = configuredEnemyPrefab;
+    }
+
     private void Update()
     {
         RemoveDestroyedEnemies();
