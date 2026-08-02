@@ -567,3 +567,10 @@ Assets/_Project/
 - 클라이언트는 보스를 별도로 생성하거나 제거 여부를 판정하지 않는다.
 - 서버가 보스 NetworkObject의 제거를 확인하면 `NetworkGameResultState.SetVictoryServer()`로 참가자 전원의 결과를 `Victory`로 변경한다.
 - 네트워크 결과에서는 `Time.timeScale`을 멈추지 않아 NGO 메시지와 결과 UI 버튼 입력이 계속 처리되도록 한다.
+
+### Main 네트워크 스테이지 통합
+
+- `Main` 씬의 `NetworkStageBootstrap`이 60초 테스트 라운드용 `EnemySpawner`, `WaveManager`, `GameManager`를 런타임에 구성한다.
+- 적과 임시 보스는 기존 네트워크 등록 `Enemy.prefab`을 사용하며 실제 생성은 서버 권한 컴포넌트가 담당한다.
+- 로비에서 이미 생성된 소유 플레이어는 `Main` 진입 시 다시 Spawn되지 않으므로 부트스트랩이 새 `CameraFollow`에 로컬 플레이어를 재연결한다.
+- 런타임 설정 API를 통해 `StageTest`의 직렬화 설정은 보존하고 `Main`만 별도 라운드 설정을 사용한다.

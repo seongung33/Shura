@@ -40,6 +40,15 @@ public class GameManager : MonoBehaviour
 
     public bool IsVictory { get; private set; }
 
+    public void Configure(
+        WaveManager configuredWaveManager,
+        GameObject configuredBossPrefab
+    )
+    {
+        waveManager = configuredWaveManager;
+        bossPrefab = configuredBossPrefab;
+    }
+
     private void Start()
     {
         Time.timeScale = 1f;
@@ -132,6 +141,11 @@ public class GameManager : MonoBehaviour
                 "GameManager에 Boss Prefab이 연결되지 않았습니다."
             );
             return;
+        }
+
+        if (player == null)
+        {
+            FindReferences();
         }
 
         if (player == null)
