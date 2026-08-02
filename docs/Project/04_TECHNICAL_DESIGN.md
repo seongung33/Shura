@@ -119,16 +119,16 @@
 | 아이템 | `Item/HealthPickup.cs` | 플레이어 체력을 회복하고 실제 회복 성공 시에만 픽업 제거 |
 | 아이템 | `Item/MagnerPickup.cs` | 씬의 경험치 구체를 플레이어에게 유도. 파일명의 `Magner` 오탈자는 정리 필요 |
 | 카메라 | `Camera/CameraFollow.cs` | `LateUpdate`에서 지정 대상을 보간 추적 |
-| 네트워크 | `Network/Tests/networkTestUI.cs` | UGS 초기화, Relay 세션 생성·참가·퇴장·재접속과 로비 컨트롤 |
-| 네트워크 | `Network/NetworkGameFlowController.cs` | 2인·호스트 시작 조건과 NGO `Main` 씬 전환 |
-| 네트워크 | `Network/Tests/NetworkPlayerMovement.cs` | 실제 네트워크 프리팹에서 사용하는 소유자 이동. 경로 이름은 기술 부채 |
-| 네트워크 | `Network/NetworkPlayerOwnerSetup.cs` | 비소유 입력·공격·스킬 비활성화와 소유자 카메라 연결 |
-| 네트워크 | `Network/NetworkPlayerHealth.cs`, `NetworkPlayerExperience.cs` | 서버 HP·사망·EXP·레벨 상태 복제 |
-| 네트워크 | `Network/NetworkEnemyAuthoritySetup.cs` | 적 AI·공격·물리를 서버로 제한 |
-| 네트워크 | `Network/NetworkStageBootstrap.cs` | `Main`에서 플레이어 보정과 스테이지 컴포넌트 런타임 조립 |
-| 네트워크 | `Network/NetworkGameResultState.cs` | 참가자 전원의 승리·패배 상태 복제 |
-| 네트워크 UI | `NetworkPlayerHudPresenter.cs`, `NetworkGameResultPresenter.cs` | 소유 플레이어의 HUD·결과 오버레이 런타임 생성 |
-| 네트워크 전환 | `NetworkGameResultActions.cs` | 호스트 재시작과 모든 참가자의 로비 복귀 |
+| 네트워크 로비 | `Network/Lobby/NetworkTestUI.cs` | UGS 초기화, Relay 세션 생성·참가·퇴장·재접속과 로비 컨트롤 |
+| 네트워크 로비 | `Network/Lobby/NetworkGameFlowController.cs` | 2인·호스트 시작 조건과 NGO `Main` 씬 전환 |
+| 네트워크 플레이어 | `Network/Player/NetworkPlayerMovement.cs` | 실제 네트워크 프리팹에서 사용하는 소유자 이동 |
+| 네트워크 플레이어 | `Network/Player/NetworkPlayerOwnerSetup.cs` | 비소유 입력·공격·스킬 비활성화와 소유자 카메라 연결 |
+| 네트워크 플레이어 | `Network/Player/NetworkPlayerHealth.cs`, `Network/Player/NetworkPlayerExperience.cs` | 서버 HP·사망·EXP·레벨 상태 복제 |
+| 네트워크 적 | `Network/Enemy/NetworkEnemyAuthoritySetup.cs` | 적 AI·공격·물리를 서버로 제한 |
+| 네트워크 스테이지 | `Network/Stage/NetworkStageBootstrap.cs` | `Main`에서 플레이어 보정과 스테이지 컴포넌트 런타임 조립 |
+| 네트워크 결과 | `Network/Result/NetworkGameResultState.cs` | 참가자 전원의 승리·패배 상태 복제 |
+| 네트워크 결과 UI | `Network/Player/NetworkPlayerHudPresenter.cs`, `Network/Result/NetworkGameResultPresenter.cs` | 소유 플레이어의 HUD·결과 오버레이 런타임 생성 |
+| 네트워크 결과 전환 | `Network/Result/NetworkGameResultActions.cs` | 호스트 재시작과 모든 참가자의 로비 복귀 |
 | 로컬 UI | `UI/HUDController.cs` | `StageTest` 등 로컬 씬의 HP·레벨·EXP와 결과 표시 |
 
 `SynergyResolver`, `StatusEffectController`, `LevelUpChoiceGenerator` 등 실제 파일이 없는 이름은 계획이다.
