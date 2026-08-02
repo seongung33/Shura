@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class NetworkStageBootstrap : MonoBehaviour
 {
+    private static GameObject cachedPlayerPrefab;
+
     [Header("Prefabs")]
+    [SerializeField]
+    private GameObject playerPrefab;
+
     [SerializeField]
     private GameObject enemyPrefab;
 
@@ -23,6 +28,15 @@ public class NetworkStageBootstrap : MonoBehaviour
 
     private CameraFollow cameraFollow;
     private bool cameraBound;
+    private bool missingPlayerPrefabLogged;
+
+    public static void CachePlayerPrefab(GameObject prefab)
+    {
+        if (prefab != null)
+        {
+            cachedPlayerPrefab = prefab;
+        }
+    }
 
     private void Start()
     {
@@ -46,15 +60,64 @@ public class NetworkStageBootstrap : MonoBehaviour
         }
 
         cameraFollow = FindFirstObjectByType<CameraFollow>();
+        EnsurePlayerObjects();
         CreateStageRuntime();
         TryBindLocalCamera();
     }
 
     private void Update()
     {
+        EnsurePlayerObjects();
+
         if (!cameraBound)
         {
             TryBindLocalCamera();
+        }
+    }
+
+    private void EnsurePlayerObjects()
+    {
+        NetworkManager manager = NetworkManager.Singleton;
+
+        if (manager == null || !manager.IsServer)
+        {
+            return;
+        }
+
+        GameObject configuredPlayerPrefab =
+            playerPrefab != null ? playerPrefab : cachedPlayerPrefab;
+
+        if (configuredPlayerPrefab == null)
+        {
+            if (!missingPlayerPrefabLogged)
+            {
+                Debug.LogError("NetworkStageBootstrap의 Player Prefab이 비어 있습니다.");
+                missingPlayerPrefabLogged = true;
+            }
+
+            return;
+        }
+
+        foreach (NetworkClient client in manager.ConnectedClientsList)
+        {
+            if (client.PlayerObject != null)
+            {
+                continue;
+            }
+
+            GameObject playerObject = Instantiate(configuredPlayerPrefab);
+            NetworkObject networkObject =
+                playerObject.GetComponent<NetworkObject>();
+
+            if (networkObject == null)
+            {
+                Debug.LogError("Player Prefab에 NetworkObject가 없습니다.");
+                Destroy(playerObject);
+                continue;
+            }
+
+            networkObject.SpawnAsPlayerObject(client.ClientId, true);
+            Debug.Log($"플레이어 재생성 완료: clientId={client.ClientId}");
         }
     }
 

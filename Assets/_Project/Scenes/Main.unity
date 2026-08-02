@@ -271,6 +271,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bd593ef0a7e46f098f1fd8c218f718b, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkStageBootstrap
+  playerPrefab: {fileID: 3389326965975105325, guid: abd7c3a66d586af489cd3712a359fe2e, type: 3}
   enemyPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
   bossPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
   roundDuration: 60

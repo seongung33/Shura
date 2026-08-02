@@ -85,6 +85,21 @@ public class NetworkGameFlowController : MonoBehaviour
             return;
         }
 
+        NetworkStageBootstrap.CachePlayerPrefab(
+            networkManager.NetworkConfig.PlayerPrefab
+        );
+
+        foreach (NetworkClient client in networkManager.ConnectedClientsList)
+        {
+            if (client.PlayerObject == null)
+            {
+                continue;
+            }
+
+            client.PlayerObject.DestroyWithScene = false;
+            DontDestroyOnLoad(client.PlayerObject.gameObject);
+        }
+
         SceneEventProgressStatus result = networkManager.SceneManager.LoadScene(
             gameplaySceneName,
             LoadSceneMode.Single
@@ -135,6 +150,11 @@ public class NetworkGameFlowController : MonoBehaviour
 
         if (startGameButton != null)
         {
+            startGameButton.gameObject.SetActive(
+                networkManager != null &&
+                networkManager.IsListening &&
+                networkManager.IsServer
+            );
             startGameButton.interactable = canStartGame;
         }
 
@@ -154,6 +174,13 @@ public class NetworkGameFlowController : MonoBehaviour
         else if (canStartGame)
         {
             SetStatus($"게임 시작 준비 완료 ({playerCount}/{minimumPlayers})");
+        }
+        else if (!networkManager.IsServer)
+        {
+            SetStatus(
+                $"호스트가 게임을 시작하기를 기다리는 중입니다. " +
+                $"({playerCount}/{minimumPlayers})"
+            );
         }
         else
         {
