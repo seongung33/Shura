@@ -1,6 +1,6 @@
 # Shura 외부 에셋 및 오픈소스 출처
 
-> 저장소 감사일: **2026-07-31**
+> 마지막 저장소 정리: **2026-08-03 KST**
 > 버전의 정본은 `Packages/manifest.json`, 실제 배포 전 최종 이용 조건은 각 공식 링크와 저장소 내 라이선스 파일을 다시 확인한다.
 
 ## 1. 기록 규칙
@@ -40,7 +40,7 @@ AI 코딩 도구 사용은 에셋 표가 아니라 `06_AI_USAGE_TECHNICAL_DOCUME
 | O-002 | `com.unity.netcode.gameobjects` | `2.13.1` | Unity Technologies, [Netcode for GameObjects 저장소](https://github.com/Unity-Technologies/com.unity.netcode.gameobjects) | Unity Companion License | 네트워크 오브젝트·소유권·이동 기술 검증 | 사용 중 |
 | O-003 | `com.unity.services.multiplayer` | `2.3.0` | Unity Technologies, Unity Package Registry | [Unity Terms of Service](https://unity.com/legal/terms-of-service) | UGS 초기화, 인증, Relay 세션 생성·참가·퇴장 | 사용 중 |
 | O-004 | `com.unity.render-pipelines.universal` | `17.3.0` | Unity Technologies, Unity Package Registry | Unity Companion License | Universal 2D 렌더링 | 사용 중 |
-| O-005 | `com.unity.ugui` / TextMesh Pro 리소스 | `2.0.0` | Unity Technologies | Unity 패키지 이용 조건 및 각 동봉 리소스 라이선스 | Relay 테스트 UI, 원격 develop의 HUD | 사용 중 |
+| O-005 | `com.unity.ugui` / TextMesh Pro 리소스 | `2.0.0` | Unity Technologies | Unity 패키지 이용 조건 및 각 동봉 리소스 라이선스 | Relay 로비, 로컬 HUD, 네트워크 HUD·결과 UI | 사용 중 |
 | O-006 | `com.unity.ai.assistant` | `2.16.0-pre.1` | Unity Technologies, Unity Package Registry | [Unity 법적 약관](https://unity.com/legal) | 패키지 설치 확인. 실제 개발 사용 내역은 별도 AI 기록과 대조 필요 | 설치됨 |
 | O-007 | `com.unity.ai.inference` | `2.6.1` | Unity Technologies, Unity Package Registry | [Unity 법적 약관](https://unity.com/legal) | 패키지 설치 확인. 런타임 추론 코드는 현재 없음 | 설치됨·미사용 |
 | O-008 | Unity `.gitignore` template | 2025-12-18 동기화 표기 | [GitHub gitignore Unity template](https://github.com/github/gitignore/blob/main/Unity.gitignore) | CC0-1.0 | Unity 생성물·빌드·개인 설정 제외 | 사용 중 |

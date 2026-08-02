@@ -1,5 +1,7 @@
 # 주몽 기본공격·P0 스킬 Unity 세팅 가이드
 
+> 2026년 7월 31일 구현 당시의 세팅 가이드다. 현재 생성 완료된 에셋과 연결 상태는 `IMPL_2026-07-31_JUMONG_SKILLS.md`, 최신 진행은 `12_CURRENT_PROJECT_STATUS.md`를 확인한다. SkillData는 현재 로컬 작업에서 `ScriptableObjects/Skills/Jumong/`으로 이동 중이다.
+
 작성: 2026-07-30. 신규 스크립트는 코드만으로는 동작하지 않고 아래 에디터 세팅이 필요하다.
 테스트는 `Tests/CombatTest.unity`에서 진행한다.
 

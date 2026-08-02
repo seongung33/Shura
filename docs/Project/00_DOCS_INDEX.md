@@ -1,73 +1,66 @@
 # Shura 프로젝트 문서 안내
 
-> 마지막 저장소 대조: **2026-07-31**
-> 현재 개발 현황의 빠른 확인은 `12_CURRENT_PROJECT_STATUS.md`, 세부 코드 계약은 `04_TECHNICAL_DESIGN.md`를 기준으로 한다.
+> 마지막 저장소 대조: **2026-08-03 KST**
 
 ## 프로젝트 개요
 
 - 프로젝트 코드명: **Shura**
-- 장르: 2D 탑다운 협동 생존 액션
-- 핵심 경험: 여러 플레이어의 스킬이 순서와 조합에 따라 연계 효과를 일으키는 협동 전투
+- 장르: 2D 탑다운 2인 협동 생존 액션
+- 핵심 경험: 서로 다른 플레이어의 속성 스킬을 연결해 일반 공격과 다른 연계 반응을 만드는 전투
 - 단기 목표: 2026년 8월 10일까지 NAN 2026 사전 과제로 제출 가능한 빌드 완성
 - 장기 목표: 최대 4인 온라인 협동과 Steam 출시
 - 엔진: Unity `6000.3.20f1`, Universal 2D
-- 팀 구성: 3명
-  - 진미리: 게임 진입·멀티플레이·전체 통합
-  - 이재준: 캐릭터·스킬·전투 성장
-  - 문성웅: 맵·라운드·적·아이템
 
-## 문서 목록
+## 문서별 정본 역할
 
-| 파일 | 목적 | 주 담당 |
-|---|---|---|
-| `01_GAME_DESIGN_DOCUMENT.md` | 게임의 재미, 규칙, 콘텐츠·서사 방향 정의 | 전원 |
-| `02_MVP_SCOPE_AND_ROADMAP.md` | 해커톤에서 만들 것과 이후 범위를 구분 | 전원 |
-| `03_TEAM_ROLES_AND_WORKFLOW.md` | 역할, 협업, Git·Unity·AI 활용 작업 규칙 | 전원 |
-| `04_TECHNICAL_DESIGN.md` | Unity 구조, 현재 구현 현황, 코드 계약과 멀티플레이 방향 | 전원 |
-| `05_DAILY_PLAN_2026-07-25_to_08-10.md` | 마감일까지 날짜별 계획과 실제 진행 기록 | 전원 |
-| `06_AI_USAGE_TECHNICAL_DOCUMENT.md` | AI 활용 방식, 실제 사용 내역, 사람의 검토·통합 기록 | 전원 |
-| `07_ASSET_SOURCES.md` | 외부 에셋·서체·Unity 패키지 출처와 이용 조건 | 전원 |
-| `08_DECISION_LOG.md` | 주요 결정과 변경 이유 기록 | 전원 |
-| `09_HACKATHON_SUBMISSION_CHECKLIST.md` | NAN 2026 필수 제출물과 현재 준비 상태 점검 | 진미리(빌드·링크), 전원(자료) |
-| `10_TEST_PLAN.md` | 기능·멀티플레이·빌드 QA 기준과 현재 미검증 항목 | 전원 |
-| `11_CHARACTER_SKILL_SYSTEM_CONCEPT.md` | 캐릭터 고유 무기·특수공격·속성·아이템 성장 방향 | 이재준 |
-| `12_CURRENT_PROJECT_STATUS.md` | 브랜치별 구현, 로컬 작업, 이력과 다음 통합 순서를 한눈에 정리 | 전원 |
-| `06_AI_USAGE_TECHNICAL_DOCUMENT.md` | AI 사용 구조와 프롬프트 기록 | AI 문서 담당 |
-| `07_ASSET_SOURCES.md` | 외부 에셋 출처와 라이선스 기록 | 콘텐츠 담당 |
-| `08_DECISION_LOG.md` | 주요 결정과 변경 이유 기록 | 회의 기록 담당 |
-| `09_HACKATHON_SUBMISSION_CHECKLIST.md` | NAN 2026 필수 제출물 점검 | 제출 담당 |
-| `10_TEST_PLAN.md` | 기능·멀티플레이·빌드 QA 기준 | QA 담당 |
-| `11_CONCEPT_AND_HERO_DESIGN.md` | 확정 콘셉트, 속성 시스템, 영웅 설계 (최신 기준) | 전원 |
-| `GUIDE_JUMONG_SKILLS_SETUP.md` | 주몽 스킬 Unity 세팅 절차 (프리팹·컴포넌트) | 스킬 담당 |
-| `IMPL_2026-07-31_JUMONG_SKILLS.md` | 기본공격·P0 스킬 3종 구현·테스트 기록 | 스킬 담당 |
-| `HANDOFF_2026-07-30.md` | 세션 인수인계 (결정·미결 정리) | 전원 |
+같은 내용을 여러 문서에서 상태표로 반복하지 않는다. 현재 상태는 `12`, 코드 계약은 `04`, 검증 결과는 `10`을 기준으로 한다.
 
-## 정본과 상태 구분
+| 문서 | 정본 역할 |
+|---|---|
+| `00_DOCS_INDEX.md` | 문서 구조와 운영 규칙 |
+| `01_GAME_DESIGN_DOCUMENT.md` | 핵심 경험, 게임 루프, 규칙과 콘텐츠 방향 |
+| `02_MVP_SCOPE_AND_ROADMAP.md` | 제출 범위, 성공 기준, 장기 로드맵 |
+| `03_TEAM_ROLES_AND_WORKFLOW.md` | 역할, Git·Unity 협업 방식, 완료 정의 |
+| `04_TECHNICAL_DESIGN.md` | 런타임 구조, 코드 계약, 네트워크 권한과 씬 책임 |
+| `05_DAILY_PLAN_2026-07-25_to_08-10.md` | 날짜별 계획과 실제 진행 이력 |
+| `06_AI_USAGE_TECHNICAL_DOCUMENT.md` | AI 사용 내역과 사람의 검토·통합·검증 기록 |
+| `07_ASSET_SOURCES.md` | 외부 에셋·서체·패키지 출처와 이용 조건 |
+| `08_DECISION_LOG.md` | 확정 결정, 대체 관계와 미결 결정 |
+| `09_HACKATHON_SUBMISSION_CHECKLIST.md` | 제출물과 링크 준비 상태 |
+| `10_TEST_PLAN.md` | 테스트 절차와 현재 검증 증거 |
+| `11_CONCEPT_AND_HERO_DESIGN.md` | 7속성, 성장 규칙, 주몽과 영웅 설계 |
+| `12_CURRENT_PROJECT_STATUS.md` | **현재 브랜치·작업트리·구현·위험·다음 순서의 단일 정본** |
 
-- `docs/Project` 아래 문서를 프로젝트 정본으로 사용한다.
-- `docs` 루트의 `game-design.md`, `decisions.md`, `asset-sources.md`, `ai-usage-log.md`는 정본 문서로 안내하는 호환용 파일이다. 같은 내용을 두 곳에서 따로 관리하지 않는다.
-- 문서의 상태 표시는 다음 의미로 통일한다.
-  - **구현:** 코드·데이터·프리팹 또는 테스트 씬에 핵심 흐름이 존재한다.
-  - **부분 구현:** 단독 기능은 있으나 실제 한 판, 최종 UI 또는 네트워크에 아직 통합되지 않았다.
-  - **원격 반영:** `origin/develop` 등 팀 브랜치에는 있으나 현재 작업 브랜치에 아직 합쳐지지 않았다.
-  - **로컬 작업 중:** 커밋되지 않은 작업트리 변경으로, 통합 완료로 간주하지 않는다.
-  - **미구현:** 실제 프로젝트 파일에서 해당 기능을 확인하지 못했다.
-- “구현”은 자동으로 “최종 검증 완료”를 뜻하지 않는다. 테스트 결과는 `10_TEST_PLAN.md`에서 별도로 관리한다.
+보조 문서:
 
-## 문서 운영 규칙
+| 문서 | 용도 |
+|---|---|
+| `GUIDE_JUMONG_SKILLS_SETUP.md` | 주몽 스킬 Unity 세팅 절차 |
+| `IMPL_2026-07-31_JUMONG_SKILLS.md` | 7월 31일 주몽 스킬 구현·테스트 기록 |
+| `HANDOFF_2026-07-30.md` | 7월 30일 시점의 보관용 인수인계 기록 |
+| `11_CHARACTER_SKILL_SYSTEM_CONCEPT.md` | 폐기된 중복 문서의 안내 파일. 내용 정본은 `11_CONCEPT_AND_HERO_DESIGN.md` |
 
-1. 결정한 내용은 대화에만 남기지 않고 관련 문서와 `08_DECISION_LOG.md`에 반영한다.
-2. AI를 사용한 작업은 도구명, 요청 목적, 산출물, 사람의 검토·연결·테스트를 `06_AI_USAGE_TECHNICAL_DOCUMENT.md`에 함께 기록한다.
-3. 외부 이미지·음원·폰트·코드는 추가한 당일 `07_ASSET_SOURCES.md`에 출처와 이용 조건을 기록한다.
-4. 매일 작업 종료 전에 `05_DAILY_PLAN_2026-07-25_to_08-10.md`와 `12_CURRENT_PROJECT_STATUS.md`를 갱신한다.
-5. 해커톤 제출용 PDF는 이 Markdown 문서들을 기반으로 작성하되, 계획과 실제 구현을 구분한다.
-6. 코드 작업 전에는 `04_TECHNICAL_DESIGN.md`의 **현재 구현 코드 계약**을 먼저 확인한다.
-7. 데미지를 주는 코드는 구체 Health 클래스를 직접 수정하지 않고 `IDamageable.TakeDamage`를 사용한다.
-8. 현재 투사체형 스킬을 추가할 때는 `SkillData → SkillRunner → Projectile → IDamageable` 흐름을 우선 재사용한다.
-9. 문서와 코드가 다르면 실제 스크립트, 프리팹, 씬, ScriptableObject, Git 브랜치 상태를 다시 확인해 함께 갱신한다.
-10. 기능 브랜치와 `origin/develop`이 갈라져 있으면 어느 브랜치의 상태인지 문서에 명시한다.
+`docs` 루트의 `game-design.md`, `decisions.md`, `asset-sources.md`, `ai-usage-log.md`는 정본 위치만 안내하는 호환용 파일이다.
 
-## 현재 가장 중요한 원칙
+## 상태 표기
+
+- **구현:** 코드·데이터·프리팹 또는 씬에 핵심 흐름이 존재한다.
+- **검증:** 명시된 커밋·빌드·환경에서 절차와 결과를 확인했다.
+- **부분 구현:** 단독 기능은 있으나 목표 흐름, 콘텐츠 또는 네트워크 연결이 남았다.
+- **로컬 작업 중:** 커밋되지 않은 작업트리 변경이다.
+- **미구현:** 현재 프로젝트 파일에서 해당 책임을 확인하지 못했다.
+
+“구현”과 “검증”은 다르다. 기능 상태는 `12_CURRENT_PROJECT_STATUS.md`, 실제 테스트 결과는 `10_TEST_PLAN.md`에서 관리한다.
+
+## 운영 규칙
+
+1. 현재 진행 상황과 다음 우선순위는 `12_CURRENT_PROJECT_STATUS.md`에만 작성한다.
+2. 코드 구조와 공개 계약은 `04_TECHNICAL_DESIGN.md`에만 작성하고 현황표를 복제하지 않는다.
+3. 테스트 결과는 `10_TEST_PLAN.md`에 기록하고 다른 문서에는 증거 링크만 남긴다.
+4. 결정이 바뀌면 `08_DECISION_LOG.md`에 새 결정을 추가하고 대체 관계를 기록한다.
+5. AI 작업은 `06_AI_USAGE_TECHNICAL_DOCUMENT.md`, 외부 에셋은 `07_ASSET_SOURCES.md`에 기록한다.
+6. 데미지 코드는 구체 Health 클래스를 직접 수정하지 않고 `IDamageable.TakeDamage`를 사용한다.
+7. 공용 씬·프리팹·ScriptableObject 변경 전에는 작업트리와 다른 담당자의 변경을 확인한다.
+8. 문서와 코드가 다르면 스크립트·프리팹·씬·ScriptableObject·Git 상태를 다시 대조해 정본 문서를 갱신한다.
 
 > 기능 수보다 실제로 이어지는 한 판을 우선한다.
-> 플레이어 이동 → 전투 → 적과 웨이브 → 스킬 연계 → 2인 협동 → 빌드 순서로 통합하고 검증한다.

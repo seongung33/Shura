@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &152582846 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7450941720886569887, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+  m_PrefabInstance: {fileID: 395130519}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &171416072
 GameObject:
   m_ObjectHideFlags: 0
@@ -151,7 +156,7 @@ MonoBehaviour:
   waveManager: {fileID: 1872421056}
   playerHealth: {fileID: 583171238}
   player: {fileID: 395130520}
-  bossPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
+  bossPrefab: {fileID: 8930158983480263104, guid: 705e6211b456de8448ed5a3231c8c565, type: 3}
   bossSpawnOffset: {x: 6, y: 0, z: 0}
 --- !u!4 &171416074
 Transform:
@@ -176,6 +181,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 750727122065354291, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: firePoint
+      value: 
+      objectReference: {fileID: 395130520}
+    - target: {fileID: 750727122065354291, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: requireEnemyInRange
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4081730810902360702, guid: e36121d3fdb73274b851a99492026c03, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -216,6 +229,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4696496361874097783, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: isDead
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5584062228375040011, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: enemyLayer.m_Bits
+      value: 256
+      objectReference: {fileID: 0}
+    - target: {fileID: 5584062228375040011, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: requireEnemyInRange
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5584062228375040011, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: equippedSkills.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5584062228375040011, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: equippedSkills.Array.data[1].data
+      value: 
+      objectReference: {fileID: 11400000, guid: 43082ef0076ab49418911e9ef22af01a, type: 2}
+    - target: {fileID: 5584062228375040011, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      propertyPath: equippedSkills.Array.data[2].data
+      value: 
+      objectReference: {fileID: 11400000, guid: 1c1287c5d0b4c3540b7d3d74a788ee34, type: 2}
     - target: {fileID: 7450941720886569887, guid: e36121d3fdb73274b851a99492026c03, type: 3}
       propertyPath: m_Name
       value: Player
@@ -223,7 +260,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7450941720886569887, guid: e36121d3fdb73274b851a99492026c03, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 583171250}
   m_SourcePrefab: {fileID: 100100000, guid: e36121d3fdb73274b851a99492026c03, type: 3}
 --- !u!4 &395130520 stripped
 Transform:
@@ -235,12 +275,28 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4696496361874097783, guid: e36121d3fdb73274b851a99492026c03, type: 3}
   m_PrefabInstance: {fileID: 395130519}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 152582846}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a4b2b332cd7ea284d94856fe67e5a564, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Shura.Player.PlayerHealth
+--- !u!114 &583171250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152582846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5ac289aaf7c7a240aee0c5109a182ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerExperience
+  currentLevel: 1
+  currentExperience: 0
+  experienceToNextLevel: 10
+  experienceGrowthPerLevel: 5
 --- !u!1001 &1513582424
 PrefabInstance:
   m_ObjectHideFlags: 0
