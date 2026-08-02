@@ -8,7 +8,8 @@ using TMPro;
 public class NetworkGameFlowController : MonoBehaviour
 {
     [SerializeField] private NetworkManager networkManager;
-    [SerializeField, Min(1)] private int minimumPlayers = 2;
+    [SerializeField, Min(1)] private int minimumPlayers = 1;
+    [SerializeField, Min(1)] private int maximumPlayers = 2;
     [SerializeField] private string gameplaySceneName;
     [SerializeField] private UnityEvent<int> onPlayerCountChanged;
     [SerializeField] private UnityEvent<bool> onStartAvailabilityChanged;
@@ -161,7 +162,7 @@ public class NetworkGameFlowController : MonoBehaviour
         if (playerCountText != null)
         {
             playerCountText.text =
-                $"접속 인원: {playerCount}/{minimumPlayers}";
+                $"접속 인원: {playerCount}/{maximumPlayers}";
         }
 
         onPlayerCountChanged?.Invoke(playerCount);
@@ -173,18 +174,18 @@ public class NetworkGameFlowController : MonoBehaviour
         }
         else if (canStartGame)
         {
-            SetStatus($"게임 시작 준비 완료 ({playerCount}/{minimumPlayers})");
+            SetStatus($"게임 시작 준비 완료 ({playerCount}/{maximumPlayers})");
         }
         else if (!networkManager.IsServer)
         {
             SetStatus(
                 $"호스트가 게임을 시작하기를 기다리는 중입니다. " +
-                $"({playerCount}/{minimumPlayers})"
+                $"({playerCount}/{maximumPlayers})"
             );
         }
         else
         {
-            SetStatus($"플레이어를 기다리는 중입니다. ({playerCount}/{minimumPlayers})");
+            SetStatus($"플레이어를 기다리는 중입니다. ({playerCount}/{maximumPlayers})");
         }
     }
 

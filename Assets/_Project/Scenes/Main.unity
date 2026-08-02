@@ -318,7 +318,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkStageBootstrap
   playerPrefab: {fileID: 3389326965975105325, guid: abd7c3a66d586af489cd3712a359fe2e, type: 3}
   enemyPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-  bossPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
+  bossPrefab: {fileID: 8930158983480263104, guid: 705e6211b456de8448ed5a3231c8c565, type: 3}
   roundDuration: 60
   wave2StartTime: 20
   wave3StartTime: 40
