@@ -553,3 +553,10 @@ Assets/_Project/
 - 결과 패널은 화면 중앙 앵커와 `CanvasScaler`를 사용해 창 크기와 화면 비율이 달라도 중앙 배치를 유지한다.
 - 로비에서 생성된 플레이어가 `Main` 씬으로 이동해도 표시가 유지되도록 결과 Canvas를 씬 전환에서 보존한다.
 - `Playing` 동안 패널을 숨기고 `Victory` 또는 `Defeat`가 복제되었을 때만 표시한다.
+
+### 결과 이후 전환
+
+- 결과 패널의 `다시 시작`과 `로비로` 버튼은 호스트 화면에만 표시한다.
+- 다시 시작은 NGO SceneManager로 `Main` 씬을 전원에게 다시 로드하고 결과·체력·사망·경험치·레벨 상태를 초기화한다.
+- 로비 복귀는 서버 RPC로 모든 참가자에게 종료를 알린 뒤 네트워크를 닫고 `NetworkTest` 씬을 새로 연다.
+- 결과 UI Canvas에는 `GraphicRaycaster`를 추가하고, 씬 전환 후 EventSystem이 없을 때 Input System용 EventSystem을 생성한다.

@@ -73,6 +73,19 @@ public class NetworkPlayerExperience : NetworkBehaviour
         ApplyStateToPlayer();
     }
 
+    public void ResetProgressServer()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        currentLevel.Value = 1;
+        currentExperience.Value = 0;
+        experienceToNextLevel.Value = 10;
+        ApplyStateToPlayer();
+    }
+
     private void OnProgressChanged(int previousValue, int newValue)
     {
         ApplyStateToPlayer();

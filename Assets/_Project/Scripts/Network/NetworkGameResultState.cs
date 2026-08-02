@@ -21,6 +21,7 @@ public class NetworkGameResultState : NetworkBehaviour
         new NetworkVariable<NetworkGameResult>();
 
     private NetworkPlayerHealth playerHealth;
+    private NetworkPlayerExperience playerExperience;
 
     public NetworkGameResult Result => result.Value;
     public bool HasFinished => result.Value != NetworkGameResult.Playing;
@@ -30,6 +31,7 @@ public class NetworkGameResultState : NetworkBehaviour
     private void Awake()
     {
         playerHealth = GetComponent<NetworkPlayerHealth>();
+        playerExperience = GetComponent<NetworkPlayerExperience>();
     }
 
     public override void OnNetworkSpawn()
@@ -71,12 +73,33 @@ public class NetworkGameResultState : NetworkBehaviour
         SetResultForAllPlayers(NetworkGameResult.Victory);
     }
 
-    private static void SetResultForAllPlayers(NetworkGameResult newResult)
+    public void ResetResultServer()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        SetResultForAllPlayers(NetworkGameResult.Playing, true);
+    }
+
+    private static void SetResultForAllPlayers(
+        NetworkGameResult newResult,
+        bool overwriteFinished = false
+    )
     {
         foreach (NetworkGameResultState state in SpawnedStates)
         {
-            if (state != null && state.IsServer && !state.HasFinished)
+            if (state != null &&
+                state.IsServer &&
+                (overwriteFinished || !state.HasFinished))
             {
+                if (newResult == NetworkGameResult.Playing && overwriteFinished)
+                {
+                    state.playerHealth.ResetHealthServer();
+                    state.playerExperience?.ResetProgressServer();
+                }
+
                 state.result.Value = newResult;
             }
         }

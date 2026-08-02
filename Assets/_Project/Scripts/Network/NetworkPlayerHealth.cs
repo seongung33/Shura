@@ -88,6 +88,18 @@ public class NetworkPlayerHealth : NetworkBehaviour
         return true;
     }
 
+    public void ResetHealthServer()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        currentHealth.Value = playerHealth.MaxHealth;
+        isDead.Value = false;
+        ApplyStateToPlayer();
+    }
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
     private void RequestHealRpc(float amount)
     {
