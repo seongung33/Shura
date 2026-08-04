@@ -14,6 +14,18 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
     [SerializeField]
     private int experienceReward = 1;
 
+    [Header("Hit Effect")]
+
+    [SerializeField]
+    private GameObject hitEffectPrefab;
+
+    [SerializeField]
+    private Transform hitEffectPoint;
+
+    [SerializeField]
+    [Min(0.05f)]
+    private float hitEffectLifetime = 0.5f;
+
     private readonly NetworkVariable<float> networkHealth =
         new NetworkVariable<float>();
 
@@ -95,11 +107,57 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
 
         Debug.Log($"적 체력: {nextHealth} / {maxHealth}");
 
+        PlayHitEffectSynced();
+
         if (nextHealth <= 0f)
         {
             Die();
         }
     }
+
+    private void PlayHitEffectSynced()
+    {
+        if (hitEffectPrefab == null)
+        {
+            return;
+        }
+
+        if (!IsSpawned)
+        {
+            PlayHitEffect();
+            return;
+        }
+
+        if (IsServer)
+        {
+            PlayHitEffectRpc();
+        }
+    }
+
+    [Rpc(
+        SendTo.ClientsAndHost,
+        InvokePermission = RpcInvokePermission.Server
+    )]
+    private void PlayHitEffectRpc()
+    {
+        PlayHitEffect();
+    }
+
+    private void PlayHitEffect()
+    {
+        Vector3 spawnPosition = hitEffectPoint != null
+            ? hitEffectPoint.position
+            : transform.position;
+
+        GameObject effect = Instantiate(
+            hitEffectPrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
+
+        Destroy(effect, hitEffectLifetime);
+    }
+
 
     private void Die()
     {
