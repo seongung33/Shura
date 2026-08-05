@@ -50,6 +50,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
     private float damage;
     private ElementType element;
     private LayerMask enemyLayer;
+    private bool visualOnly;
 
     private bool isInitialized;
     private int remainingPierce;
@@ -74,6 +75,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         damage = context.Damage;
         element = context.Element;
         enemyLayer = context.EnemyLayer;
+        visualOnly = context.VisualOnly;
 
         remainingPierce = pierceCount;
 
@@ -133,7 +135,10 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
 
         hitEnemyIds.Add(enemyId);
 
-        damageable.TakeDamage(damage);
+        if (!visualOnly)
+        {
+            damageable.TakeDamage(damage);
+        }
 
         SpawnEffect(hitEffectPrefab, hitRoot.position);
 
@@ -195,7 +200,10 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
                 continue;
             }
 
-            enemyDamageable.TakeDamage(explosionDamage);
+            if (!visualOnly)
+            {
+                enemyDamageable.TakeDamage(explosionDamage);
+            }
         }
 
         SpawnEffect(explosionEffectPrefab, center);

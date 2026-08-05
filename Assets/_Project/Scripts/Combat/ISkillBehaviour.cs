@@ -13,6 +13,7 @@ public struct SkillCastContext
     public float ProjectileSpeed;
     public ElementType Element;     // 습득 시 랜덤 부여된 속성
     public LayerMask EnemyLayer;
+    public bool VisualOnly;         // 네트워크 표시용 복제본은 피해를 주지 않음
 }
 
 /// <summary>
