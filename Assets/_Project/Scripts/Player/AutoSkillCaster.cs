@@ -126,6 +126,29 @@ public class AutoSkillCaster : MonoBehaviour
                 ? firePoint.position
                 : transform.position;
 
+        Vector2 direction =
+            aim != null ? aim.AimDirection : Vector2.right;
+
+        NetworkSkillCastRelay networkRelay =
+            GetComponent<NetworkSkillCastRelay>();
+
+        if (networkRelay != null && networkRelay.IsSpawned)
+        {
+            bool requestSent = networkRelay.TryCast(
+                skill.data,
+                spawnPosition,
+                direction,
+                skill.element
+            );
+
+            if (requestSent)
+            {
+                skill.nextCastTime = Time.time + skill.data.Cooldown;
+            }
+
+            return;
+        }
+
         GameObject skillObject = Instantiate(
             skill.data.SkillPrefab,
             spawnPosition,
@@ -145,9 +168,6 @@ public class AutoSkillCaster : MonoBehaviour
             return;
         }
 
-        Vector2 direction =
-            aim != null ? aim.AimDirection : Vector2.right;
-
         SkillCastContext context = new SkillCastContext
         {
             Owner = gameObject,
@@ -156,7 +176,8 @@ public class AutoSkillCaster : MonoBehaviour
             Damage = skill.data.Damage,
             ProjectileSpeed = skill.data.ProjectileSpeed,
             Element = skill.element,
-            EnemyLayer = enemyLayer
+            EnemyLayer = enemyLayer,
+            VisualOnly = false
         };
 
         skillBehaviour.Cast(context);

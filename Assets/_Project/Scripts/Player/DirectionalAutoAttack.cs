@@ -81,6 +81,22 @@ public class DirectionalAutoAttack : MonoBehaviour
                 ? firePoint.position
                 : transform.position;
 
+        Vector2 direction =
+            aim != null ? aim.AimDirection : Vector2.right;
+
+        NetworkSkillCastRelay networkRelay =
+            GetComponent<NetworkSkillCastRelay>();
+
+        if (networkRelay != null && networkRelay.IsSpawned)
+        {
+            return networkRelay.TryCast(
+                basicSkill,
+                spawnPosition,
+                direction,
+                ElementType.None
+            );
+        }
+
         GameObject skillObject = Instantiate(
             basicSkill.SkillPrefab,
             spawnPosition,
@@ -105,11 +121,12 @@ public class DirectionalAutoAttack : MonoBehaviour
         {
             Owner = gameObject,
             Origin = spawnPosition,
-            Direction = aim.AimDirection,
+            Direction = direction,
             Damage = basicSkill.Damage,
             ProjectileSpeed = basicSkill.ProjectileSpeed,
             Element = ElementType.None,
-            EnemyLayer = enemyLayer
+            EnemyLayer = enemyLayer,
+            VisualOnly = false
         };
 
         skillBehaviour.Cast(context);
