@@ -51,6 +51,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
     private ElementType element;
     private LayerMask enemyLayer;
     private bool visualOnly;
+    private ulong sourcePlayerId;
 
     private bool isInitialized;
     private int remainingPierce;
@@ -76,6 +77,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         element = context.Element;
         enemyLayer = context.EnemyLayer;
         visualOnly = context.VisualOnly;
+        sourcePlayerId = context.SourcePlayerId;
 
         remainingPierce = pierceCount;
 
@@ -137,6 +139,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
 
         if (!visualOnly)
         {
+            RecordElement(other, element);
             damageable.TakeDamage(damage);
         }
 
@@ -202,6 +205,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
 
             if (!visualOnly)
             {
+                RecordElement(enemyCollider, element);
                 enemyDamageable.TakeDamage(explosionDamage);
             }
         }
@@ -223,6 +227,12 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         );
 
         effect.SetElement(element);
+    }
+
+    private void RecordElement(Component target, ElementType appliedElement)
+    {
+        IElementReceiver receiver = target.GetComponentInParent<IElementReceiver>();
+        receiver?.RecordElement(appliedElement, sourcePlayerId);
     }
 
     private void OnDrawGizmosSelected()

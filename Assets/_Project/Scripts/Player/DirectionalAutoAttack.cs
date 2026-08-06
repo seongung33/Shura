@@ -126,7 +126,8 @@ public class DirectionalAutoAttack : MonoBehaviour
             ProjectileSpeed = basicSkill.ProjectileSpeed,
             Element = ElementType.None,
             EnemyLayer = enemyLayer,
-            VisualOnly = false
+            VisualOnly = false,
+            SourcePlayerId = ulong.MaxValue
         };
 
         skillBehaviour.Cast(context);

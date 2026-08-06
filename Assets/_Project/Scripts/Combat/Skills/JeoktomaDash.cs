@@ -52,6 +52,7 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
     private ElementType element;
     private LayerMask enemyLayer;
     private bool visualOnly;
+    private ulong sourcePlayerId;
 
     private bool isActive;
     private float endTime;
@@ -65,6 +66,7 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
         element = context.Element;
         enemyLayer = context.EnemyLayer;
         visualOnly = context.VisualOnly;
+        sourcePlayerId = context.SourcePlayerId;
 
         ownerController =
             owner.GetComponent<Shura.Player.PlayerController>();
@@ -155,6 +157,10 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
                 continue;
             }
 
+            IElementReceiver receiver =
+                enemyCollider.GetComponentInParent<IElementReceiver>();
+            receiver?.RecordElement(element, sourcePlayerId);
+
             damageable.TakeDamage(damage);
         }
     }
@@ -193,7 +199,8 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
             element,
             damage * zoneDamageMultiplier,
             enemyLayer,
-            visualOnly
+            visualOnly,
+            sourcePlayerId
         );
     }
 

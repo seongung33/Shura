@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class EnemyHealth : NetworkBehaviour, IDamageable
+public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
 {
     [SerializeField]
     private float maxHealth = 100f;
@@ -26,11 +27,34 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
     [Min(0.05f)]
     private float hitEffectLifetime = 0.5f;
 
+    [Header("Element Synergy")]
+
+    [Min(0.1f)]
+    [SerializeField]
+    private float synergyWindow = 4f;
+
+    [Min(0f)]
+    [SerializeField]
+    private float synergyInternalCooldown = 2f;
+
+    [Min(0f)]
+    [SerializeField]
+    private float synergyDamage = 10f;
+
+    [Min(0.1f)]
+    [SerializeField]
+    private float synergyRadius = 2.5f;
+
+    [Min(0.1f)]
+    [SerializeField]
+    private float synergyFeedbackLifetime = 1f;
+
     private readonly NetworkVariable<float> networkHealth =
         new NetworkVariable<float>();
 
     private float localHealth;
     private bool isDead;
+    private ElementalStatusController elementalStatus;
 
     public float CurrentHealth
     {
@@ -44,6 +68,7 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
     {
         localHealth = maxHealth;
         isDead = false;
+        elementalStatus = new ElementalStatusController();
     }
 
     public override void OnNetworkSpawn()
@@ -74,6 +99,31 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
         }
 
         RequestDamageRpc(damage);
+    }
+
+    public void RecordElement(ElementType element, ulong sourcePlayerId)
+    {
+        if ((IsSpawned && !IsServer) || isDead)
+        {
+            return;
+        }
+
+        elementalStatus ??= new ElementalStatusController();
+
+        if (!elementalStatus.TryApply(
+                element,
+                sourcePlayerId,
+                Time.time,
+                synergyWindow,
+                synergyInternalCooldown,
+                out SynergyReaction reaction
+            ))
+        {
+            return;
+        }
+
+        PlaySynergyFeedbackSynced(reaction);
+        ApplySynergyDamage(reaction);
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -156,6 +206,120 @@ public class EnemyHealth : NetworkBehaviour, IDamageable
         );
 
         Destroy(effect, hitEffectLifetime);
+    }
+
+    private void ApplySynergyDamage(SynergyReaction reaction)
+    {
+        if (reaction == SynergyReaction.Shock)
+        {
+            EnemyHealth nearest = FindNearestOtherEnemy();
+
+            if (nearest != null)
+            {
+                nearest.TakeDamage(synergyDamage);
+            }
+
+            return;
+        }
+
+        if (reaction != SynergyReaction.Shatter)
+        {
+            return;
+        }
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            transform.position,
+            synergyRadius,
+            1 << gameObject.layer
+        );
+        HashSet<int> damagedIds = new HashSet<int>();
+
+        foreach (Collider2D hit in hits)
+        {
+            EnemyHealth enemy = hit.GetComponentInParent<EnemyHealth>();
+
+            if (enemy == null || !damagedIds.Add(enemy.GetInstanceID()))
+            {
+                continue;
+            }
+
+            enemy.TakeDamage(synergyDamage);
+        }
+    }
+
+    private EnemyHealth FindNearestOtherEnemy()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            transform.position,
+            synergyRadius,
+            1 << gameObject.layer
+        );
+        EnemyHealth nearest = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (Collider2D hit in hits)
+        {
+            EnemyHealth candidate = hit.GetComponentInParent<EnemyHealth>();
+
+            if (candidate == null || candidate == this || candidate.isDead)
+            {
+                continue;
+            }
+
+            float distance = (candidate.transform.position - transform.position).sqrMagnitude;
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = candidate;
+            }
+        }
+
+        return nearest;
+    }
+
+    private void PlaySynergyFeedbackSynced(SynergyReaction reaction)
+    {
+        if (IsSpawned)
+        {
+            ShowSynergyFeedbackRpc(reaction);
+            return;
+        }
+
+        ShowSynergyFeedback(reaction);
+    }
+
+    [Rpc(SendTo.ClientsAndHost, InvokePermission = RpcInvokePermission.Server)]
+    private void ShowSynergyFeedbackRpc(SynergyReaction reaction)
+    {
+        ShowSynergyFeedback(reaction);
+    }
+
+    private void ShowSynergyFeedback(SynergyReaction reaction)
+    {
+        GameObject feedbackObject = new GameObject($"Synergy_{reaction}");
+        feedbackObject.transform.position = transform.position + Vector3.up * 0.8f;
+
+        TextMesh textMesh = feedbackObject.AddComponent<TextMesh>();
+        textMesh.text = reaction == SynergyReaction.Shock ? "감전!" : "분쇄!";
+        textMesh.color = reaction == SynergyReaction.Shock
+            ? ElementUtil.GetColor(ElementType.Lightning)
+            : ElementUtil.GetColor(ElementType.Ice);
+        textMesh.anchor = TextAnchor.MiddleCenter;
+        textMesh.alignment = TextAlignment.Center;
+        textMesh.characterSize = 0.15f;
+        textMesh.fontSize = 32;
+        MeshRenderer meshRenderer = feedbackObject.GetComponent<MeshRenderer>();
+        meshRenderer.sortingOrder = 20;
+
+        if (Application.isPlaying)
+        {
+            Destroy(feedbackObject, synergyFeedbackLifetime);
+        }
+        else
+        {
+            DestroyImmediate(feedbackObject);
+        }
     }
 
 

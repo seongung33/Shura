@@ -14,6 +14,7 @@ public struct SkillCastContext
     public ElementType Element;     // 습득 시 랜덤 부여된 속성
     public LayerMask EnemyLayer;
     public bool VisualOnly;         // 네트워크 표시용 복제본은 피해를 주지 않음
+    public ulong SourcePlayerId;    // 네트워크 소유자 ID. 로컬/미지정은 ulong.MaxValue
 }
 
 /// <summary>

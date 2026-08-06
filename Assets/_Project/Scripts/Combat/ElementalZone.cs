@@ -28,6 +28,7 @@ public class ElementalZone : MonoBehaviour
     private ElementType element;
     private LayerMask enemyLayer;
     private bool visualOnly;
+    private ulong sourcePlayerId;
 
     private bool isInitialized;
     private float nextTickTime;
@@ -36,13 +37,15 @@ public class ElementalZone : MonoBehaviour
         ElementType newElement,
         float newDamagePerTick,
         LayerMask newEnemyLayer,
-        bool newVisualOnly = false
+        bool newVisualOnly = false,
+        ulong newSourcePlayerId = ulong.MaxValue
     )
     {
         element = newElement;
         damagePerTick = newDamagePerTick;
         enemyLayer = newEnemyLayer;
         visualOnly = newVisualOnly;
+        sourcePlayerId = newSourcePlayerId;
 
         ElementVisuals.ApplyColor(gameObject, element);
 
@@ -110,9 +113,11 @@ public class ElementalZone : MonoBehaviour
                 continue;
             }
 
-            damageable.TakeDamage(damagePerTick);
+            IElementReceiver receiver =
+                enemyCollider.GetComponentInParent<IElementReceiver>();
+            receiver?.RecordElement(element, sourcePlayerId);
 
-            // TODO(연계): 장판 피해 시 적에게 (element, 플레이어 ID, 시간) 기록
+            damageable.TakeDamage(damagePerTick);
         }
     }
 
