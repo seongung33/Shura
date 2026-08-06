@@ -13,6 +13,8 @@ public class NetworkPlayerMovement : NetworkBehaviour
 
     private Vector2 moveInput;
 
+    public float SpeedMultiplier { get; set; } = 1f;
+
     private void Awake()
     {
         rigidBody = GetComponent<Rigidbody2D>();
@@ -70,7 +72,7 @@ public class NetworkPlayerMovement : NetworkBehaviour
         }
 
         rigidBody.linearVelocity =
-            moveInput * moveSpeed;
+            moveInput * moveSpeed * SpeedMultiplier;
     }
 
     public override void OnNetworkDespawn()
@@ -81,5 +83,7 @@ public class NetworkPlayerMovement : NetworkBehaviour
             rigidBody.linearVelocity =
                 Vector2.zero;
         }
+
+        SpeedMultiplier = 1f;
     }
 }

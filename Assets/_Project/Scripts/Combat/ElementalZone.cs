@@ -27,6 +27,7 @@ public class ElementalZone : MonoBehaviour
     private float damagePerTick;
     private ElementType element;
     private LayerMask enemyLayer;
+    private bool visualOnly;
 
     private bool isInitialized;
     private float nextTickTime;
@@ -34,19 +35,24 @@ public class ElementalZone : MonoBehaviour
     public void Initialize(
         ElementType newElement,
         float newDamagePerTick,
-        LayerMask newEnemyLayer
+        LayerMask newEnemyLayer,
+        bool newVisualOnly = false
     )
     {
         element = newElement;
         damagePerTick = newDamagePerTick;
         enemyLayer = newEnemyLayer;
+        visualOnly = newVisualOnly;
 
         ElementVisuals.ApplyColor(gameObject, element);
 
         // 스프라이트가 지름 1 유닛 기준일 때 radius에 맞게 크기 조정
         transform.localScale = Vector3.one * (radius * 2f);
 
-        Destroy(gameObject, duration);
+        if (Application.isPlaying)
+        {
+            Destroy(gameObject, duration);
+        }
 
         isInitialized = true;
     }
@@ -65,7 +71,10 @@ public class ElementalZone : MonoBehaviour
 
         nextTickTime = Time.time + tickInterval;
 
-        DamageEnemiesInside();
+        if (!visualOnly)
+        {
+            DamageEnemiesInside();
+        }
     }
 
     private void DamageEnemiesInside()
