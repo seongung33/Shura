@@ -31,6 +31,9 @@ public class NetworkTestUI : MonoBehaviour
     [SerializeField]
     private Button leaveRoomButton;
 
+    [SerializeField]
+    private Button backButton;
+
     private bool servicesReady;
     private bool initializationInProgress;
     private bool operationInProgress;
@@ -508,6 +511,12 @@ public class NetworkTestUI : MonoBehaviour
             leaveRoomButton.gameObject.SetActive(hasSession);
             leaveRoomButton.interactable =
                 hasSession && !operationInProgress;
+        }
+
+        if (backButton != null)
+        {
+            backButton.gameObject.SetActive(!hasSession);
+            backButton.interactable = !operationInProgress;
         }
     }
 }
