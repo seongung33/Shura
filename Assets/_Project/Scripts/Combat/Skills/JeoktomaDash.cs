@@ -47,9 +47,11 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
 
     private GameObject owner;
     private Shura.Player.PlayerController ownerController;
+    private NetworkPlayerMovement ownerNetworkMovement;
     private float damage;
     private ElementType element;
     private LayerMask enemyLayer;
+    private bool visualOnly;
 
     private bool isActive;
     private float endTime;
@@ -62,13 +64,21 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
         damage = context.Damage;
         element = context.Element;
         enemyLayer = context.EnemyLayer;
+        visualOnly = context.VisualOnly;
 
         ownerController =
             owner.GetComponent<Shura.Player.PlayerController>();
+        ownerNetworkMovement =
+            owner.GetComponent<NetworkPlayerMovement>();
 
         if (ownerController != null)
         {
             ownerController.SpeedMultiplier = speedMultiplier;
+        }
+
+        if (ownerNetworkMovement != null)
+        {
+            ownerNetworkMovement.SpeedMultiplier = speedMultiplier;
         }
 
         // 플레이어를 따라다니도록 부착
@@ -98,7 +108,10 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
             return;
         }
 
-        TrampleEnemies();
+        if (!visualOnly)
+        {
+            TrampleEnemies();
+        }
         TrySpawnZone();
     }
 
@@ -179,7 +192,8 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
         zone.Initialize(
             element,
             damage * zoneDamageMultiplier,
-            enemyLayer
+            enemyLayer,
+            visualOnly
         );
     }
 
@@ -189,9 +203,16 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
         {
             ownerController.SpeedMultiplier = 1f;
         }
+        if (ownerNetworkMovement != null)
+        {
+            ownerNetworkMovement.SpeedMultiplier = 1f;
+        }
 
         isActive = false;
 
-        Destroy(gameObject);
+        if (Application.isPlaying)
+        {
+            Destroy(gameObject);
+        }
     }
 }

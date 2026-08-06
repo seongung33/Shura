@@ -123,6 +123,7 @@
 | 네트워크 로비 | `Network/Lobby/NetworkGameFlowController.cs` | 2인·호스트 시작 조건과 NGO `Main` 씬 전환 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerMovement.cs` | 실제 네트워크 프리팹에서 사용하는 소유자 이동 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerOwnerSetup.cs` | 비소유 입력·공격·스킬 비활성화와 소유자 카메라 연결 |
+| 네트워크 스킬 | `Network/Player/NetworkSkillCastRelay.cs` | 소유자의 주몽 스킬 요청을 서버에서 허용 목록·쿨다운·발동 위치로 검증하고 서버 판정본과 비서버 시각 복제본 생성 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerHealth.cs`, `Network/Player/NetworkPlayerExperience.cs` | 서버 HP·사망·EXP·레벨 상태 복제 |
 | 네트워크 적 | `Network/Enemy/NetworkEnemyAuthoritySetup.cs` | 적 AI·공격·물리를 서버로 제한 |
 | 네트워크 스테이지 | `Network/Stage/NetworkStageBootstrap.cs` | `Main`에서 플레이어 보정과 스테이지 컴포넌트 런타임 조립 |
