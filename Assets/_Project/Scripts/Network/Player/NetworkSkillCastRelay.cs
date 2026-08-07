@@ -17,6 +17,8 @@ public class NetworkSkillCastRelay : NetworkBehaviour
 
     private readonly Dictionary<int, float> nextServerCastTimes =
         new Dictionary<int, float>();
+    private readonly Dictionary<int, ElementType> serverSkillElements =
+        new Dictionary<int, ElementType>();
 
     public bool TryCast(
         SkillData skill,
@@ -50,17 +52,20 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         ElementType element
     )
     {
-        if (!TryGetValidatedCast(
+        if (!IsValidElement(element) ||
+            !TryGetValidatedCast(
                 skillIndex,
                 origin,
                 direction,
                 out SkillData skill,
                 out Vector2 normalizedDirection
-            ))
+            ) ||
+            !TryValidateSkillElement(skillIndex, skill, element))
         {
             return;
         }
 
+        nextServerCastTimes[skillIndex] = Time.time + skill.Cooldown;
         SpawnSkill(skill, origin, normalizedDirection, element, false);
         SpawnSkillVisualRpc(skillIndex, origin, normalizedDirection, element);
     }
@@ -106,7 +111,6 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             return false;
         }
 
-        nextServerCastTimes[skillIndex] = now + skill.Cooldown;
         normalizedDirection = direction.normalized;
         return true;
     }
@@ -122,6 +126,31 @@ public class NetworkSkillCastRelay : NetworkBehaviour
 
         skill = allowedSkills[index];
         return skill != null && skill.SkillPrefab != null;
+    }
+
+    private bool TryValidateSkillElement(
+        int skillIndex,
+        SkillData skill,
+        ElementType element
+    )
+    {
+        if (skill.SkillId == "basic_arrow")
+        {
+            return element == ElementType.None;
+        }
+
+        if (element == ElementType.None)
+        {
+            return false;
+        }
+
+        if (serverSkillElements.TryGetValue(skillIndex, out ElementType assigned))
+        {
+            return assigned == element;
+        }
+
+        serverSkillElements[skillIndex] = element;
+        return true;
     }
 
     private void SpawnSkill(
@@ -157,7 +186,8 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             ProjectileSpeed = skill.ProjectileSpeed,
             Element = element,
             EnemyLayer = enemyLayer,
-            VisualOnly = visualOnly
+            VisualOnly = visualOnly,
+            SourcePlayerId = OwnerClientId
         });
     }
 
@@ -167,5 +197,11 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             !float.IsNaN(value.y) &&
             !float.IsInfinity(value.x) &&
             !float.IsInfinity(value.y);
+    }
+
+    private static bool IsValidElement(ElementType element)
+    {
+        int value = (int)element;
+        return value >= (int)ElementType.None && value <= (int)ElementType.Fire;
     }
 }

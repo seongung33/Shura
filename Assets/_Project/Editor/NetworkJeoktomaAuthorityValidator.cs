@@ -100,7 +100,8 @@ public static class NetworkJeoktomaAuthorityValidator
                 Damage = TestDamage,
                 Element = ElementType.None,
                 EnemyLayer = 1 << EnemyLayer,
-                VisualOnly = true
+                VisualOnly = true,
+                SourcePlayerId = ulong.MaxValue
             });
 
             if (movement.SpeedMultiplier <= 1f)

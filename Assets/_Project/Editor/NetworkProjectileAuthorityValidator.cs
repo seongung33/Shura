@@ -58,7 +58,8 @@ public static class NetworkProjectileAuthorityValidator
                 ProjectileSpeed = 0f,
                 Element = ElementType.None,
                 EnemyLayer = 1 << EnemyLayer,
-                VisualOnly = visualOnly
+                VisualOnly = visualOnly,
+                SourcePlayerId = ulong.MaxValue
             });
 
             InvokeNonPublic(projectile, "OnTriggerEnter2D", targetCollider);

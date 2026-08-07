@@ -177,7 +177,8 @@ public class AutoSkillCaster : MonoBehaviour
             ProjectileSpeed = skill.data.ProjectileSpeed,
             Element = skill.element,
             EnemyLayer = enemyLayer,
-            VisualOnly = false
+            VisualOnly = false,
+            SourcePlayerId = ulong.MaxValue
         };
 
         skillBehaviour.Cast(context);

@@ -54,8 +54,8 @@
 - `ElementType` / `ElementVisuals`: 7속성 정의와 속성별 색 적용 — 구현됨
 - `JeoktomaDash`: 캐릭터 전용 스킬 예시(버프+장판형) — 구현됨
 - `Projectile`(유도형), `SkillRunner`: 초기 구조. 현재 주몽에는 미사용하며 재사용 대비 보존
-- `ElementApplier`: 명중한 적에게 (속성, 플레이어 ID, 시간) 기록 — **미구현**
-- `SynergyResolver`: 기록된 속성을 확인해 연계 반응 결정 — **미구현**
+- `IElementReceiver` / `ElementalStatusController`: 명중한 적에게 속성·플레이어 ID·시간 기록 — 구현됨
+- `SynergyResolver`: 물+번개의 감전, 얼음+흙의 분쇄 조합 판정 — 구현됨
 
 ### Player
 
@@ -331,7 +331,7 @@ AutoSkillCaster.EquippedSkill:
 6. 사용한 속성을 소비하거나 내부 쿨다운을 적용한다.
 
 핵심 판정은 한 곳에서만 수행한다. 각 공격 코드에 시너지 조합을 직접 작성하지 않는다.
-현재 연결 지점은 `StraightProjectile.OnTriggerEnter2D`와 `ElementalZone.DamageEnemiesInside`의 `TODO(연계)` 주석이다. 무작위 속성은 공격마다 다시 뽑지 않고 스킬 습득 시 정해 그 판 동안 유지한다.
+`StraightProjectile`, `ElementalZone`, `JeoktomaDash`는 조합을 직접 알지 않고 `IElementReceiver`에 속성·서버가 확인한 플레이어 ID만 전달한다. `ElementalStatusController`가 서로 다른 플레이어와 제한 시간·내부 쿨다운을 확인하고 `SynergyResolver`가 감전·분쇄를 판정한다. 무작위 속성은 공격마다 다시 뽑지 않고 첫 서버 시전에서 스킬별 속성을 고정해 그 판 동안 유지한다.
 
 ## 7. 멀티플레이 권한 원칙
 
