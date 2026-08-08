@@ -17,3 +17,11 @@ MonoBehaviour:
   description: "\uBE60\uB978 \uD654\uC0B4\uACFC \uACF5\uACA9\uC73C\uB85C \uC801\uC744
     \uAD00\uD1B5\uD558\uACE0 \uD3ED\uBC1C\uC2DC\uD0A4\uB294 \uC6D0\uAC70\uB9AC \uC601\uC6C5"
   portrait: {fileID: 6181904971353062520, guid: 7543703d969ca9748a58cd386b02e68e, type: 3}
+  gameplayVisualPrefab: {fileID: 8511967789212467204, guid: a105977df30cf894a916a77bf52a8ff7, type: 3}
+  maxHealth: 100
+  moveSpeed: 5
+  basicSkill: {fileID: 11400000, guid: 314896e113a3c04458d39cb923046d5e, type: 2}
+  startingSkills:
+  - {fileID: 11400000, guid: b94bc1cafa5e7c8488c3ac8bba38c81c, type: 2}
+  - {fileID: 11400000, guid: 1c1287c5d0b4c3540b7d3d74a788ee34, type: 2}
+  - {fileID: 11400000, guid: 43082ef0076ab49418911e9ef22af01a, type: 2}

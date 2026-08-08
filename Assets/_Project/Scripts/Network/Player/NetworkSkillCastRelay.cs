@@ -20,6 +20,27 @@ public class NetworkSkillCastRelay : NetworkBehaviour
     private readonly Dictionary<int, ElementType> serverSkillElements =
         new Dictionary<int, ElementType>();
 
+    public void ConfigureAllowedSkills(
+        SkillData basicSkill,
+        IReadOnlyList<SkillData> startingSkills
+    )
+    {
+        allowedSkills.Clear();
+
+        AddAllowedSkill(basicSkill);
+
+        if (startingSkills != null)
+        {
+            foreach (SkillData skill in startingSkills)
+            {
+                AddAllowedSkill(skill);
+            }
+        }
+
+        nextServerCastTimes.Clear();
+        serverSkillElements.Clear();
+    }
+
     public bool TryCast(
         SkillData skill,
         Vector2 origin,
@@ -126,6 +147,14 @@ public class NetworkSkillCastRelay : NetworkBehaviour
 
         skill = allowedSkills[index];
         return skill != null && skill.SkillPrefab != null;
+    }
+
+    private void AddAllowedSkill(SkillData skill)
+    {
+        if (skill != null && !allowedSkills.Contains(skill))
+        {
+            allowedSkills.Add(skill);
+        }
     }
 
     private bool TryValidateSkillElement(

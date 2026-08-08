@@ -130,6 +130,7 @@
 | 네트워크 게임 진입 | `Network/Lobby/NetworkGameFlowController.cs` | 호스트·최소 인원 조건과 NGO `Main` 씬 전환. 현재 정식 씬 직렬화값은 최소 1명·최대 2명 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerMovement.cs` | 실제 네트워크 프리팹에서 사용하는 소유자 이동 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerOwnerSetup.cs` | 비소유 입력·공격·스킬 비활성화와 소유자 카메라 연결 |
+| 네트워크 플레이어 | `Network/Player/NetworkPlayerCharacter.cs` | 서버가 로비 선택 ID를 플레이어 `NetworkVariable`에 보존하고 모든 클라이언트에서 외형·체력·이동속도·기본공격·시작 스킬 적용 |
 | 네트워크 스킬 | `Network/Player/NetworkSkillCastRelay.cs` | 소유자의 주몽 스킬 요청을 서버에서 허용 목록·쿨다운·발동 위치로 검증하고 서버 판정본과 비서버 시각 복제본 생성 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerHealth.cs`, `Network/Player/NetworkPlayerExperience.cs` | 서버 HP·사망·EXP·레벨 상태 복제 |
 | 네트워크 적 | `Network/Enemy/NetworkEnemyAuthoritySetup.cs` | 적 AI·공격·물리를 서버로 제한 |
@@ -227,9 +228,9 @@ PlayerAutoAttack
 
 ### 4.7 현재 구현 시 주의점
 
-- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이다. 네트워크 프리팹에는 충돌·체력·경험치·기본 공격·주몽 P0 스킬이 이관됐고 투사체·장판·속성·연계는 서버 판정/RPC 시각 복제 경로가 있다. 다만 스킬 오브젝트 자체의 상태 복제, 캐릭터 선택 적용, 지연 보정과 실제 2인 회귀가 남았으므로 일반 전투 전체가 완전 동기화되었다고 가정하지 않는다.
-- `MultiPlayerLobby`의 캐릭터 선택은 서버가 슬롯별 ID를 복제하고 양쪽 UI에 표시하는 데까지만 연결됐다. `TryGetPlayerSelection`을 전투 시작 시 읽는 코드가 없고 `NetworkPlayer.prefab`은 선택과 무관한 고정 구성·스프라이트를 사용하므로 선택 결과가 외형·스킬·스탯에 적용된다고 가정하지 않는다.
-- `NetworkPlayer.prefab`의 `CharacterVisualRoot`는 현재 비어 있고 `JumongVisual.prefab`은 `PlayerTest`에서만 참조된다. 주몽 애니메이션이 정식 네트워크 플레이어에 연결됐는지는 실행 이전에 프리팹 구성을 보완·검증해야 한다.
+- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이다. 네트워크 프리팹에는 충돌·체력·경험치·기본 공격·주몽 P0 스킬이 이관됐고 투사체·장판·속성·연계는 서버 판정/RPC 시각 복제 경로가 있다. 다만 스킬 오브젝트 자체의 상태 복제, 지연 보정과 실제 2인 회귀가 남았으므로 일반 전투 전체가 완전 동기화되었다고 가정하지 않는다.
+- `MultiPlayerLobby`의 슬롯별 선택 ID는 서버가 각 `NetworkPlayerCharacter`의 `NetworkVariable`로 옮겨 씬 전환 후에도 보존한다. 모든 클라이언트는 같은 `CharacterData` 순서로 ID를 해석해 외형·체력·이동속도·기본공격·시작 스킬을 적용한다.
+- `NetworkPlayer.prefab`의 `CharacterVisualRoot`는 `JumongData`의 `JumongVisual.prefab`을 런타임에 생성한다. 현재 선택지는 주몽 1종이며, 추가 캐릭터는 모든 클라이언트에서 동일한 `CharacterData` 목록 순서를 유지해야 한다.
 - 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·방향 추적·주몽 기본공격·자동 스킬·경험치 획득을 활성화하고 카메라 대상을 연결한다. 새 방향 공격이 있으면 기존 유도형 `PlayerAutoAttack`은 중복 실행하지 않는다.
 - `NetworkPlayerHealth`는 서버 쓰기 체력·사망 상태를 모든 클라이언트에 반영하고 기존 `PlayerHealth.CurrentHealth`, `MaxHealth`, `IsDead`, `onDeath` 계약을 유지한다. 적 접촉 피해는 서버에서 적용하며 소유 플레이어의 회복 요청은 서버 RPC를 거친다. 회복 픽업 자체의 생성·제거와 전체 승패 상태 동기화는 후속 작업이다.
 - `Enemy.prefab`은 기본 네트워크 프리팹 목록에 등록되어 있다. 네트워크 세션에서는 `EnemySpawner`와 적 이동·공격 시뮬레이션을 서버로 제한한다. 클라이언트 적은 Kinematic 충돌 대상으로 유지해 소유자 로컬 투사체가 명중 요청을 보낼 수 있고, 서버가 체력 감소와 제거를 최종 처리한다. 현재 요청은 피해량·명중 위치를 엄격히 재검증하지 않는 프로토타입 경계이며, 경험치 드롭과 투사체 자체의 네트워크 동기화는 후속 작업이다.
