@@ -16,8 +16,11 @@ public class NetworkGameFlowController : MonoBehaviour
     [SerializeField] private UnityEvent<string> onStatusChanged;
     [SerializeField] private Button startGameButton;
     [SerializeField] private TMP_Text playerCountText;
+    private TMP_Text statusText;
 
     private bool callbacksRegistered;
+    private bool lobbyUiBound;
+    private bool sceneLoadInProgress;
 
     public int ConnectedPlayerCount =>
         networkManager != null && networkManager.IsListening
@@ -28,6 +31,7 @@ public class NetworkGameFlowController : MonoBehaviour
         networkManager != null &&
         networkManager.IsServer &&
         networkManager.IsListening &&
+        !sceneLoadInProgress &&
         ConnectedPlayerCount >= minimumPlayers;
 
     private void Awake()
@@ -54,8 +58,55 @@ public class NetworkGameFlowController : MonoBehaviour
         UnregisterCallbacks();
     }
 
+    public void BindLobbyUI(
+        Button button,
+        TMP_Text countText,
+        TMP_Text lobbyStatusText)
+    {
+        if (startGameButton != null)
+        {
+            startGameButton.onClick.RemoveListener(StartGame);
+        }
+
+        startGameButton = button;
+        playerCountText = countText;
+        statusText = lobbyStatusText;
+        lobbyUiBound = true;
+
+        if (startGameButton != null)
+        {
+            startGameButton.onClick.RemoveListener(StartGame);
+            startGameButton.onClick.AddListener(StartGame);
+            startGameButton.gameObject.SetActive(true);
+        }
+
+        RefreshState();
+    }
+
+    public void UnbindLobbyUI(Button button)
+    {
+        if (startGameButton != button)
+            return;
+
+        if (startGameButton != null)
+        {
+            startGameButton.onClick.RemoveListener(StartGame);
+        }
+
+        startGameButton = null;
+        playerCountText = null;
+        statusText = null;
+        lobbyUiBound = false;
+    }
+
+
     public void StartGame()
     {
+        if (sceneLoadInProgress)
+        {
+            return;
+        }
+
         if (networkManager == null)
         {
             SetStatus("NetworkManager를 찾을 수 없습니다.");
@@ -86,6 +137,13 @@ public class NetworkGameFlowController : MonoBehaviour
             return;
         }
 
+        sceneLoadInProgress = true;
+
+        if (startGameButton != null)
+        {
+            startGameButton.interactable = false;
+        }
+
         NetworkStageBootstrap.CachePlayerPrefab(
             networkManager.NetworkConfig.PlayerPrefab
         );
@@ -108,6 +166,8 @@ public class NetworkGameFlowController : MonoBehaviour
 
         if (result != SceneEventProgressStatus.Started)
         {
+            sceneLoadInProgress = false;
+            RefreshState();
             SetStatus($"게임 씬 전환을 시작하지 못했습니다: {result}");
             return;
         }
@@ -152,9 +212,10 @@ public class NetworkGameFlowController : MonoBehaviour
         if (startGameButton != null)
         {
             startGameButton.gameObject.SetActive(
-                networkManager != null &&
-                networkManager.IsListening &&
-                networkManager.IsServer
+                lobbyUiBound ||
+                (networkManager != null &&
+                 networkManager.IsListening &&
+                 networkManager.IsServer)
             );
             startGameButton.interactable = canStartGame;
         }
@@ -178,10 +239,17 @@ public class NetworkGameFlowController : MonoBehaviour
         }
         else if (!networkManager.IsServer)
         {
-            SetStatus(
-                $"호스트가 게임을 시작하기를 기다리는 중입니다. " +
-                $"({playerCount}/{maximumPlayers})"
-            );
+            if (lobbyUiBound)
+            {
+                SetStatus("호스트가 게임을 시작하기를 기다리는 중입니다.");
+            }
+            else
+            {
+                SetStatus(
+                    $"호스트가 게임을 시작하기를 기다리는 중입니다. " +
+                    $"({playerCount}/{maximumPlayers})"
+                );
+            }
         }
         else
         {
@@ -191,6 +259,11 @@ public class NetworkGameFlowController : MonoBehaviour
 
     private void SetStatus(string message)
     {
+        if (statusText != null)
+        {
+            statusText.text = message;
+        }
+
         onStatusChanged?.Invoke(message);
         Debug.Log(message);
     }

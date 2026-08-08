@@ -9,11 +9,20 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
-    path: Assets/_Project/Scenes/Tests/NetworkTest.unity
-    guid: 943677227a10da24cb67f372f05a55db
+    path: Assets/_Project/Scenes/MainMenu.unity
+    guid: 5e6ce3635398fba4599de97147f5b9ec
+  - enabled: 1
+    path: Assets/_Project/Scenes/MultiPlayerEntry.unity
+    guid: a85c4af4d55a6884297e448861aa941a
+  - enabled: 1
+    path: Assets/_Project/Scenes/MultiPlayerLobby.unity
+    guid: f6b798981baa9fb458e6f6ea739d274c
   - enabled: 1
     path: Assets/_Project/Scenes/Main.unity
     guid: 9a7dadb7460f6a34fabd2ae59bae0628
+  - enabled: 1
+    path: Assets/_Project/Scenes/Tests/NetworkTest.unity
+    guid: 943677227a10da24cb67f372f05a55db
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
