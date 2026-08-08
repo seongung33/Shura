@@ -1,9 +1,9 @@
 # 주몽 기본공격·P0 스킬 Unity 세팅 가이드
 
-> 2026년 7월 31일 구현 당시의 세팅 가이드다. 현재 생성 완료된 에셋과 연결 상태는 `IMPL_2026-07-31_JUMONG_SKILLS.md`, 최신 진행은 `12_CURRENT_PROJECT_STATUS.md`를 확인한다. SkillData는 현재 로컬 작업에서 `ScriptableObjects/Skills/Jumong/`으로 이동 중이다.
+> 2026년 7월 31일 구현 당시의 세팅 가이드다. 현재 생성 완료된 에셋과 연결 상태는 `IMPL_2026-07-31_JUMONG_SKILLS.md`, 최신 진행은 `12_CURRENT_PROJECT_STATUS.md`를 확인한다. SkillData는 현재 `ScriptableObjects/Skills/Jumong/`에 커밋되어 있다.
 
 작성: 2026-07-30. 신규 스크립트는 코드만으로는 동작하지 않고 아래 에디터 세팅이 필요하다.
-테스트는 `Tests/CombatTest.unity`에서 진행한다.
+아래 절차는 당시 `Tests/CombatTest.unity` 기준이다. 현재 그 씬은 구성이 불완전하므로 로컬 회귀는 `PlayerTest`·`StageTest`, 네트워크 회귀는 정식 멀티 흐름을 사용한다.
 
 ## 1. 추가된 파일
 
@@ -102,7 +102,7 @@ Skill_Jeoktoma (루트, 빈 오브젝트)
 
 ## 4. SkillData 에셋 (생성 완료 — 프리팹 연결만 필요)
 
-`ScriptableObjects/Skills/`에 아래 4개가 이미 생성되어 있다 (수치는 임시값, 테스트 후 조정).
+`ScriptableObjects/Skills/Jumong/`에 아래 4개가 생성되어 있다 (수치는 임시값, 테스트 후 조정).
 **Skill Prefab 칸은 비어 있으므로** 3장의 프리팹 제작 후 Inspector에서 연결할 것:
 
 | 에셋 | displayName | cooldown | damage | range | projectileSpeed | skillPrefab |
@@ -123,9 +123,11 @@ Skill_Jeoktoma (루트, 빈 오브젝트)
 7. 적토마: 시전 중 이동 속도 증가, 지나간 자리 장판 생성, 장판 위 적 틱 피해
 8. AutoSkillCaster 우클릭 → "모든 스킬 속성 랜덤 재부여"로 색 변화 확인
 
-## 6. 알려진 제한 (다음 작업)
+## 6. 2026-07-31 당시 알려진 제한
 
 - 명중 시 속성 기록 → SynergyResolver 연계 판정 미구현 (TODO 주석 위치 참조)
 - 적토마 중첩 시전 시 이속 배율이 단순 초기화됨 (MVP 허용)
 - 멀티플레이 동기화 미적용 — 로컬 기준
 - 스킬 습득 UI(레벨 3택1) 미구현 — `AutoSkillCaster.EquipSkill()`이 연결 지점
+
+2026-08-09 기준으로 속성 기록·감전·분쇄와 네트워크 스킬 서버 권한 코드는 추가되었다. 실제 2인 표시·연계 피드백, 레벨 3택1, 캐릭터 선택값의 전투 적용은 아직 실행 검증 또는 구현이 필요하다.

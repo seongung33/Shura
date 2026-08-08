@@ -1,6 +1,6 @@
 # Shura 기술 설계서
 
-> 최종 구조 정리: **2026-08-03 KST**
+> 최종 구조 정리: **2026-08-09 KST**
 > 이 문서는 코드 계약과 런타임 구조의 정본이다. 현재 구현·브랜치 상태는 `12_CURRENT_PROJECT_STATUS.md`, 검증 결과는 `10_TEST_PLAN.md`를 따른다.
 
 ## 1. 기술 목표
@@ -119,8 +119,15 @@
 | 아이템 | `Item/HealthPickup.cs` | 플레이어 체력을 회복하고 실제 회복 성공 시에만 픽업 제거 |
 | 아이템 | `Item/MagnerPickup.cs` | 씬의 경험치 구체를 플레이어에게 유도. 파일명의 `Magner` 오탈자는 정리 필요 |
 | 카메라 | `Camera/CameraFollow.cs` | `LateUpdate`에서 지정 대상을 보간 추적 |
-| 네트워크 로비 | `Network/Lobby/NetworkTestUI.cs` | UGS 초기화, Relay 세션 생성·참가·퇴장·재접속과 로비 컨트롤 |
-| 네트워크 로비 | `Network/Lobby/NetworkGameFlowController.cs` | 2인·호스트 시작 조건과 NGO `Main` 씬 전환 |
+| 메뉴 | `UI/StartMenuController.cs` | `MainMenu`에서 `MultiPlayerEntry`로, 입장 화면에서 `MainMenu`로 일반 씬 전환. 싱글플레이 연결은 없음 |
+| 캐릭터 데이터·UI | `Data/CharacterData.cs`, `UI/CharacterListUI.cs`, `UI/CharacterSlotUI.cs`, `UI/CharacterInfoUI.cs`, `UI/MyPlayerSlotUI.cs` | 캐릭터 이름·역할·설명·초상화 데이터와 슬롯 생성·선택 표시. 현재 데이터는 주몽 1개 |
+| 레거시 네트워크 로비 | `Network/Lobby/NetworkTestUI.cs` | `Tests/NetworkTest` 전용 UGS·Relay 생성·참가·퇴장·재접속. 정식 메뉴 경로와 별도 유지 |
+| 멀티 입장 | `Network/Player/MultiplayerEntryUI.cs` | `MultiPlayerEntry`의 UGS 초기화, Relay 2인 세션 생성·코드 참가·퇴장과 실패 정리 |
+| 네트워크 세션 | `Network/Lobby/NetworkSessionState.cs` | 정식 멀티 흐름의 `ISession`과 참가 코드를 `NetworkManager`에 보관하고 네트워크 상태 이벤트 중계 |
+| 네트워크 로비 전환 | `Network/Lobby/NetworkLobbySceneLoader.cs` | 호스트 네트워크·참가 코드 준비 후 NGO로 `MultiPlayerLobby` 로드, PlayerObject 보존 |
+| 네트워크 로비 상태 | `Network/Lobby/NetworkLobbyState.cs` | 최대 2개 슬롯의 클라이언트 ID·캐릭터 ID를 서버 쓰기 `NetworkVariable`로 복제 |
+| 네트워크 로비 UI | `Network/Lobby/MultiplayerLobbyUI.cs`, `Network/Lobby/MultiplayerLobbyExitController.cs` | 참가 코드·접속 인원·호스트 시작 UI 바인딩, 세션 종료 후 `MultiPlayerEntry` 복귀 |
+| 네트워크 게임 진입 | `Network/Lobby/NetworkGameFlowController.cs` | 호스트·최소 인원 조건과 NGO `Main` 씬 전환. 현재 정식 씬 직렬화값은 최소 1명·최대 2명 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerMovement.cs` | 실제 네트워크 프리팹에서 사용하는 소유자 이동 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerOwnerSetup.cs` | 비소유 입력·공격·스킬 비활성화와 소유자 카메라 연결 |
 | 네트워크 스킬 | `Network/Player/NetworkSkillCastRelay.cs` | 소유자의 주몽 스킬 요청을 서버에서 허용 목록·쿨다운·발동 위치로 검증하고 서버 판정본과 비서버 시각 복제본 생성 |
@@ -132,7 +139,7 @@
 | 네트워크 결과 전환 | `Network/Result/NetworkGameResultActions.cs` | 호스트 재시작과 모든 참가자의 로비 복귀 |
 | 로컬 UI | `UI/HUDController.cs` | `StageTest` 등 로컬 씬의 HP·레벨·EXP와 결과 표시 |
 
-`SynergyResolver`, `StatusEffectController`, `LevelUpChoiceGenerator` 등 실제 파일이 없는 이름은 계획이다.
+`SynergyResolver`는 `Combat/Element/SynergyResolver.cs`로 구현되어 있다. `StatusEffectController`, `LevelUpChoiceGenerator` 등 실제 파일이 없는 이름은 계획이다.
 
 ### 4.3 스킬 생성·실행 규칙
 
@@ -166,7 +173,7 @@ PlayerAutoAttack
 - `TryRun`이 `true`를 반환한 뒤에만 발동 측 쿨다운을 갱신한다. 데이터·대상·프리팹·`Projectile`이 없어서 실패한 경우에는 쿨다운을 소비하지 않는다.
 - `SkillRunner.firePoint`가 연결되어 있으면 그 위치에서, 없으면 `SkillRunner`가 붙은 오브젝트 위치에서 생성한다.
 - 현재 `SkillRunner`가 실행하는 프리팹의 루트에는 `Projectile` 컴포넌트가 있어야 한다. 다른 실행 방식의 스킬을 추가할 때 기존 `TryRun`의 의미를 몰래 바꾸지 말고 실행 타입과 호환 방식을 먼저 설계한다.
-- 주몽 SkillData는 `ScriptableObjects/Skills/Jumong` 경로로 이동 중이다. `.meta` GUID와 프리팹 참조를 보존한 뒤 커밋한다.
+- 주몽 SkillData 4개는 `ScriptableObjects/Skills/Jumong` 경로에 커밋되어 있으며 기존 `.meta` GUID와 프리팹 참조를 유지한다.
 
 ### 4.4 피해 처리 규칙
 
@@ -216,11 +223,13 @@ PlayerAutoAttack
 - 라운드 종료: 일반 적 생성을 중지하고 `GameManager`가 보스 프리팹 생성
 - 현재 로컬 보스 참조: `BossJangsanTiger.prefab`
 
-`Main.unity`에는 정적 플레이어·스테이지 오브젝트를 두지 않는다. `NetworkStageBootstrap`이 로비에서 넘어온 `NetworkPlayer`를 유지하고 60초·20초·40초 설정으로 스테이지 컴포넌트를 조립한다. 현재 `Main`의 보스 참조는 일반 `Enemy.prefab`이므로 장산범을 별도로 연결해야 한다.
+`Main.unity`에는 정적 플레이어·스테이지 오브젝트를 두지 않는다. `NetworkStageBootstrap`이 로비에서 넘어온 `NetworkPlayer`를 유지하고 60초·20초·40초 설정으로 스테이지 컴포넌트를 조립한다. 일반 적은 `Enemy.prefab`, 보스는 `BossJangsanTiger.prefab`을 참조한다.
 
 ### 4.7 현재 구현 시 주의점
 
-- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이지만, 네트워크 프리팹에도 현재 전투용 충돌·체력·경험치·기본 공격 구성을 이관했다. 체력·사망·경험치 수치는 서버 권한으로 동기화하지만, 투사체 생성·속성 판정과 전체 게임 상태는 아직 완전 동기화되지 않았으므로 일반 전투 전체가 동기화되었다고 가정하지 않는다.
+- 일반 전투용 `Player.prefab`과 `NetworkPlayer.prefab`은 별도 프리팹이다. 네트워크 프리팹에는 충돌·체력·경험치·기본 공격·주몽 P0 스킬이 이관됐고 투사체·장판·속성·연계는 서버 판정/RPC 시각 복제 경로가 있다. 다만 스킬 오브젝트 자체의 상태 복제, 캐릭터 선택 적용, 지연 보정과 실제 2인 회귀가 남았으므로 일반 전투 전체가 완전 동기화되었다고 가정하지 않는다.
+- `MultiPlayerLobby`의 캐릭터 선택은 서버가 슬롯별 ID를 복제하고 양쪽 UI에 표시하는 데까지만 연결됐다. `TryGetPlayerSelection`을 전투 시작 시 읽는 코드가 없고 `NetworkPlayer.prefab`은 선택과 무관한 고정 구성·스프라이트를 사용하므로 선택 결과가 외형·스킬·스탯에 적용된다고 가정하지 않는다.
+- `NetworkPlayer.prefab`의 `CharacterVisualRoot`는 현재 비어 있고 `JumongVisual.prefab`은 `PlayerTest`에서만 참조된다. 주몽 애니메이션이 정식 네트워크 플레이어에 연결됐는지는 실행 이전에 프리팹 구성을 보완·검증해야 한다.
 - 일반 플레이어와 네트워크 플레이어 이동은 모두 Input Actions의 `OnMove` 콜백을 사용한다. `NetworkPlayerOwnerSetup`은 소유 플레이어에서만 입력·방향 추적·주몽 기본공격·자동 스킬·경험치 획득을 활성화하고 카메라 대상을 연결한다. 새 방향 공격이 있으면 기존 유도형 `PlayerAutoAttack`은 중복 실행하지 않는다.
 - `NetworkPlayerHealth`는 서버 쓰기 체력·사망 상태를 모든 클라이언트에 반영하고 기존 `PlayerHealth.CurrentHealth`, `MaxHealth`, `IsDead`, `onDeath` 계약을 유지한다. 적 접촉 피해는 서버에서 적용하며 소유 플레이어의 회복 요청은 서버 RPC를 거친다. 회복 픽업 자체의 생성·제거와 전체 승패 상태 동기화는 후속 작업이다.
 - `Enemy.prefab`은 기본 네트워크 프리팹 목록에 등록되어 있다. 네트워크 세션에서는 `EnemySpawner`와 적 이동·공격 시뮬레이션을 서버로 제한한다. 클라이언트 적은 Kinematic 충돌 대상으로 유지해 소유자 로컬 투사체가 명중 요청을 보낼 수 있고, 서버가 체력 감소와 제거를 최종 처리한다. 현재 요청은 피해량·명중 위치를 엄격히 재검증하지 않는 프로토타입 경계이며, 경험치 드롭과 투사체 자체의 네트워크 동기화는 후속 작업이다.
@@ -229,6 +238,7 @@ PlayerAutoAttack
 - `EnemyController`는 `Start`와 `FixedUpdate`에서 플레이어를 찾는 현재 코드 흐름이 서로 다르므로 추적 로직을 수정할 때 두 경로를 함께 확인한다.
 - `GameManager`는 현재 `PlayerHealth.IsDead`를 매 프레임 확인한다. `PlayerHealth.onDeath` 이벤트 기반으로 바꾸는 경우 관련 담당자와 공개 계약을 함께 갱신한다.
 - `GameManager`의 보스 사망 판정은 생성된 GameObject가 제거되었는지를 본다. 네트워크 세션에서는 서버만 보스를 생성·판정하고 `NetworkGameResultState`에 승리를 전달한다.
+- `NetworkGameResultActions`와 `NetworkPlayer.prefab`의 결과 후 로비 이름은 아직 `NetworkTest`다. 새 정식 흐름의 `MultiPlayerEntry` 또는 `MultiPlayerLobby`로 돌아가지 않으므로 두 로비 체계를 통합해야 한다.
 - 현재 `CombatTest`는 사실상 카메라만 있는 상태이므로 전투 회귀의 정본 씬으로 사용하기 전에 구성을 복구하거나 `PlayerTest`·`StageTest`로 테스트 기준을 통일한다.
 - `PlayerHealthDebugTester`는 Space 키 피해 확인용 테스트 컴포넌트다. 실제 공격 시스템의 필수 구성요소로 사용하지 않는다.
 
@@ -261,8 +271,12 @@ PlayerHealth.IsDead == true
 
 | 씬 | 책임 | 주의 |
 |---|---|---|
-| `Tests/NetworkTest.unity` | Relay 로비, NetworkManager, 2인 시작 | 제출용 메뉴 외형은 별도 정리 필요 |
+| `MainMenu.unity` | 정식 첫 화면과 멀티 진입 | 멀티 버튼만 연결. 싱글·종료 버튼은 실행 이벤트 없음 |
+| `MultiPlayerEntry.unity` | UGS·Relay 생성/참가, `NetworkManager` 생성 | 비활성 레거시 `NetworkTestUI` 오브젝트가 남아 있음 |
+| `MultiPlayerLobby.unity` | 참가 코드·2슬롯·주몽 선택·호스트 시작·나가기 | 선택은 전투에 미적용, 시작 최소 인원 직렬화값 1 |
 | `Main.unity` | 실제 네트워크 한 판 | 정적 Player를 추가하지 않음 |
+| `CharacterSelect.unity` | 독립 캐릭터 선택 UI 초안 | Build Scene List 제외, 시작·뒤로 버튼 미연결, 싱글 흐름 없음 |
+| `Tests/NetworkTest.unity` | 레거시 Relay 로비와 2인 회귀 | 정식 메뉴 흐름의 완료 판정에 사용하지 않음 |
 | `Tests/StageTest.unity` | 네트워크 없는 스테이지·스킬·아이템 회귀 | 최종 게임 씬이나 Build 진입점이 아님 |
 | `Tests/PlayerTest.unity` | 플레이어 단위 기능 | 통합 흐름 완료 판정에 사용하지 않음 |
 | `Tests/CombatTest.unity` | 현재 구성이 불완전한 과거 테스트 씬 | 복구 전 정본 테스트로 사용하지 않음 |
@@ -346,16 +360,22 @@ AutoSkillCaster.EquippedSkill:
 
 ### 네트워크 로비와 진입 장면
 
-`NetworkTest.unity`는 현재 다음 책임을 가진다.
+정식 씬 흐름은 다음 책임으로 분리되어 있다.
 
-- UGS 초기화와 익명 로그인
-- Relay 방 생성·코드 참가·퇴장
-- NGO `NetworkManager`와 네트워크 플레이어 생성
-- 실제 접속 인원 표시
-- 2명 접속 시 호스트 전용 게임 시작
-- NGO SceneManager를 통한 `Main` 전환
+```text
+MainMenu
+→ MultiPlayerEntry: UGS 초기화·익명 로그인, Relay 방 생성/코드 참가
+→ MultiPlayerLobby: 참가 코드·2슬롯 캐릭터 선택·호스트 시작
+→ Main: 네트워크 한 판
+```
 
-Relay 외부 접속, `Main` 동시 전환과 정상 로비 복귀는 확인했다. 생성·참가 실패 세션 정리와 서비스 초기화 재시도 API가 있다. 강제 종료·호스트 이탈·로비 복귀 후 새 방·Web은 별도 회귀가 필요하다.
+- `MultiPlayerEntry`의 `NetworkManager`는 `UnityTransport`, NGO, `NetworkGameFlowController`, `NetworkSessionState`, `NetworkLobbySceneLoader`를 가진다.
+- 호스트는 세션과 네트워크 준비 후 NGO SceneManager로 `MultiPlayerLobby`를 로드하고, 게스트는 호스트의 현재 씬에 동기화된다.
+- `MultiPlayerLobby`의 씬 배치 `NetworkLobbyState`가 최대 2개 슬롯과 캐릭터 ID를 서버 권한으로 관리한다. 현재 선택 가능한 데이터는 주몽 1개다.
+- `MultiplayerLobbyUI`가 런타임에 `NetworkGameFlowController`와 시작 버튼을 바인딩한다. 코드상 호스트만 시작할 수 있지만 `MultiPlayerEntry` 씬의 `minimumPlayers`는 현재 1이므로 2명 대기 조건은 충족하지 않는다.
+- `MultiplayerLobbyExitController`는 세션과 `NetworkManager`를 종료하고 `MultiPlayerEntry`로 돌아간다.
+
+`Tests/NetworkTest.unity`와 `NetworkTestUI`는 8월 2일 2인 검증에 사용된 레거시 경로다. 해당 경로의 Relay 외부 접속, `Main` 동시 전환과 `NetworkTest` 복귀 기록은 있지만 새 정식 4씬 흐름의 실행 증거로 대체할 수 없다. 새 흐름의 생성·참가·선택·시작·나가기·결과 후 복귀, 강제 이탈·새 방·Web은 별도 회귀가 필요하다.
 
 ## 8. 네트워크 솔루션 결정
 
@@ -371,13 +391,17 @@ Relay 외부 접속, `Main` 동시 전환과 정상 로비 복귀는 확인했�
 
 | 씬 | 목적 |
 |---|---|
+| `MainMenu.unity` | Build Scene List의 첫 활성 씬. 멀티 진입만 연결 |
+| `MultiPlayerEntry.unity` | 정식 Relay 방 생성·코드 참가와 `NetworkManager` 소유 |
+| `MultiPlayerLobby.unity` | 네트워크 캐릭터 선택·접속 인원·호스트 시작 |
 | `Main.unity` | 실제 네트워크 게임. 런타임 스테이지·HUD·결과 사용 |
+| `CharacterSelect.unity` | 싱글용으로 보이는 독립 선택 UI 초안. Build Scene List 제외 |
 | `Tests/PlayerTest.unity` | 플레이어 기능 |
 | `Tests/CombatTest.unity` | 과거 전투 테스트. 현재 구성 복구 필요 |
-| `Tests/NetworkTest.unity` | Relay 로비와 게임 진입 |
+| `Tests/NetworkTest.unity` | 레거시 Relay 로비와 회귀 비교 |
 | `Tests/StageTest.unity` | 로컬 스폰·웨이브·보스·승패·스킬·픽업 통합 검증 |
 
-Build Settings에는 `NetworkTest`와 `Main`이 활성화되어 있다. 별도 `Boot`, `MainMenu`, `Result`, `ContentTest` 씬은 만들지 않았으며 MVP에서는 `NetworkTest`와 `Main` 두 진입 씬으로 유지한다.
+Build Scene List에는 `MainMenu`, `MultiPlayerEntry`, `MultiPlayerLobby`, `Main`, 레거시 `NetworkTest`가 활성화되어 있다. `SampleScene`은 비활성이고 `CharacterSelect`, `PlayerTest`, `CombatTest`, `StageTest`는 목록에 없다. 별도 `Boot`, `Result`, `ContentTest` 씬은 없다.
 
 ## 10. 성능 원칙
 
@@ -434,7 +458,7 @@ Assets/_Project/
 
 - 결과 패널의 `다시 시작`과 `로비로` 버튼은 호스트 화면에만 표시한다.
 - 다시 시작은 NGO SceneManager로 `Main` 씬을 전원에게 다시 로드하고 결과·체력·사망·경험치·레벨 상태를 초기화한다.
-- 로비 복귀는 서버 RPC로 모든 참가자에게 종료를 알린 뒤 네트워크를 닫고 `NetworkTest` 씬을 새로 연다.
+- 로비 복귀는 서버 RPC로 모든 참가자에게 종료를 알린 뒤 네트워크를 닫고 현재 직렬화된 `NetworkTest` 씬을 새로 연다. 정식 `MultiPlayerEntry` 흐름과 아직 통합되지 않았다.
 - 결과 UI Canvas에는 `GraphicRaycaster`를 추가하고, 씬 전환 후 EventSystem이 없을 때 Input System용 EventSystem을 생성한다.
 
 ### 네트워크 보스 승리
@@ -447,7 +471,7 @@ Assets/_Project/
 ### Main 네트워크 스테이지 통합
 
 - `Main` 씬의 `NetworkStageBootstrap`이 60초 테스트 라운드용 `EnemySpawner`, `WaveManager`, `GameManager`를 런타임에 구성한다.
-- 적과 임시 보스는 기존 네트워크 등록 `Enemy.prefab`을 사용하며 실제 생성은 서버 권한 컴포넌트가 담당한다.
+- 일반 적은 `Enemy.prefab`, 보스는 네트워크 프리팹 목록에 등록된 `BossJangsanTiger.prefab`을 사용하며 실제 생성은 서버 권한 컴포넌트가 담당한다.
 - 로비에서 이미 생성된 소유 플레이어는 `Main` 진입 시 다시 Spawn되지 않으므로 부트스트랩이 새 `CameraFollow`에 로컬 플레이어를 재연결한다.
 - 런타임 설정 API를 통해 `StageTest`의 직렬화 설정은 보존하고 `Main`만 별도 라운드 설정을 사용한다.
 
