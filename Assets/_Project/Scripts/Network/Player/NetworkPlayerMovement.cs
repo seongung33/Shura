@@ -15,6 +15,14 @@ public class NetworkPlayerMovement : NetworkBehaviour
 
     public float SpeedMultiplier { get; set; } = 1f;
 
+    public void ConfigureBaseSpeed(float value)
+    {
+        if (value > 0f && !float.IsNaN(value) && !float.IsInfinity(value))
+        {
+            moveSpeed = value;
+        }
+    }
+
     private void Awake()
     {
         rigidBody = GetComponent<Rigidbody2D>();

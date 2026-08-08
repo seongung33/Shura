@@ -18,6 +18,17 @@ namespace Shura.Player
         public float MaxHealth => maxHealth;
         public bool IsDead => isDead;
 
+        public void ConfigureMaxHealth(float value)
+        {
+            if (value <= 0f || float.IsNaN(value) || float.IsInfinity(value))
+            {
+                return;
+            }
+
+            maxHealth = value;
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+        }
+
         private void Awake()
         {
             currentHealth = maxHealth;

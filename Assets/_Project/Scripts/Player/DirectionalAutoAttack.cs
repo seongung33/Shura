@@ -24,6 +24,12 @@ public class DirectionalAutoAttack : MonoBehaviour
     private PlayerAimDirection aim;
     private float nextAttackTime;
 
+    public void ConfigureBasicSkill(SkillData skill)
+    {
+        basicSkill = skill;
+        nextAttackTime = 0f;
+    }
+
     private void Awake()
     {
         aim = GetComponent<PlayerAimDirection>();

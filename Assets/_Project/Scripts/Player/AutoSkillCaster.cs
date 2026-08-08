@@ -36,6 +36,7 @@ public class AutoSkillCaster : MonoBehaviour
     private bool requireEnemyInRange = true;
 
     private PlayerAimDirection aim;
+    private bool hasStarted;
 
     private void Awake()
     {
@@ -44,7 +45,35 @@ public class AutoSkillCaster : MonoBehaviour
 
     private void Start()
     {
+        hasStarted = true;
         AssignRandomElements();
+    }
+
+    public void ConfigureSkills(IReadOnlyList<SkillData> skills)
+    {
+        equippedSkills.Clear();
+
+        if (skills != null)
+        {
+            foreach (SkillData skill in skills)
+            {
+                if (skill == null)
+                {
+                    continue;
+                }
+
+                equippedSkills.Add(new EquippedSkill
+                {
+                    data = skill,
+                    element = ElementType.None
+                });
+            }
+        }
+
+        if (hasStarted)
+        {
+            AssignRandomElements();
+        }
     }
 
     private void Update()
