@@ -17,7 +17,7 @@ public class StartMenuController : MonoBehaviour
     }
     public void OpenMultiplayerScene()
     {
-        SceneManager.LoadScene("NetworkTest");
+        SceneManager.LoadScene("MultiPlayerEntry");
     }
     public void OpenMainMenuScene()
     {
