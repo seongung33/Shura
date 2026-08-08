@@ -1,5 +1,7 @@
 # 장산범 보스 도트 에셋
 
+> 2026-08-09 정적 확인: 런타임 에셋은 `Assets/_Project/Art/Enemies/Jangsantiger/`에 있고 `BossJangsanTiger.prefab`이 `StageTest`와 `Main`에서 참조된다. Play Mode 보스 전투·승리 검증은 별도 필요하다.
+
 ## 포함 파일
 
 | 파일 | 용도 | 크기 |

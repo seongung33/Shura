@@ -1,6 +1,6 @@
 # Shura 팀 역할 및 협업 방식
 
-> 마지막 역할·계약 정리: **2026-08-03 KST**. 진행 상태는 `12_CURRENT_PROJECT_STATUS.md`에서 관리한다.
+> 마지막 역할·계약 정리: **2026-08-09 KST**. 진행 상태는 `12_CURRENT_PROJECT_STATUS.md`에서 관리한다.
 
 ## 1. 운영 원칙
 
@@ -16,7 +16,7 @@
 
 - 초기화, 시작 화면과 메인 메뉴
 - 방 생성·참가·퇴장 UI
-- `NetworkTest`의 Relay 로비와 `Main` 게임 진입 흐름 유지·개선
+- `MainMenu → MultiPlayerEntry → MultiPlayerLobby → Main` 정식 흐름과 레거시 `NetworkTest` 회귀 경로 유지·개선
 - 참가 후 네트워크 플레이어 생성과 소유권 적용
 - 일반 `Player.prefab` 기능과 `NetworkPlayer.prefab` 구조 통합
 - 준비 완료 또는 게임 시작 조건과 게임 씬 진입
@@ -180,9 +180,9 @@ GitHub에서 `feat/* → develop` Pull Request를 만들고 다른 팀원 한 �
 ## 6. Unity 충돌 방지 규칙
 
 - `Main.unity`와 게임 진입 씬은 통합 담당인 진미리가 수정한다.
-- 진미리는 기존 `NetworkTest.unity`에서 방과 플레이어 입장을 먼저 검증한다.
+- 진미리는 정식 `MainMenu → MultiPlayerEntry → MultiPlayerLobby → Main` 흐름을 먼저 검증하고, `NetworkTest.unity`는 레거시 회귀 비교에만 사용한다.
 - 이재준은 기존 `PlayerTest.unity` 또는 별도 `SkillTest.unity`에서 스킬을 검증한다.
-- 문성웅은 기존 `CombatTest.unity`와 현재 생성된 `StageTest.unity`에서 웨이브·보스·아이템을 검증한다.
+- 문성웅은 `StageTest.unity`에서 웨이브·보스·아이템을 검증한다. `CombatTest.unity`는 현재 구성이 불완전하므로 복구 전 정본 테스트로 사용하지 않는다.
 - 아직 없는 `SkillTest.unity`를 만들 경우 `Scenes/Tests` 아래에 둔다.
 - 재사용할 오브젝트는 Prefab으로 전달한다.
 - 파일 탐색기에서 에셋을 이동하지 않고 Unity의 Project 창에서 이동한다.

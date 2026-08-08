@@ -1,6 +1,6 @@
 # 구현 기록 — 주몽 기본공격 · P0 스킬 3종 (2026-07-31)
 
-> **구현 이력 문서:** 2026년 7월 31일 당시의 작업과 로컬 Play 결과를 기록한다. 현재 상태는 `12_CURRENT_PROJECT_STATUS.md`를 따른다. SkillData는 현재 로컬 작업에서 `ScriptableObjects/Skills/Jumong/` 경로로 이동 중이다.
+> **구현 이력 문서:** 2026년 7월 31일 당시의 작업과 로컬 Play 결과를 기록한다. 현재 상태는 `12_CURRENT_PROJECT_STATUS.md`를 따른다. SkillData는 현재 `ScriptableObjects/Skills/Jumong/` 경로에 커밋되어 있다.
 
 담당: 아침호랑이 (기본공격·스킬)
 상태: **Play 테스트 완료, 정상 동작 확인**
@@ -83,7 +83,7 @@
 | 스킬 습득 시 랜덤 속성 부여 (Console 로그) | 통과 |
 | 스프라이트·트레일이 부여된 속성 색으로 변경 | 통과 |
 
-## 5. 알려진 제한
+## 5. 2026-07-31 당시 알려진 제한
 
 - **연계 판정 미구현**: 명중 시 속성 기록 → `SynergyResolver` 연동이 남음. 연결 지점은 `StraightProjectile.OnTriggerEnter2D`와 `ElementalZone.DamageEnemiesInside`의 `TODO(연계)` 주석
 - **멀티플레이 동기화 미적용** — 로컬 기준 구현
@@ -99,3 +99,5 @@
 2. `04_TECHNICAL_DESIGN.md`의 SkillTag 5종 구조를 7속성 구조로 갱신
 3. 스킬 습득 UI (레벨 3택1 + 속성 미리 표시)
 4. Git 커밋 및 PR (`feat/jumong-basic-attack-skills` → develop)
+
+> 2026-08-09 정적 갱신: 네트워크 기본·폭발·편전·적토마 권한 연결과 감전·분쇄 연계 2종 코드는 이후 커밋되었다. 이 문서의 테스트 표는 7월 31일 로컬 결과이며 최신 통합본 또는 실제 2인 실행 완료를 뜻하지 않는다.
