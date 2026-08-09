@@ -49,6 +49,12 @@ public static class CharacterSelectVisualTheme
         RectTransform list = FindRect(canvas.transform, "CharacterListPanel");
         RectTransform info = FindRect(canvas.transform, "CharacterInfoPanel");
 
+        // Some lobby objects were saved with a temporary Canvas scale baked
+        // into their transforms. Restore the same unscaled layout root used by
+        // the single-player character selection scene before positioning the
+        // three columns.
+        NormalizeContentRoot(FindRect(canvas.transform, "CharacterSelectPanel"));
+
         SetPanel(players, new Vector2(0f, 0f), new Vector2(0.22f, 1f),
             new Vector2(28f, 32f), new Vector2(-12f, -128f), Panel);
         SetPanel(list, new Vector2(0.22f, 0f), new Vector2(0.66f, 1f),
@@ -337,6 +343,7 @@ public static class CharacterSelectVisualTheme
         if (rect == null)
             return;
 
+        rect.localScale = Vector3.one;
         rect.anchorMin = anchorMin;
         rect.anchorMax = anchorMax;
         rect.offsetMin = offsetMin;
@@ -346,6 +353,19 @@ public static class CharacterSelectVisualTheme
         Outline outline = rect.GetComponent<Outline>() ?? rect.gameObject.AddComponent<Outline>();
         outline.effectColor = AccentSoft;
         outline.effectDistance = new Vector2(1.5f, -1.5f);
+    }
+
+    private static void NormalizeContentRoot(RectTransform rect)
+    {
+        if (rect == null)
+            return;
+
+        rect.localScale = Vector3.one;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(-60f, -60f);
     }
 
     private static void StyleImage(RectTransform rect, Color color)

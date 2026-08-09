@@ -9,6 +9,23 @@ public enum LevelUpCandidateKind : byte
     Skill
 }
 
+public interface ILevelUpChoiceSource
+{
+    bool ChoiceActive { get; }
+    bool HasSelected { get; }
+    int ChoiceTeamLevel { get; }
+    int ChoiceSessionId { get; }
+    double ChoiceDeadline { get; }
+    int CandidateCount { get; }
+    LevelUpSettings Settings { get; }
+
+    LevelUpCandidateState GetCandidate(int index);
+    SkillData GetSkillData(int poolIndex);
+    int GetCurrentSkillLevel(int poolIndex);
+    string GetSelectionStatusText();
+    void RequestChoice(int index);
+}
+
 public struct LevelUpCandidateState :
     INetworkSerializable,
     IEquatable<LevelUpCandidateState>

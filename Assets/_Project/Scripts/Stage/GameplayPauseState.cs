@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public static class GameplayPauseState
 {
-    private static readonly HashSet<NetworkPlayerProgression>
+    private static readonly HashSet<Object>
         ActiveLevelUps = new();
     private static readonly HashSet<PlayerRelicInventory>
         ActiveRelicChoices = new();
@@ -11,7 +12,7 @@ public static class GameplayPauseState
         ActiveLevelUps.Count > 0 || ActiveRelicChoices.Count > 0;
 
     public static void SetLevelUpActive(
-        NetworkPlayerProgression progression,
+        Object progression,
         bool isActive
     )
     {
