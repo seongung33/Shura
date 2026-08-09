@@ -126,7 +126,7 @@ public class NetworkGameResultPresenter : NetworkBehaviour
 
         lobbyButton = CreateButton(
             "LobbyButton",
-            "로비로",
+            "멀티 입장으로",
             new Vector2(125f, -70f),
             resultActions.ReturnToLobby
         );

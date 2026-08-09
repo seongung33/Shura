@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,7 +11,7 @@ public class NetworkGameResultActions : NetworkBehaviour
     private string gameplaySceneName = "Main";
 
     [SerializeField]
-    private string lobbySceneName = "NetworkTest";
+    private string multiplayerEntrySceneName = "MultiPlayerEntry";
 
     [SerializeField, Min(0f)]
     private float shutdownDelay = 0.25f;
@@ -61,7 +62,7 @@ public class NetworkGameResultActions : NetworkBehaviour
             return;
         }
 
-        if (!CanLoadScene(lobbySceneName))
+        if (!CanLoadScene(multiplayerEntrySceneName))
         {
             return;
         }
@@ -80,7 +81,7 @@ public class NetworkGameResultActions : NetworkBehaviour
 
         NetworkLobbyReturnLoader.Begin(
             NetworkManager,
-            lobbySceneName,
+            multiplayerEntrySceneName,
             shutdownDelay
         );
     }
@@ -102,7 +103,7 @@ internal sealed class NetworkLobbyReturnLoader : MonoBehaviour
 {
     public static void Begin(
         NetworkManager networkManager,
-        string lobbySceneName,
+        string multiplayerEntrySceneName,
         float shutdownDelay
     )
     {
@@ -115,7 +116,7 @@ internal sealed class NetworkLobbyReturnLoader : MonoBehaviour
         loader.StartCoroutine(
             loader.ShutdownAndLoadLobby(
                 networkManager,
-                lobbySceneName,
+                multiplayerEntrySceneName,
                 shutdownDelay
             )
         );
@@ -123,13 +124,35 @@ internal sealed class NetworkLobbyReturnLoader : MonoBehaviour
 
     private IEnumerator ShutdownAndLoadLobby(
         NetworkManager networkManager,
-        string lobbySceneName,
+        string multiplayerEntrySceneName,
         float shutdownDelay
     )
     {
         yield return new WaitForSecondsRealtime(shutdownDelay);
 
         Time.timeScale = 1f;
+
+        NetworkSessionState sessionState = networkManager != null
+            ? networkManager.GetComponent<NetworkSessionState>()
+            : null;
+
+        if (sessionState != null && sessionState.HasSession)
+        {
+            Task leaveTask = sessionState.LeaveSessionAsync();
+
+            while (!leaveTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (leaveTask.IsFaulted)
+            {
+                Debug.LogWarning(
+                    "결과 화면에서 세션 나가기 중 오류가 발생했습니다: " +
+                    leaveTask.Exception?.GetBaseException().Message
+                );
+            }
+        }
 
         if (networkManager != null)
         {
@@ -142,7 +165,10 @@ internal sealed class NetworkLobbyReturnLoader : MonoBehaviour
         }
 
         yield return null;
-        SceneManager.LoadScene(lobbySceneName, LoadSceneMode.Single);
+        SceneManager.LoadScene(
+            multiplayerEntrySceneName,
+            LoadSceneMode.Single
+        );
         Destroy(gameObject);
     }
 }
