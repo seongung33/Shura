@@ -141,6 +141,10 @@ MonoBehaviour:
   target: {fileID: 0}
   moveSpeed: 2
   stopDistance: 0.1
+  walkSpriteSheet: {fileID: 2800000, guid: b26229ba5fe740e59fd3b79ba7539cd2, type: 3}
+  walkFrameCount: 4
+  walkFramesPerSecond: 7
+  walkPixelsPerUnit: 650
 --- !u!114 &880000000000000101
 MonoBehaviour:
   m_ObjectHideFlags: 0
