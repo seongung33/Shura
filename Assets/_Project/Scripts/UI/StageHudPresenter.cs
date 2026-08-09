@@ -22,6 +22,7 @@ public sealed class StageHudPresenter : MonoBehaviour
     private static readonly Color AccentColor = new Color(0.25f, 0.76f, 0.92f, 1f);
     private static readonly Color HealthColor = new Color(0.95f, 0.25f, 0.28f, 1f);
     private static readonly Color ExperienceColor = new Color(0.97f, 0.78f, 0.16f, 1f);
+    private static readonly Color PrimaryTextColor = new Color(0.96f, 0.98f, 1f, 1f);
 
     private readonly List<PlayerView> playerViews = new List<PlayerView>();
     private WaveManager waveManager;
@@ -298,7 +299,13 @@ public sealed class StageHudPresenter : MonoBehaviour
             return;
         }
 
-        GameObject canvasObject = new GameObject("StageHudCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        GameObject canvasObject = new GameObject(
+            "StageHudCanvas",
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(CanvasScaler),
+            typeof(GraphicRaycaster)
+        );
         canvasObject.transform.SetParent(transform, false);
         Canvas canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -311,6 +318,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         GameObject timerPanel = CreatePanel(canvasObject.transform, "RoundTimer", PanelColor);
         SetRect(timerPanel.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(300f, 72f), new Vector2(0.5f, 1f));
         timerText = CreateText(timerPanel.transform, "Time", TextAlignmentOptions.Center, 46f);
+        ApplyTextColor(timerText, PrimaryTextColor);
         Stretch(timerText.rectTransform, 8f);
 
         bossPanel = CreatePanel(canvasObject.transform, "BossPanel", PanelColor);
@@ -339,6 +347,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         Stretch(experienceBar.GetComponent<RectTransform>(), 12f);
         experienceFill = CreateFill(experienceBar.transform, "Fill", ExperienceColor);
         experienceText = CreateText(experiencePanel.transform, "ExperienceText", TextAlignmentOptions.Center, 27f);
+        ApplyTextColor(experienceText, PrimaryTextColor);
         Stretch(experienceText.rectTransform, 10f);
 
         CreateResultView(canvasObject.transform);
@@ -450,9 +459,16 @@ public sealed class StageHudPresenter : MonoBehaviour
         text.fontSizeMin = 16f;
         text.fontSizeMax = maxSize;
         text.fontStyle = FontStyles.Bold;
-        text.color = Color.white;
-        text.outlineWidth = 0.16f;
+        ApplyTextColor(text, PrimaryTextColor);
         return text;
+    }
+
+    private static void ApplyTextColor(TMP_Text text, Color color)
+    {
+        text.color = color;
+        text.faceColor = color;
+        text.outlineColor = new Color(0f, 0f, 0f, 0.9f);
+        text.outlineWidth = 0.18f;
     }
 
     private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size, Vector2 pivot)
