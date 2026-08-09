@@ -483,5 +483,11 @@ Assets/_Project/
 - `EnemyHealth.IsBoss`가 설정된 적이 존재할 때만 상단 보스 체력 막대를 노출한다. 현재 `BossJangsanTiger.prefab`에 보스 플래그가 설정되어 있다.
 - 오프라인 결과에서는 `StageHudPresenter`가 큰 승리·패배 오버레이와 다시 시작·메인 메뉴 버튼을 제공한다. 네트워크 결과는 기존 `NetworkGameResultPresenter` 흐름을 유지한다.
 - Maplestory TMP 동적 폰트는 다중 아틀라스를 허용해 런타임에 필요한 한글 글리프가 누락되지 않도록 한다.
+
+### 인게임 일시정지·종료 메뉴
+
+- `GameplayPauseMenu`는 `NetworkStageBootstrap`이 `StageRuntime`에 추가하며 `Main` 진입 시 런타임 Canvas와 Input System용 EventSystem을 보장한다.
+- 우측 상단 메뉴 버튼과 `Escape` 키가 같은 메뉴를 열고 닫는다. 싱글에서는 `Time.timeScale`을 0으로 변경하고, 멀티에서는 NGO·Relay 흐름을 멈추지 않기 위해 화면만 열며 게임 진행 안내를 표시한다.
+- 메인 메뉴 복귀 시 Relay 세션을 먼저 나간 뒤 `NetworkManager`를 종료·제거하고 `MainMenu`를 로드한다. 게임 종료는 빌드에서 `Application.Quit`, Editor에서는 Play Mode 종료로 처리한다.
 - 좌측 상단 앵커와 `CanvasScaler`를 사용해 창 크기와 화면 비율 변경에도 일정한 여백을 유지한다.
 - HP는 서버 동기화 체력, 레벨과 EXP는 서버 동기화 성장 상태가 반영된 로컬 플레이어 컴포넌트에서 읽는다.
