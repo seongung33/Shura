@@ -6,17 +6,28 @@ public class NetworkStageBootstrap : MonoBehaviour
 {
     private static GameObject cachedPlayerPrefab;
 
-    [Header("Prefabs")]
+    [Header("Stage Balance")]
+    [SerializeField]
+    private StageConfig stageConfig;
+
+    [SerializeField]
+    private LevelCurveData levelCurve;
+
+    [Header("Players")]
     [SerializeField]
     private GameObject playerPrefab;
 
+    [SerializeField]
+    private GameObject offlinePlayerPrefab;
+
+    [Header("Legacy Fallback Prefabs")]
     [SerializeField]
     private GameObject enemyPrefab;
 
     [SerializeField]
     private GameObject bossPrefab;
 
-    [Header("Test Round")]
+    [Header("Legacy Test Round")]
     [SerializeField, Min(1f)]
     private float roundDuration = 60f;
 
@@ -27,6 +38,7 @@ public class NetworkStageBootstrap : MonoBehaviour
     private float wave3StartTime = 40f;
 
     private CameraFollow cameraFollow;
+    private Transform offlinePlayer;
     private bool cameraBound;
     private bool missingPlayerPrefabLogged;
 
@@ -40,38 +52,62 @@ public class NetworkStageBootstrap : MonoBehaviour
 
     private void Start()
     {
-        if (NetworkManager.Singleton == null ||
-            !NetworkManager.Singleton.IsListening)
-        {
-            Debug.LogError(
-                "NetworkStageBootstrap은 실행 중인 네트워크 세션이 필요합니다."
-            );
-            enabled = false;
-            return;
-        }
-
-        if (enemyPrefab == null || bossPrefab == null)
-        {
-            Debug.LogError(
-                "NetworkStageBootstrap의 적 또는 보스 프리팹이 비어 있습니다."
-            );
-            enabled = false;
-            return;
-        }
-
         cameraFollow = FindFirstObjectByType<CameraFollow>();
-        EnsurePlayerObjects();
+
+        if (IsNetworkSessionRunning())
+        {
+            EnsurePlayerObjects();
+        }
+        else
+        {
+            EnsureOfflinePlayer();
+        }
+
         CreateStageRuntime();
         TryBindLocalCamera();
     }
 
     private void Update()
     {
-        EnsurePlayerObjects();
+        if (IsNetworkSessionRunning())
+        {
+            EnsurePlayerObjects();
+        }
 
         if (!cameraBound)
         {
             TryBindLocalCamera();
+        }
+    }
+
+    private void EnsureOfflinePlayer()
+    {
+        GameObject existingPlayer = GameObject.FindGameObjectWithTag("Player");
+
+        if (existingPlayer != null)
+        {
+            offlinePlayer = existingPlayer.transform;
+        }
+        else
+        {
+            GameObject configuredPrefab = offlinePlayerPrefab;
+
+            if (configuredPrefab == null)
+            {
+                Debug.LogError("NetworkStageBootstrap의 Offline Player Prefab이 비어 있습니다.");
+                return;
+            }
+
+            offlinePlayer = Instantiate(
+                configuredPrefab,
+                Vector3.zero,
+                Quaternion.identity
+            ).transform;
+        }
+
+        if (offlinePlayer.GetComponent<PlayerExperience>() == null)
+        {
+            offlinePlayer.gameObject.AddComponent<PlayerExperience>();
         }
     }
 
@@ -106,8 +142,7 @@ public class NetworkStageBootstrap : MonoBehaviour
             }
 
             GameObject playerObject = Instantiate(configuredPlayerPrefab);
-            NetworkObject networkObject =
-                playerObject.GetComponent<NetworkObject>();
+            NetworkObject networkObject = playerObject.GetComponent<NetworkObject>();
 
             if (networkObject == null)
             {
@@ -123,24 +158,43 @@ public class NetworkStageBootstrap : MonoBehaviour
 
     private void CreateStageRuntime()
     {
-        GameObject runtimeObject = new GameObject("NetworkStageRuntime");
+        GameObject runtimeObject = new GameObject("StageRuntime");
 
-        EnemySpawner enemySpawner =
-            runtimeObject.AddComponent<EnemySpawner>();
+        TeamExperience teamExperience = runtimeObject.AddComponent<TeamExperience>();
+        teamExperience.Configure(levelCurve);
+
+        EnemySpawner enemySpawner = runtimeObject.AddComponent<EnemySpawner>();
         enemySpawner.Configure(enemyPrefab);
 
-        WaveManager waveManager =
-            runtimeObject.AddComponent<WaveManager>();
-        waveManager.Configure(
-            enemySpawner,
-            roundDuration,
-            wave2StartTime,
-            wave3StartTime
-        );
+        WaveManager waveManager = runtimeObject.AddComponent<WaveManager>();
 
-        GameManager gameManager =
-            runtimeObject.AddComponent<GameManager>();
-        gameManager.Configure(waveManager, bossPrefab);
+        if (stageConfig != null)
+        {
+            enemySpawner.Configure(stageConfig);
+            waveManager.Configure(enemySpawner, stageConfig);
+        }
+        else
+        {
+            waveManager.Configure(
+                enemySpawner,
+                roundDuration,
+                wave2StartTime,
+                wave3StartTime
+            );
+        }
+
+        GameObject configuredBoss = stageConfig != null && stageConfig.BossPrefab != null
+            ? stageConfig.BossPrefab
+            : bossPrefab;
+        float configuredBossHealth = stageConfig != null
+            ? stageConfig.BossHealth
+            : 500f;
+
+        GameManager gameManager = runtimeObject.AddComponent<GameManager>();
+        gameManager.Configure(waveManager, configuredBoss, configuredBossHealth);
+
+        StageHudPresenter hud = runtimeObject.AddComponent<StageHudPresenter>();
+        hud.Configure(waveManager, enemySpawner);
     }
 
     private void TryBindLocalCamera()
@@ -150,13 +204,23 @@ public class NetworkStageBootstrap : MonoBehaviour
             cameraFollow = FindFirstObjectByType<CameraFollow>();
         }
 
-        if (cameraFollow == null || NetworkManager.Singleton == null)
+        if (cameraFollow == null)
         {
             return;
         }
 
-        NetworkObject localPlayer =
-            NetworkManager.Singleton.LocalClient?.PlayerObject;
+        if (!IsNetworkSessionRunning())
+        {
+            if (offlinePlayer != null)
+            {
+                cameraFollow.SetTarget(offlinePlayer);
+                cameraBound = true;
+            }
+
+            return;
+        }
+
+        NetworkObject localPlayer = NetworkManager.Singleton.LocalClient?.PlayerObject;
 
         if (localPlayer == null)
         {
@@ -167,17 +231,15 @@ public class NetworkStageBootstrap : MonoBehaviour
         cameraBound = true;
     }
 
+    private static bool IsNetworkSessionRunning()
+    {
+        return NetworkManager.Singleton != null &&
+            NetworkManager.Singleton.IsListening;
+    }
+
     private void OnValidate()
     {
-        wave2StartTime = Mathf.Clamp(
-            wave2StartTime,
-            0f,
-            roundDuration
-        );
-        wave3StartTime = Mathf.Clamp(
-            wave3StartTime,
-            wave2StartTime,
-            roundDuration
-        );
+        wave2StartTime = Mathf.Clamp(wave2StartTime, 0f, roundDuration);
+        wave3StartTime = Mathf.Clamp(wave3StartTime, wave2StartTime, roundDuration);
     }
 }

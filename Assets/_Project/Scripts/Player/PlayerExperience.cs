@@ -18,6 +18,16 @@ public class PlayerExperience : MonoBehaviour
     public int CurrentExperience => currentExperience;
     public int ExperienceToNextLevel => experienceToNextLevel;
 
+    private void Start()
+    {
+        TeamExperience.Active?.Register(this);
+    }
+
+    private void OnDestroy()
+    {
+        TeamExperience.Active?.Unregister(this);
+    }
+
     public void ApplyNetworkState(
         int level,
         int experience,
@@ -33,6 +43,12 @@ public class PlayerExperience : MonoBehaviour
     {
         if (amount <= 0)
         {
+            return;
+        }
+
+        if (TeamExperience.Active != null)
+        {
+            TeamExperience.Active.GrantExperience(amount);
             return;
         }
 

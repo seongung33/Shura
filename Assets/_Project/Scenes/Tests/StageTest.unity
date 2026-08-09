@@ -430,6 +430,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   enemySpawner: {fileID: 1872421054}
+  stageConfig: {fileID: 11400000, guid: 2410ca01a0044328a65a4cc84729460b, type: 2}
   roundDuration: 10
   wave2StartTime: 3
   wave3StartTime: 4

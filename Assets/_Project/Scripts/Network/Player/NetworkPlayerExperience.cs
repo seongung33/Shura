@@ -5,9 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerExperience))]
 public class NetworkPlayerExperience : NetworkBehaviour
 {
-    [SerializeField]
-    private int experienceGrowthPerLevel = 5;
-
     private readonly NetworkVariable<int> currentLevel =
         new NetworkVariable<int>(1);
 
@@ -17,7 +14,12 @@ public class NetworkPlayerExperience : NetworkBehaviour
     private readonly NetworkVariable<int> experienceToNextLevel =
         new NetworkVariable<int>(10);
 
+    private readonly NetworkVariable<int> pendingChoiceCount =
+        new NetworkVariable<int>();
+
     private PlayerExperience playerExperience;
+
+    public int PendingChoiceCount => pendingChoiceCount.Value;
 
     private void Awake()
     {
@@ -29,13 +31,21 @@ public class NetworkPlayerExperience : NetworkBehaviour
         currentLevel.OnValueChanged += OnProgressChanged;
         currentExperience.OnValueChanged += OnProgressChanged;
         experienceToNextLevel.OnValueChanged += OnProgressChanged;
+        pendingChoiceCount.OnValueChanged += OnProgressChanged;
 
         if (IsServer)
         {
-            currentLevel.Value = playerExperience.CurrentLevel;
-            currentExperience.Value = playerExperience.CurrentExperience;
-            experienceToNextLevel.Value =
-                playerExperience.ExperienceToNextLevel;
+            if (TeamExperience.Active != null)
+            {
+                TeamExperience.Active.Register(playerExperience);
+            }
+            else
+            {
+                currentLevel.Value = playerExperience.CurrentLevel;
+                currentExperience.Value = playerExperience.CurrentExperience;
+                experienceToNextLevel.Value =
+                    playerExperience.ExperienceToNextLevel;
+            }
         }
 
         ApplyStateToPlayer();
@@ -46,6 +56,7 @@ public class NetworkPlayerExperience : NetworkBehaviour
         currentLevel.OnValueChanged -= OnProgressChanged;
         currentExperience.OnValueChanged -= OnProgressChanged;
         experienceToNextLevel.OnValueChanged -= OnProgressChanged;
+        pendingChoiceCount.OnValueChanged -= OnProgressChanged;
     }
 
     public void GrantExperienceServer(int amount)
@@ -55,22 +66,13 @@ public class NetworkPlayerExperience : NetworkBehaviour
             return;
         }
 
-        int nextExperience = currentExperience.Value + amount;
-        int nextLevel = currentLevel.Value;
-        int nextThreshold = experienceToNextLevel.Value;
-
-        while (nextExperience >= nextThreshold)
+        if (TeamExperience.Active != null)
         {
-            nextExperience -= nextThreshold;
-            nextLevel++;
-            nextThreshold += experienceGrowthPerLevel;
+            TeamExperience.Active.GrantExperience(amount);
+            return;
         }
 
-        currentExperience.Value = nextExperience;
-        currentLevel.Value = nextLevel;
-        experienceToNextLevel.Value = nextThreshold;
-
-        ApplyStateToPlayer();
+        playerExperience.AddExperience(amount);
     }
 
     public void ResetProgressServer()
@@ -80,9 +82,41 @@ public class NetworkPlayerExperience : NetworkBehaviour
             return;
         }
 
-        currentLevel.Value = 1;
-        currentExperience.Value = 0;
-        experienceToNextLevel.Value = 10;
+        if (TeamExperience.Active != null)
+        {
+            TeamExperience.Active.ResetProgress();
+            return;
+        }
+
+        ApplyTeamStateServer(1, 0, 10, 0, true);
+    }
+
+    public void ApplyTeamStateServer(
+        int level,
+        int experience,
+        int nextLevelExperience,
+        int gainedLevels,
+        bool resetChoices = false
+    )
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        currentLevel.Value = Mathf.Max(1, level);
+        currentExperience.Value = Mathf.Max(0, experience);
+        experienceToNextLevel.Value = Mathf.Max(1, nextLevelExperience);
+
+        if (resetChoices)
+        {
+            pendingChoiceCount.Value = 0;
+        }
+        else if (gainedLevels > 0)
+        {
+            pendingChoiceCount.Value += gainedLevels;
+        }
+
         ApplyStateToPlayer();
     }
 

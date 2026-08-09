@@ -14,6 +14,8 @@ public class EnemyController : MonoBehaviour
 
     private Rigidbody2D rigidBody;
 
+    public ulong AssignedTargetClientId { get; private set; }
+
     private void Awake()
     {
         rigidBody = GetComponent<Rigidbody2D>();
@@ -37,16 +39,22 @@ public class EnemyController : MonoBehaviour
         target = player.transform;
     }
 
+    public void ConfigureRuntime(
+        Transform assignedTarget,
+        ulong assignedClientId,
+        float moveSpeedMultiplier
+    )
+    {
+        target = assignedTarget;
+        AssignedTargetClientId = assignedClientId;
+        moveSpeed *= Mathf.Max(0.01f, moveSpeedMultiplier);
+    }
+
     private void FixedUpdate()
     {
         if (target == null)
         {
-            GameObject player= GameObject.FindGameObjectWithTag("Player");
-
-            if (player != null)
-            {
-                target = player.transform;
-            }
+            rigidBody.linearVelocity = Vector2.zero;
             return;
         }
 

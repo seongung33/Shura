@@ -8,11 +8,15 @@ namespace Shura.Player
         [SerializeField] private float maxHealth = 100f;
         [SerializeField] private UnityEvent onDeath;
 
+        [SerializeField, Min(0f)]
+        private float hitInvulnerabilityDuration = 0.4f;
+
         [Header("Debug (읽기 전용, Play 모드에서 확인용)")]
         [SerializeField] private float currentHealth;
         [SerializeField] private bool isDead;
 
         private NetworkPlayerHealth networkPlayerHealth;
+        private float nextDamageTime;
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
@@ -26,10 +30,12 @@ namespace Shura.Player
 
         public void TakeDamage(float amount)
         {
-            if (isDead || amount <= 0f)
+            if (isDead || amount <= 0f || Time.time < nextDamageTime)
             {
                 return;
             }
+
+            nextDamageTime = Time.time + hitInvulnerabilityDuration;
 
             if (networkPlayerHealth != null &&
                 networkPlayerHealth.IsSpawned)

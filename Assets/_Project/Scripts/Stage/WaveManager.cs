@@ -2,49 +2,38 @@ using UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
-    [Header("Reference")]
     [SerializeField]
     private EnemySpawner enemySpawner;
 
-    [Header("Test Round")]
+    [SerializeField]
+    private StageConfig stageConfig;
+
+    [Header("Legacy Test Fallback")]
     [SerializeField, Min(1f)]
     private float roundDuration = 60f;
 
-    [Header("Wave Start Time")]
     [SerializeField, Min(0f)]
     private float wave2StartTime = 20f;
 
     [SerializeField, Min(0f)]
     private float wave3StartTime = 40f;
 
-    [Header("Wave 1")]
-    [SerializeField, Min(0.1f)]
-    private float wave1SpawnInterval = 2f;
-
-    [SerializeField, Min(1)]
-    private int wave1MaxAlive = 15;
-
-    [Header("Wave 2")]
-    [SerializeField, Min(0.1f)]
-    private float wave2SpawnInterval = 1f;
-
-    [SerializeField, Min(1)]
-    private int wave2MaxAlive = 25;
-
-    [Header("Wave 3")]
-    [SerializeField, Min(0.1f)]
-    private float wave3SpawnInterval = 0.5f;
-
-    [SerializeField, Min(1)]
-    private int wave3MaxAlive = 40;
-
     private float elapsedTime;
     private int currentWave;
+    private bool cleanupStarted;
     private bool roundFinished;
 
     public float ElapsedTime => elapsedTime;
+    public float Duration => stageConfig != null ? stageConfig.Duration : roundDuration;
     public int CurrentWave => currentWave;
+    public bool CleanupStarted => cleanupStarted;
     public bool RoundFinished => roundFinished;
+
+    public void Configure(EnemySpawner configuredSpawner, StageConfig configuredStage)
+    {
+        enemySpawner = configuredSpawner;
+        stageConfig = configuredStage;
+    }
 
     public void Configure(
         EnemySpawner configuredSpawner,
@@ -55,37 +44,33 @@ public class WaveManager : MonoBehaviour
     {
         enemySpawner = configuredSpawner;
         roundDuration = Mathf.Max(1f, configuredRoundDuration);
-        wave2StartTime = Mathf.Clamp(
-            configuredWave2StartTime,
-            0f,
-            roundDuration
-        );
-        wave3StartTime = Mathf.Clamp(
-            configuredWave3StartTime,
-            wave2StartTime,
-            roundDuration
-        );
+        wave2StartTime = Mathf.Clamp(configuredWave2StartTime, 0f, roundDuration);
+        wave3StartTime = Mathf.Clamp(configuredWave3StartTime, wave2StartTime, roundDuration);
     }
 
     private void Start()
     {
         if (enemySpawner == null)
         {
-            enemySpawner =
-                GetComponent<EnemySpawner>();
+            enemySpawner = GetComponent<EnemySpawner>();
         }
 
         if (enemySpawner == null)
         {
-            Debug.LogError(
-                "WaveManager에 EnemySpawner가 연결되지 않았습니다."
-            );
-
+            Debug.LogError("WaveManager에 EnemySpawner가 연결되지 않았습니다.");
             enabled = false;
             return;
         }
 
-        ApplyWave(1);
+        if (stageConfig != null)
+        {
+            enemySpawner.Configure(stageConfig);
+            ApplyConfiguredSegment();
+        }
+        else
+        {
+            ApplyLegacyWave(1);
+        }
     }
 
     private void Update()
@@ -97,89 +82,89 @@ public class WaveManager : MonoBehaviour
 
         elapsedTime += Time.deltaTime;
 
+        if (stageConfig != null)
+        {
+            UpdateConfiguredStage();
+        }
+        else
+        {
+            UpdateLegacyStage();
+        }
+    }
+
+    private void UpdateConfiguredStage()
+    {
+        if (!cleanupStarted && elapsedTime >= stageConfig.CleanupStart)
+        {
+            cleanupStarted = true;
+            enemySpawner.SetSpawningEnabled(false);
+            Debug.Log("보스 전 정리 구간 시작");
+        }
+
+        if (elapsedTime >= stageConfig.Duration)
+        {
+            FinishRound();
+            return;
+        }
+
+        ApplyConfiguredSegment();
+    }
+
+    private void ApplyConfiguredSegment()
+    {
+        WaveSegment segment = stageConfig.GetSegment(elapsedTime);
+        int segmentIndex = stageConfig.GetSegmentIndex(elapsedTime);
+        enemySpawner.ApplyStageState(segment, elapsedTime);
+
+        int nextWave = segmentIndex >= 0 ? segmentIndex + 1 : 0;
+
+        if (nextWave != currentWave)
+        {
+            currentWave = nextWave;
+            Debug.Log(currentWave > 0
+                ? $"Wave {currentWave} 시작"
+                : "정리 구간 진행 중");
+        }
+    }
+
+    private void UpdateLegacyStage()
+    {
         if (elapsedTime >= roundDuration)
         {
             FinishRound();
             return;
         }
 
-        int nextWave = GetWaveByTime();
+        int nextWave = elapsedTime >= wave3StartTime
+            ? 3
+            : elapsedTime >= wave2StartTime ? 2 : 1;
 
         if (nextWave != currentWave)
         {
-            ApplyWave(nextWave);
+            ApplyLegacyWave(nextWave);
         }
     }
 
-    private int GetWaveByTime()
-    {
-        if (elapsedTime >= wave3StartTime)
-        {
-            return 3;
-        }
-
-        if (elapsedTime >= wave2StartTime)
-        {
-            return 2;
-        }
-
-        return 1;
-    }
-
-    private void ApplyWave(int wave)
+    private void ApplyLegacyWave(int wave)
     {
         currentWave = wave;
-
-        switch (wave)
-        {
-            case 1:
-                enemySpawner.ApplyWaveSettings(
-                    wave1SpawnInterval,
-                    wave1MaxAlive
-                );
-                break;
-
-            case 2:
-                enemySpawner.ApplyWaveSettings(
-                    wave2SpawnInterval,
-                    wave2MaxAlive
-                );
-                break;
-
-            case 3:
-                enemySpawner.ApplyWaveSettings(
-                    wave3SpawnInterval,
-                    wave3MaxAlive
-                );
-                break;
-        }
-
+        float interval = wave == 1 ? 2f : wave == 2 ? 1f : 0.5f;
+        int alive = wave == 1 ? 15 : wave == 2 ? 25 : 40;
+        enemySpawner.ApplyWaveSettings(interval, alive);
         Debug.Log($"Wave {currentWave} 시작");
     }
 
     private void FinishRound()
     {
         roundFinished = true;
-
         enemySpawner.SetSpawningEnabled(false);
-
-        Debug.Log(
-            "테스트 라운드 종료 - 다음 단계에서 보스를 생성합니다."
-        );
+        enemySpawner.DespawnAllEnemies();
+        Debug.Log("일반 웨이브 종료 - 보스 전환");
     }
 
     private void OnValidate()
     {
-        wave2StartTime = Mathf.Clamp(
-            wave2StartTime,
-            0f,
-            roundDuration
-        );
-
-        wave3StartTime = Mathf.Clamp(
-            wave3StartTime,
-            wave2StartTime,
-            roundDuration
-        );
+        wave2StartTime = Mathf.Clamp(wave2StartTime, 0f, roundDuration);
+        wave3StartTime = Mathf.Clamp(wave3StartTime, wave2StartTime, roundDuration);
     }
 }

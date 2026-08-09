@@ -34,6 +34,8 @@ public class GameManager : MonoBehaviour
 
     private bool bossSpawnAttempted;
     private bool bossSpawned;
+    [SerializeField, Min(1f)]
+    private float bossHealth = 500f;
 
     public GameState CurrentState { get; private set; }
         = GameState.Ready;
@@ -42,11 +44,13 @@ public class GameManager : MonoBehaviour
 
     public void Configure(
         WaveManager configuredWaveManager,
-        GameObject configuredBossPrefab
+        GameObject configuredBossPrefab,
+        float configuredBossHealth = 500f
     )
     {
         waveManager = configuredWaveManager;
         bossPrefab = configuredBossPrefab;
+        bossHealth = Mathf.Max(1f, configuredBossHealth);
     }
 
     private void Start()
@@ -165,6 +169,14 @@ public class GameManager : MonoBehaviour
             bossPrefab,
             spawnPosition,
             Quaternion.identity
+        );
+
+        EnemyHealth bossEnemyHealth = spawnedBoss.GetComponent<EnemyHealth>();
+        bossEnemyHealth?.ConfigureRuntime(
+            bossHealth / 500f,
+            0f,
+            null,
+            1
         );
 
         if (IsNetworkSessionRunning())
