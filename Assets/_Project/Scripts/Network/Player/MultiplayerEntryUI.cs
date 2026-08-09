@@ -16,6 +16,7 @@ using UnityEngine.UI;
 public sealed class MultiplayerEntryUI : MonoBehaviour
 {
     private const string JoinCodeFontName = "LiberationSans SDF";
+    private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
 
     private static readonly Color ScreenColor =
         new Color32(5, 12, 25, 255);
@@ -68,6 +69,7 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
 
     private async void Start()
     {
+        GameAudioController.EnsureExists();
         ResolveReferences();
         ApplyVisualTheme();
         RegisterCallbacks();
@@ -431,11 +433,14 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
             return;
         }
 
+        ConfigureCanvas(canvas);
+
         TMP_FontAsset uiFont = createRoomButton != null
             ? createRoomButton.GetComponentInChildren<TMP_Text>(true)?.font
             : null;
 
         EnsureBackdrop(canvasRect);
+        EnsureArtwork(canvasRect);
         EnsureHeading(canvasRect, uiFont);
 
         StyleText(statusText, 24f, TextColor, FontStyles.Bold, uiFont);
@@ -452,6 +457,81 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         StyleButton(leaveRoomButton, new Vector2(0f, -225f), "방 나가기", false);
     }
 
+    private static void ConfigureCanvas(Canvas canvas)
+    {
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+        {
+            scaler = canvas.gameObject.AddComponent<CanvasScaler>();
+        }
+
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1280f, 720f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 1f;
+    }
+
+    private static void EnsureArtwork(RectTransform canvasRect)
+    {
+        Transform existing = canvasRect.Find("EntryArtworkRuntime");
+        GameObject artwork = existing != null
+            ? existing.gameObject
+            : new GameObject("EntryArtworkRuntime", typeof(RectTransform));
+        artwork.transform.SetParent(canvasRect, false);
+        artwork.transform.SetAsFirstSibling();
+        RectTransform artworkRect = (RectTransform)artwork.transform;
+        Stretch(artworkRect);
+
+        Transform backgroundTransform = artwork.transform.Find("CityBackground");
+        Image background;
+        if (backgroundTransform == null)
+        {
+            background = new GameObject(
+                "CityBackground",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(AspectRatioFitter),
+                typeof(MainMenuBackdropMotion)
+            ).GetComponent<Image>();
+            background.transform.SetParent(artwork.transform, false);
+        }
+        else
+        {
+            background = backgroundTransform.GetComponent<Image>();
+        }
+
+        Stretch(background.rectTransform);
+        background.sprite = Resources.Load<Sprite>(BackgroundResourcePath);
+        background.color = new Color(0.72f, 0.78f, 0.9f, 1f);
+        background.raycastTarget = false;
+        AspectRatioFitter fitter = background.GetComponent<AspectRatioFitter>();
+        if (background.sprite != null && fitter != null)
+        {
+            fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fitter.aspectRatio = background.sprite.rect.width / background.sprite.rect.height;
+        }
+
+        Transform shadeTransform = artwork.transform.Find("ReadabilityShade");
+        Image shade;
+        if (shadeTransform == null)
+        {
+            shade = new GameObject(
+                "ReadabilityShade",
+                typeof(RectTransform),
+                typeof(Image)
+            ).GetComponent<Image>();
+            shade.transform.SetParent(artwork.transform, false);
+        }
+        else
+        {
+            shade = shadeTransform.GetComponent<Image>();
+        }
+
+        Stretch(shade.rectTransform);
+        shade.color = new Color(0f, 0.015f, 0.04f, 0.58f);
+        shade.raycastTarget = false;
+    }
+
     private static void EnsureBackdrop(RectTransform canvasRect)
     {
         Transform existing = canvasRect.Find("EntryBackdrop");
@@ -465,7 +545,7 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = Vector2.zero;
-        rect.sizeDelta = new Vector2(720f, 680f);
+        rect.sizeDelta = new Vector2(720f, 640f);
 
         Image image = backdrop.GetComponent<Image>();
         image.color = PanelColor;
@@ -567,6 +647,12 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         colors.colorMultiplier = 1f;
         button.colors = colors;
 
+        if (button.GetComponent<MainMenuButtonMotion>() == null)
+        {
+            button.gameObject.AddComponent<MainMenuButtonMotion>();
+        }
+        button.onClick.AddListener(GameAudioController.PlayButtonClick);
+
         TMP_Text[] buttonTexts = button.GetComponentsInChildren<TMP_Text>(true);
         foreach (TMP_Text buttonText in buttonTexts)
         {
@@ -654,6 +740,14 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         rect.anchoredPosition = position;
         rect.sizeDelta = size;
         rect.localScale = Vector3.one;
+    }
+
+    private static void Stretch(RectTransform rect)
+    {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 
     private void RegisterCallbacks()
@@ -789,6 +883,18 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         if (statusText != null)
         {
             statusText.text = message;
+            if (message.Contains("실패") || message.Contains("오류"))
+            {
+                statusText.color = new Color32(255, 108, 116, 255);
+            }
+            else if (message.Contains("완료") || message.Contains("준비"))
+            {
+                statusText.color = new Color32(118, 235, 184, 255);
+            }
+            else
+            {
+                statusText.color = TextColor;
+            }
         }
 
         Debug.Log(message);

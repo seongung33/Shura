@@ -15,6 +15,7 @@ public class EnemyAttack : MonoBehaviour
     private float nextAttackTime;
     private int maxAttackersPerPlayer = 5;
     private GameObject slottedPlayer;
+    private float frozenUntil;
 
     public void ConfigureRuntime(
         float damageMultiplier,
@@ -26,9 +27,22 @@ public class EnemyAttack : MonoBehaviour
         maxAttackersPerPlayer = Mathf.Max(1, configuredMaxAttackersPerPlayer);
     }
 
+    public void FreezeFor(float duration)
+    {
+        if (duration <= 0f ||
+            float.IsNaN(duration) ||
+            float.IsInfinity(duration))
+        {
+            return;
+        }
+
+        frozenUntil = Mathf.Max(frozenUntil, Time.time + duration);
+    }
+
     private void OnCollisionStay2D(Collision2D collision)
     {
-        if (GameplayPauseState.IsLevelUpActive)
+        if (GameplayPauseState.IsLevelUpActive ||
+            Time.time < frozenUntil)
         {
             return;
         }

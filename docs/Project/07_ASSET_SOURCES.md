@@ -35,6 +35,7 @@
 | AI-A-005 | 미래형 한국 도시 메인 배경 | 팀 제공 AI 생성 이미지(도구·원문 프롬프트 확인 필요) | 어두운 미래형 한국 도시와 네온 간판, 산 위 궁궐 | 2026-08-09 제공 | 원본 비율 유지, 어두운 UI 오버레이 적용 | `Assets/Resources/UI/MainMenu/main_menu_city.png`, 메인 메뉴 배경 | 진미리 |
 | AI-A-006 | MUGUNG 로고 시안 | ChatGPT 이미지 생성 | 무궁화와 적·청 원형 문양을 결합한 `MUGUNG` 로고 | 2026-08-09 | 원본 비율 유지, 메인 메뉴 로고 레이어 적용 | `Assets/Resources/UI/MainMenu/mugung_logo.png`, 메인 메뉴 | 진미리 |
 | AI-A-007 | MUGUNG 투명 로고 | OpenAI 이미지 생성·로컬 후처리 | AI-A-006의 글자·무궁화·적청 문양을 보존한 크로마키 배경 편집 | 2026-08-09 | 초록 크로마키 제거, 투명 PNG 변환, UI Sprite 설정 | `Assets/Resources/UI/MainMenu/mugung_logo_transparent.png`, 시작 연출·메인 메뉴 | 진미리 |
+| AI-A-008 | MUGUNG 픽셀 로고 | 팀 제공 로고·Image-to-Pixel 변환·로컬 후처리 | 기존 MUGUNG 로고를 36색 픽셀 스타일로 변환한 결과 | 2026-08-09 | `#090A14` 단색 배경 제거, 이진 알파, Point 필터·무압축 Sprite 설정 | `Assets/Resources/UI/MainMenu/mugung_logo_pixel.png`, 시작 연출·메인 메뉴 | 진미리 |
 
 ### 음악
 
