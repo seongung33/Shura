@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Shura.Player;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -31,7 +32,7 @@ public class EnemySpawner : MonoBehaviour
     private float minSpawnDistance = 8f;
 
     [SerializeField, Min(0f)]
-    private float maxSpawnDistance = 12f;
+    private float maxSpawnDistance = 13f;
 
     [SerializeField, Min(1)]
     private int maxAlive = 300;
@@ -42,17 +43,24 @@ public class EnemySpawner : MonoBehaviour
     private StageConfig stageConfig;
     private WaveSegment currentSegment;
     private ExperienceDropAccumulator dropAccumulator;
-    private float elapsedTime;
-    private float spawnBudget;
+    private float spawnTimer;
     private float playerRefreshTimer;
     private int targetAlive;
+    private int currentMaxAlive;
+    private bool cleanupMode;
     private bool spawningEnabled = true;
 
     public int AliveCount => spawnedEnemies.Count;
     public int TargetAlive => targetAlive;
+    public int MaxAlive => currentMaxAlive;
 
     private void Start()
     {
+        if (currentMaxAlive <= 0)
+        {
+            currentMaxAlive = maxAlive;
+        }
+
         dropAccumulator = GetComponent<ExperienceDropAccumulator>();
 
         if (dropAccumulator == null)
@@ -80,6 +88,7 @@ public class EnemySpawner : MonoBehaviour
         minSpawnDistance = stageConfig.SpawnRadiusMin;
         maxSpawnDistance = stageConfig.SpawnRadiusMax;
         maxAlive = stageConfig.MaxAlive;
+        currentMaxAlive = maxAlive;
     }
 
     private void Update()
@@ -104,32 +113,23 @@ public class EnemySpawner : MonoBehaviour
             RefreshPlayers();
         }
 
-        if (!spawningEnabled || playerTargets.Count == 0)
+        if (!spawningEnabled || playerTargets.Count == 0 || targetAlive <= 0)
         {
             return;
         }
 
-        float budgetPerSecond = currentSegment != null
-            ? currentSegment.SpawnBudgetPerMinute / 60f
-            : 1f / Mathf.Max(0.1f, spawnInterval);
+        spawnTimer -= Time.deltaTime;
 
-        spawnBudget = Mathf.Min(spawnBudget + budgetPerSecond * Time.deltaTime, 12f);
-
-        int spawnedThisFrame = 0;
-
-        while (spawnBudget >= 1f &&
-               spawnedEnemies.Count < targetAlive &&
-               spawnedEnemies.Count < maxAlive &&
-               spawnedThisFrame < 8)
+        if (spawnedEnemies.Count >= targetAlive ||
+            spawnedEnemies.Count >= currentMaxAlive ||
+            spawnTimer > 0f)
         {
-            if (!SpawnEnemy())
-            {
-                break;
-            }
-
-            spawnBudget -= 1f;
-            spawnedThisFrame++;
+            return;
         }
+
+        bool catchUp = IsCatchUpNeeded();
+        SpawnBatch(GetBatchSize(catchUp));
+        spawnTimer = GetSpawnInterval(catchUp);
     }
 
     public void ApplyStageState(
@@ -137,11 +137,21 @@ public class EnemySpawner : MonoBehaviour
         float stageElapsedTime
     )
     {
+        bool segmentChanged = currentSegment != segment;
         currentSegment = segment;
-        elapsedTime = stageElapsedTime;
-        targetAlive = segment != null
-            ? Mathf.Min(maxAlive, segment.GetTargetAlive(stageElapsedTime))
-            : 0;
+        currentMaxAlive = segment != null
+            ? Mathf.Min(maxAlive, segment.MaxAlive)
+            : maxAlive;
+
+        int configuredTarget = cleanupMode && stageConfig != null
+            ? stageConfig.CleanupTargetAlive
+            : segment?.GetTargetAlive(stageElapsedTime) ?? 0;
+        targetAlive = Mathf.Min(currentMaxAlive, configuredTarget);
+
+        if (segmentChanged)
+        {
+            spawnTimer = Mathf.Min(spawnTimer, GetSpawnInterval(true));
+        }
     }
 
     public void ApplyWaveSettings(float newSpawnInterval, int newMaxAlive)
@@ -149,7 +159,14 @@ public class EnemySpawner : MonoBehaviour
         currentSegment = null;
         spawnInterval = Mathf.Max(0.1f, newSpawnInterval);
         maxAlive = Mathf.Max(1, newMaxAlive);
+        currentMaxAlive = maxAlive;
         targetAlive = maxAlive;
+    }
+
+    public void SetCleanupMode(bool enabled)
+    {
+        cleanupMode = enabled;
+        spawnTimer = Mathf.Min(spawnTimer, GetSpawnInterval(true));
     }
 
     public void SetSpawningEnabled(bool enabled)
@@ -158,9 +175,68 @@ public class EnemySpawner : MonoBehaviour
 
         if (!enabled)
         {
-            spawnBudget = 0f;
+            spawnTimer = 0f;
             dropAccumulator?.Flush();
         }
+    }
+
+    private void SpawnBatch(int requestedBatchSize)
+    {
+        int availableSlots = Mathf.Min(
+            targetAlive - spawnedEnemies.Count,
+            currentMaxAlive - spawnedEnemies.Count
+        );
+        int spawnCount = Mathf.Min(Mathf.Max(1, requestedBatchSize), availableSlots);
+
+        for (int index = 0; index < spawnCount; index++)
+        {
+            if (!SpawnEnemy())
+            {
+                break;
+            }
+        }
+    }
+
+    private bool IsCatchUpNeeded()
+    {
+        if (currentSegment == null || targetAlive <= 0)
+        {
+            return false;
+        }
+
+        return spawnedEnemies.Count <
+            Mathf.CeilToInt(targetAlive * currentSegment.CatchUpThreshold);
+    }
+
+    private int GetBatchSize(bool catchUp)
+    {
+        if (currentSegment == null)
+        {
+            return 1;
+        }
+
+        return catchUp
+            ? currentSegment.CatchUpBatchSize
+            : currentSegment.SpawnBatchSize;
+    }
+
+    private float GetSpawnInterval(bool catchUp)
+    {
+        float interval = currentSegment != null
+            ? currentSegment.SpawnInterval
+            : Mathf.Max(0.1f, spawnInterval);
+
+        if (catchUp && currentSegment != null)
+        {
+            interval *= currentSegment.CatchUpIntervalMultiplier;
+        }
+
+        if (cleanupMode && stageConfig != null)
+        {
+            interval *= stageConfig.CleanupSpawnIntervalMultiplier;
+        }
+
+        return Mathf.Max(0.02f, interval);
     }
 
     public void DespawnAllEnemies()
@@ -381,7 +457,8 @@ public class EnemySpawner : MonoBehaviour
         {
             foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
             {
-                if (client.PlayerObject != null)
+                if (client.PlayerObject != null &&
+                    IsAlivePlayer(client.PlayerObject.transform))
                 {
                     found[client.ClientId] = client.PlayerObject.transform;
                 }
@@ -389,7 +466,7 @@ public class EnemySpawner : MonoBehaviour
         }
         else
         {
-            if (player != null)
+            if (player != null && IsAlivePlayer(player))
             {
                 found[0] = player;
             }
@@ -399,7 +476,12 @@ public class EnemySpawner : MonoBehaviour
 
                 for (int index = 0; index < localPlayers.Length; index++)
                 {
-                    found[(ulong)index] = localPlayers[index].transform;
+                    Transform localPlayer = localPlayers[index].transform;
+
+                    if (IsAlivePlayer(localPlayer))
+                    {
+                        found[(ulong)index] = localPlayer;
+                    }
                 }
             }
         }
@@ -424,6 +506,25 @@ public class EnemySpawner : MonoBehaviour
 
         playerTargets.RemoveAll(target => !found.ContainsKey(target.ClientId));
         RecountAssignments();
+    }
+
+    private static bool IsAlivePlayer(Transform candidate)
+    {
+        if (candidate == null)
+        {
+            return false;
+        }
+
+        NetworkPlayerHealth networkHealth =
+            candidate.GetComponent<NetworkPlayerHealth>();
+
+        if (networkHealth != null && networkHealth.IsDead)
+        {
+            return false;
+        }
+
+        PlayerHealth localHealth = candidate.GetComponent<PlayerHealth>();
+        return localHealth == null || !localHealth.IsDead;
     }
 
     private void RemoveDestroyedEnemies()

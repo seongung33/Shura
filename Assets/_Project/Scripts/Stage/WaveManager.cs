@@ -8,6 +8,10 @@ public class WaveManager : MonoBehaviour
     [SerializeField]
     private StageConfig stageConfig;
 
+    [Header("Test Acceleration")]
+    [SerializeField, Min(0.01f)]
+    private float stageTimeScale = 1f;
+
     [Header("Legacy Test Fallback")]
     [SerializeField, Min(1f)]
     private float roundDuration = 60f;
@@ -80,7 +84,7 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        elapsedTime += Time.deltaTime;
+        elapsedTime += Time.deltaTime * Mathf.Max(0.01f, stageTimeScale);
 
         if (stageConfig != null)
         {
@@ -97,8 +101,8 @@ public class WaveManager : MonoBehaviour
         if (!cleanupStarted && elapsedTime >= stageConfig.CleanupStart)
         {
             cleanupStarted = true;
-            enemySpawner.SetSpawningEnabled(false);
-            Debug.Log("보스 전 정리 구간 시작");
+            enemySpawner.SetCleanupMode(true);
+            Debug.Log("보스 전 Horde 완화 구간 시작");
         }
 
         if (elapsedTime >= stageConfig.Duration)
@@ -164,6 +168,7 @@ public class WaveManager : MonoBehaviour
 
     private void OnValidate()
     {
+        stageTimeScale = Mathf.Max(0.01f, stageTimeScale);
         wave2StartTime = Mathf.Clamp(wave2StartTime, 0f, roundDuration);
         wave3StartTime = Mathf.Clamp(wave3StartTime, wave2StartTime, roundDuration);
     }

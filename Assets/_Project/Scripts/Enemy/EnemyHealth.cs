@@ -181,7 +181,10 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
             localHealth = nextHealth;
         }
 
-        Debug.Log($"적 체력: {nextHealth} / {maxHealth}");
+        if (isBoss)
+        {
+            Debug.Log($"보스 체력: {nextHealth} / {maxHealth}");
+        }
 
         PlayHitEffectSynced();
 

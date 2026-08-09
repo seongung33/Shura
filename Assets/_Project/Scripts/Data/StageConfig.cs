@@ -58,6 +58,24 @@ public sealed class WaveSegment
     [SerializeField, Min(0)]
     private int targetAliveEnd = 70;
 
+    [SerializeField, Min(1)]
+    private int maxAlive = 70;
+
+    [SerializeField, Min(0.02f)]
+    private float spawnInterval = 0.45f;
+
+    [SerializeField, Range(1, 6)]
+    private int spawnBatchSize = 2;
+
+    [SerializeField, Range(1, 6)]
+    private int catchUpBatchSize = 5;
+
+    [SerializeField, Range(0.1f, 0.9f)]
+    private float catchUpThreshold = 0.5f;
+
+    [SerializeField, Range(0.1f, 1f)]
+    private float catchUpIntervalMultiplier = 0.5f;
+
     [SerializeField, Min(0f)]
     private float spawnBudgetPerMinute = 77f;
 
@@ -83,6 +101,20 @@ public sealed class WaveSegment
     public float EndTime => Mathf.Max(startTime, endTime);
     public int TargetAliveStart => Mathf.Max(0, targetAliveStart);
     public int TargetAliveEnd => Mathf.Max(0, targetAliveEnd);
+    public int MaxAlive => Mathf.Max(1, maxAlive);
+    public float SpawnInterval => Mathf.Max(0.02f, spawnInterval);
+    public int SpawnBatchSize => Mathf.Clamp(spawnBatchSize, 1, 6);
+    public int CatchUpBatchSize => Mathf.Clamp(
+        Mathf.Max(spawnBatchSize, catchUpBatchSize),
+        1,
+        6
+    );
+    public float CatchUpThreshold => Mathf.Clamp(catchUpThreshold, 0.1f, 0.9f);
+    public float CatchUpIntervalMultiplier => Mathf.Clamp(
+        catchUpIntervalMultiplier,
+        0.1f,
+        1f
+    );
     public float SpawnBudgetPerMinute => Mathf.Max(0f, spawnBudgetPerMinute);
     public float TeamExperiencePerMinute => Mathf.Max(0f, teamExperiencePerMinute);
     public float HealthMultiplier => Mathf.Max(0.01f, healthMultiplier);
@@ -98,8 +130,11 @@ public sealed class WaveSegment
 
     public int GetTargetAlive(float elapsedTime)
     {
-        return Mathf.RoundToInt(
-            Mathf.Lerp(TargetAliveStart, TargetAliveEnd, GetProgress(elapsedTime))
+        return Mathf.Min(
+            MaxAlive,
+            Mathf.RoundToInt(
+                Mathf.Lerp(TargetAliveStart, TargetAliveEnd, GetProgress(elapsedTime))
+            )
         );
     }
 }
@@ -118,6 +153,12 @@ public sealed class StageConfig : ScriptableObject
 
     [SerializeField, Min(0f)]
     private float cleanupStart = 870f;
+
+    [SerializeField, Min(0)]
+    private int cleanupTargetAlive = 230;
+
+    [SerializeField, Min(1f)]
+    private float cleanupSpawnIntervalMultiplier = 1.5f;
 
     [SerializeField, Min(1)]
     private int maxAlive = 300;
@@ -141,6 +182,11 @@ public sealed class StageConfig : ScriptableObject
     public float Duration => Mathf.Max(1f, duration);
     public float CleanupStart => Mathf.Clamp(cleanupStart, 0f, Duration);
     public int MaxAlive => Mathf.Max(1, maxAlive);
+    public int CleanupTargetAlive => Mathf.Clamp(cleanupTargetAlive, 0, MaxAlive);
+    public float CleanupSpawnIntervalMultiplier => Mathf.Max(
+        1f,
+        cleanupSpawnIntervalMultiplier
+    );
     public float SpawnRadiusMin => Mathf.Max(0f, spawnRadiusMin);
     public float SpawnRadiusMax => Mathf.Max(SpawnRadiusMin, spawnRadiusMax);
     public GameObject BossPrefab => bossPrefab;

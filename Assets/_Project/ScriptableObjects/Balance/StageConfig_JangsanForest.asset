@@ -15,16 +15,24 @@ MonoBehaviour:
   stageId: jangsanbeom_forest
   duration: 900
   cleanupStart: 870
+  cleanupTargetAlive: 230
+  cleanupSpawnIntervalMultiplier: 1.5
   maxAlive: 300
   spawnRadiusMin: 8
-  spawnRadiusMax: 12
+  spawnRadiusMax: 13
   bossPrefab: {fileID: 8930158983480263104, guid: 705e6211b456de8448ed5a3231c8c565, type: 3}
   bossHealth: 2100
   waveSegments:
   - startTime: 0
     endTime: 180
-    targetAliveStart: 35
-    targetAliveEnd: 70
+    targetAliveStart: 40
+    targetAliveEnd: 50
+    maxAlive: 70
+    spawnInterval: 0.45
+    spawnBatchSize: 2
+    catchUpBatchSize: 5
+    catchUpThreshold: 0.5
+    catchUpIntervalMultiplier: 0.5
     spawnBudgetPerMinute: 77
     teamExperiencePerMinute: 63
     healthMultiplier: 1
@@ -32,24 +40,23 @@ MonoBehaviour:
     maxAttackersPerPlayer: 5
     experienceOrbBundleSize: 3
     enemies:
-    - role: 0
-      prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 70
-      healthMultiplier: 0.11
-      damageMultiplier: 0.4
-      moveSpeedMultiplier: 1
-      experienceWeight: 1
     - role: 1
       prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 30
-      healthMultiplier: 0.22
-      damageMultiplier: 0.6
+      weight: 100
+      healthMultiplier: 0.2
+      damageMultiplier: 0.5
       moveSpeedMultiplier: 1
       experienceWeight: 1
   - startTime: 180
     endTime: 360
-    targetAliveStart: 70
-    targetAliveEnd: 130
+    targetAliveStart: 75
+    targetAliveEnd: 90
+    maxAlive: 120
+    spawnInterval: 0.35
+    spawnBatchSize: 3
+    catchUpBatchSize: 6
+    catchUpThreshold: 0.5
+    catchUpIntervalMultiplier: 0.5
     spawnBudgetPerMinute: 135
     teamExperiencePerMinute: 109
     healthMultiplier: 1.05
@@ -57,155 +64,131 @@ MonoBehaviour:
     maxAttackersPerPlayer: 5
     experienceOrbBundleSize: 4
     enemies:
-    - role: 0
-      prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 50
-      healthMultiplier: 0.11
-      damageMultiplier: 0.4
-      moveSpeedMultiplier: 1
-      experienceWeight: 1
     - role: 1
       prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 35
-      healthMultiplier: 0.22
-      damageMultiplier: 0.6
+      weight: 75
+      healthMultiplier: 0.2
+      damageMultiplier: 0.5
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 2
       prefab: {fileID: 8930158983480263104, guid: 7610a984f3f358c46bd1a8449980aac5, type: 3}
-      weight: 15
-      healthMultiplier: 0.25
+      weight: 25
+      healthMultiplier: 0.3
       damageMultiplier: 1.67
       moveSpeedMultiplier: 1
       experienceWeight: 1
   - startTime: 360
     endTime: 540
-    targetAliveStart: 130
-    targetAliveEnd: 190
+    targetAliveStart: 125
+    targetAliveEnd: 150
+    maxAlive: 180
+    spawnInterval: 0.28
+    spawnBatchSize: 4
+    catchUpBatchSize: 6
+    catchUpThreshold: 0.5
+    catchUpIntervalMultiplier: 0.5
     spawnBudgetPerMinute: 220
     teamExperiencePerMinute: 190
-    healthMultiplier: 1.1
+    healthMultiplier: 1.15
     damageMultiplier: 1.1
     maxAttackersPerPlayer: 5
     experienceOrbBundleSize: 5
     enemies:
-    - role: 0
-      prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 45
-      healthMultiplier: 0.11
-      damageMultiplier: 0.4
-      moveSpeedMultiplier: 1
-      experienceWeight: 1
     - role: 1
       prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 30
-      healthMultiplier: 0.22
-      damageMultiplier: 0.6
+      weight: 60
+      healthMultiplier: 0.2
+      damageMultiplier: 0.5
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 2
       prefab: {fileID: 8930158983480263104, guid: 7610a984f3f358c46bd1a8449980aac5, type: 3}
-      weight: 15
-      healthMultiplier: 0.25
+      weight: 25
+      healthMultiplier: 0.3
       damageMultiplier: 1.67
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 3
       prefab: {fileID: 8930158983480263104, guid: ba32fe1680861704cb0a7be32793bfb1, type: 3}
-      weight: 10
-      healthMultiplier: 0.4
+      weight: 15
+      healthMultiplier: 0.45
       damageMultiplier: 0.4
       moveSpeedMultiplier: 1
       experienceWeight: 3
   - startTime: 540
     endTime: 720
-    targetAliveStart: 190
-    targetAliveEnd: 250
+    targetAliveStart: 180
+    targetAliveEnd: 210
+    maxAlive: 240
+    spawnInterval: 0.22
+    spawnBatchSize: 5
+    catchUpBatchSize: 6
+    catchUpThreshold: 0.5
+    catchUpIntervalMultiplier: 0.5
     spawnBudgetPerMinute: 250
     teamExperiencePerMinute: 210
-    healthMultiplier: 1.18
-    damageMultiplier: 1.18
+    healthMultiplier: 1.25
+    damageMultiplier: 1.2
     maxAttackersPerPlayer: 5
     experienceOrbBundleSize: 7
     enemies:
-    - role: 0
-      prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 55
-      healthMultiplier: 0.11
-      damageMultiplier: 0.4
-      moveSpeedMultiplier: 1
-      experienceWeight: 1
     - role: 1
       prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 20
-      healthMultiplier: 0.22
-      damageMultiplier: 0.6
+      weight: 50
+      healthMultiplier: 0.2
+      damageMultiplier: 0.5
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 2
       prefab: {fileID: 8930158983480263104, guid: 7610a984f3f358c46bd1a8449980aac5, type: 3}
-      weight: 15
-      healthMultiplier: 0.25
+      weight: 30
+      healthMultiplier: 0.3
       damageMultiplier: 1.67
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 3
       prefab: {fileID: 8930158983480263104, guid: ba32fe1680861704cb0a7be32793bfb1, type: 3}
-      weight: 8
-      healthMultiplier: 0.4
+      weight: 20
+      healthMultiplier: 0.45
       damageMultiplier: 0.4
       moveSpeedMultiplier: 1
       experienceWeight: 3
-    - role: 4
-      prefab: {fileID: 8930158983480263104, guid: ba32fe1680861704cb0a7be32793bfb1, type: 3}
-      weight: 2
-      healthMultiplier: 1.3
-      damageMultiplier: 0.56
-      moveSpeedMultiplier: 1
-      experienceWeight: 8
   - startTime: 720
-    endTime: 870
-    targetAliveStart: 250
-    targetAliveEnd: 300
+    endTime: 900
+    targetAliveStart: 240
+    targetAliveEnd: 260
+    maxAlive: 300
+    spawnInterval: 0.16
+    spawnBatchSize: 6
+    catchUpBatchSize: 6
+    catchUpThreshold: 0.5
+    catchUpIntervalMultiplier: 0.5
     spawnBudgetPerMinute: 360
     teamExperiencePerMinute: 336
-    healthMultiplier: 1.25
+    healthMultiplier: 1.4
     damageMultiplier: 1.3
     maxAttackersPerPlayer: 5
     experienceOrbBundleSize: 10
     enemies:
-    - role: 0
-      prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 60
-      healthMultiplier: 0.11
-      damageMultiplier: 0.4
-      moveSpeedMultiplier: 1
-      experienceWeight: 1
     - role: 1
       prefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
-      weight: 15
-      healthMultiplier: 0.22
-      damageMultiplier: 0.6
+      weight: 45
+      healthMultiplier: 0.2
+      damageMultiplier: 0.5
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 2
       prefab: {fileID: 8930158983480263104, guid: 7610a984f3f358c46bd1a8449980aac5, type: 3}
-      weight: 15
-      healthMultiplier: 0.25
+      weight: 30
+      healthMultiplier: 0.3
       damageMultiplier: 1.67
       moveSpeedMultiplier: 1
       experienceWeight: 1
     - role: 3
       prefab: {fileID: 8930158983480263104, guid: ba32fe1680861704cb0a7be32793bfb1, type: 3}
-      weight: 8
-      healthMultiplier: 0.4
+      weight: 25
+      healthMultiplier: 0.45
       damageMultiplier: 0.4
       moveSpeedMultiplier: 1
       experienceWeight: 3
-    - role: 4
-      prefab: {fileID: 8930158983480263104, guid: ba32fe1680861704cb0a7be32793bfb1, type: 3}
-      weight: 2
-      healthMultiplier: 1.3
-      damageMultiplier: 0.56
-      moveSpeedMultiplier: 1
-      experienceWeight: 8
