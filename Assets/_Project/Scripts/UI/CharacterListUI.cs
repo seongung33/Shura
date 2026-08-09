@@ -26,6 +26,7 @@ public class CharacterListUI : MonoBehaviour
     private void Start()
     {
         CreateCharacterSlots();
+        CharacterSelectVisualTheme.Apply(transform);
 
         int firstCharacterId = FindFirstCharacterId();
 
@@ -76,6 +77,8 @@ public class CharacterListUI : MonoBehaviour
                 myPlayerSlotUI,
                 HandleCharacterSelected
             );
+
+            CharacterSelectVisualTheme.StyleCharacterCard(slot.transform);
         }
     }
 
