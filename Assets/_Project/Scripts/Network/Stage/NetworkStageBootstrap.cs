@@ -135,8 +135,10 @@ public class NetworkStageBootstrap : MonoBehaviour
             ?.ConfigureBasicSkill(data.BasicSkill);
         offlinePlayer.GetComponent<PlayerRuntimeGrowth>()
             ?.ConfigureBasicSkill(data.BasicSkill);
-        offlinePlayer.GetComponent<AutoSkillCaster>()
-            ?.ConfigureSkills(data.StartingSkills);
+        AutoSkillCaster skillCaster =
+            offlinePlayer.GetComponent<AutoSkillCaster>();
+        skillCaster?.ConfigureSkills(data.StartingSkills);
+        skillCaster?.ConfigureUltimateSkill(data.UltimateSkill);
 
         ApplyOfflineCharacterVisual(data);
         Debug.Log($"싱글 캐릭터 적용: {data.characterName}");

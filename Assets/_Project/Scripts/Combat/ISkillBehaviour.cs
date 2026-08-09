@@ -37,3 +37,13 @@ public interface ISkillBehaviour
 {
     void Cast(SkillCastContext context);
 }
+
+public interface ISkillCastOriginResolver
+{
+    Vector2 ResolveCastOrigin(
+        GameObject owner,
+        Vector2 direction,
+        float searchRange,
+        LayerMask enemyLayer
+    );
+}
