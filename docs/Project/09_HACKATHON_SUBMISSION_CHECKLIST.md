@@ -32,7 +32,7 @@
 - [x] 전체 Unity 소스와 커밋 이력 유지
 - [x] Unity 버전 `6000.3.20f1` 기록
 - [x] Build Settings에 `MainMenu`, `MultiPlayerEntry`, `MultiPlayerLobby`, `Main`, 레거시 `NetworkTest` 등록
-- [ ] README에 `MainMenu` 시작, 방 생성·참가·캐릭터 선택·WASD/방향키·자동 공격 설명
+- [x] README에 `MainMenu` 시작, 방 생성·참가·캐릭터 선택·WASD/방향키·자동 공격 설명
 - [ ] 미커밋 작업 없이 제출 후보 커밋 생성
 - [ ] 새 Clone에서 Console 오류와 Missing 참조 없음
 - [ ] Windows 제출 후보 빌드 생성·실행

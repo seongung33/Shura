@@ -1,5 +1,7 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -7,22 +9,27 @@ public class StartMenuController : MonoBehaviour
 {
     private const string GameTitle = "MUGUNG";
     private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
-    private const string LogoResourcePath = "UI/MainMenu/mugung_logo";
+    private const string LogoResourcePath = "UI/MainMenu/mugung_logo_pixel";
 
-    private static readonly Color PanelColor = new Color(0.015f, 0.025f, 0.05f, 0.78f);
+    private static readonly Color PanelColor = new Color(0.015f, 0.025f, 0.05f, 0.52f);
     private static readonly Color AccentColor = new Color(0.08f, 0.72f, 0.88f, 1f);
     private static readonly Color ButtonColor = new Color(0.08f, 0.34f, 0.48f, 1f);
     private static readonly Color DisabledColor = new Color(0.12f, 0.17f, 0.24f, 1f);
     private static readonly Color PrimaryTextColor = new Color(0.82f, 0.93f, 1f, 1f);
+    private static bool introShownThisSession;
 
     [SerializeField] private GameObject startMenuPanel;
     [SerializeField] private GameObject multiplayerPanel;
     private TMP_Text subtitleText;
+    private CanvasGroup menuCanvasGroup;
+    private bool skipIntroRequested;
 
     private void Awake()
     {
         GameAudioController.EnsureExists();
+        MainMenuSettingsPanel.ApplySavedDisplaySetting();
         ApplyVisualTheme();
+        ShowLaunchIntro();
     }
 
     public void OpenMultiplayer()
@@ -71,14 +78,20 @@ public class StartMenuController : MonoBehaviour
             return;
         }
 
+        Canvas canvas = menuRoot.GetComponentInParent<Canvas>();
+        ConfigureCanvas(canvas);
+
         CreateBackground(menuRoot);
 
+        bool compactLayout = (float)Screen.width / Mathf.Max(1f, Screen.height) < 1.45f;
         RectTransform panelRect = menuRoot.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
         panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = new Vector2(620f, 820f);
+        panelRect.sizeDelta = compactLayout
+            ? new Vector2(500f, 650f)
+            : new Vector2(560f, 650f);
 
         Image panelImage = menuRoot.GetComponent<Image>();
         if (panelImage == null)
@@ -92,12 +105,17 @@ public class StartMenuController : MonoBehaviour
         {
             panelOutline = menuRoot.AddComponent<Outline>();
         }
-        panelOutline.effectColor = new Color(0.08f, 0.7f, 0.88f, 0.82f);
-        panelOutline.effectDistance = new Vector2(3f, -3f);
+        panelOutline.effectColor = new Color(0.08f, 0.7f, 0.88f, 0.46f);
+        panelOutline.effectDistance = new Vector2(2f, -2f);
 
-        CreateLogo(menuRoot.transform);
-        subtitleText = CreateHeading(menuRoot.transform, "Subtitle", "무궁의 밤, 끝까지 살아남아라", new Vector2(0f, 112f), 27f, new Color(0.75f, 0.86f, 0.95f, 1f));
-        CreateAccentLine(menuRoot.transform, 72f);
+        CreateLogo(menuRoot.transform, compactLayout);
+        float subtitleY = compactLayout ? 75f : 82f;
+        subtitleText = CreateHeading(menuRoot.transform, "Subtitle", "무궁의 밤, 끝까지 살아남아라", new Vector2(0f, subtitleY), compactLayout ? 23f : 27f, new Color(0.75f, 0.86f, 0.95f, 1f));
+        CreateAccentLine(menuRoot.transform, compactLayout ? 48f : 54f);
+        CreateHowToButton(menuRoot.transform);
+
+        float firstButtonY = -4f;
+        float buttonGap = 64f;
 
         Button[] buttons = menuRoot.GetComponentsInChildren<Button>(true);
         foreach (Button button in buttons)
@@ -114,27 +132,78 @@ public class StartMenuController : MonoBehaviour
 
             if (text == "싱글 플레이")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, 10f), ButtonColor);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY), ButtonColor, compactLayout);
             }
             else if (text == "멀티 플레이")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, -80f), ButtonColor);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap), ButtonColor, compactLayout);
             }
             else if (text == "설정")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, -170f), ButtonColor);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 3f), ButtonColor, compactLayout);
                 button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(ShowSettingsNotice);
+                button.onClick.AddListener(OpenSettings);
+            }
+            else if (text == "게임 방법")
+            {
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 2f), ButtonColor, compactLayout);
             }
             else if (text == "게임 종료")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, -260f), new Color(0.42f, 0.12f, 0.16f, 1f));
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 4f), new Color(0.42f, 0.12f, 0.16f, 1f), compactLayout);
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(QuitGame);
             }
 
             button.onClick.AddListener(GameAudioController.PlayButtonClick);
         }
+    }
+
+    private void CreateHowToButton(Transform parent)
+    {
+        if (parent.Find("HowToButtonRuntime") != null)
+        {
+            return;
+        }
+
+        GameObject buttonObject = new(
+            "HowToButtonRuntime",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button)
+        );
+        buttonObject.transform.SetParent(parent, false);
+        Button button = buttonObject.GetComponent<Button>();
+        button.onClick.AddListener(OpenHowTo);
+
+        TMP_Text label = CreateHeading(
+            buttonObject.transform,
+            "Label",
+            "게임 방법",
+            Vector2.zero,
+            28f,
+            PrimaryTextColor
+        );
+        StretchLabel(label.rectTransform);
+    }
+
+    private static void ConfigureCanvas(Canvas canvas)
+    {
+        if (canvas == null)
+        {
+            return;
+        }
+
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+        {
+            scaler = canvas.gameObject.AddComponent<CanvasScaler>();
+        }
+
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1280f, 720f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 1f;
     }
 
     private static void CreateBackground(GameObject menuRoot)
@@ -161,6 +230,13 @@ public class StartMenuController : MonoBehaviour
         background.sprite = Resources.Load<Sprite>(BackgroundResourcePath);
         background.color = Color.white;
         background.raycastTarget = false;
+        if (background.sprite != null)
+        {
+            AspectRatioFitter fitter = background.gameObject.AddComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fitter.aspectRatio = background.sprite.rect.width / background.sprite.rect.height;
+        }
+        background.gameObject.AddComponent<MainMenuBackdropMotion>();
 
         Image shade = new GameObject("ReadabilityShade", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
         shade.transform.SetParent(artwork.transform, false);
@@ -171,7 +247,7 @@ public class StartMenuController : MonoBehaviour
         shade.raycastTarget = false;
     }
 
-    private static void CreateLogo(Transform parent)
+    private static void CreateLogo(Transform parent, bool compactLayout)
     {
         Transform oldTitle = parent.Find("Title");
         if (oldTitle != null)
@@ -192,8 +268,10 @@ public class StartMenuController : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(0f, 270f);
-        rect.sizeDelta = new Vector2(560f, 300f);
+        rect.anchoredPosition = new Vector2(0f, compactLayout ? 205f : 210f);
+        rect.sizeDelta = compactLayout
+            ? new Vector2(420f, 190f)
+            : new Vector2(460f, 200f);
 
         Image logo = logoObject.GetComponent<Image>();
         logo.sprite = logoSprite;
@@ -218,23 +296,26 @@ public class StartMenuController : MonoBehaviour
         return startMenuPanel;
     }
 
-    private void ShowSettingsNotice()
+    private void OpenSettings()
     {
-        if (subtitleText != null)
-        {
-            subtitleText.text = "설정 기능은 현재 준비 중입니다.";
-            ApplyTextColor(subtitleText, new Color(1f, 0.78f, 0.28f, 1f), 0.12f);
-        }
+        MainMenuSettingsPanel.Show(GetComponentInParent<Canvas>());
     }
 
-    private static void StyleButton(Button button, TMP_Text tmpLabel, Text legacyLabel, Vector2 position, Color normalColor)
+    private void OpenHowTo()
+    {
+        MainMenuHowToPanel.Show(GetComponentInParent<Canvas>());
+    }
+
+    private static void StyleButton(Button button, TMP_Text tmpLabel, Text legacyLabel, Vector2 position, Color normalColor, bool compactLayout)
     {
         RectTransform rect = button.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = position;
-        rect.sizeDelta = new Vector2(400f, 64f);
+        rect.sizeDelta = compactLayout
+            ? new Vector2(380f, 56f)
+            : new Vector2(400f, 64f);
 
         Image image = button.GetComponent<Image>();
         image.color = normalColor;
@@ -249,6 +330,11 @@ public class StartMenuController : MonoBehaviour
         colors.colorMultiplier = 1f;
         colors.fadeDuration = 0.08f;
         button.colors = colors;
+
+        if (button.GetComponent<MainMenuButtonMotion>() == null)
+        {
+            button.gameObject.AddComponent<MainMenuButtonMotion>();
+        }
 
         if (tmpLabel != null)
         {
@@ -308,6 +394,149 @@ public class StartMenuController : MonoBehaviour
         rect.anchoredPosition = new Vector2(0f, positionY);
         rect.sizeDelta = new Vector2(380f, 4f);
         line.GetComponent<Image>().color = AccentColor;
+    }
+
+    private void ShowLaunchIntro()
+    {
+        if (introShownThisSession)
+        {
+            return;
+        }
+
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Sprite logoSprite = Resources.Load<Sprite>(LogoResourcePath);
+        Sprite backgroundSprite = Resources.Load<Sprite>(BackgroundResourcePath);
+        if (canvas == null || logoSprite == null)
+        {
+            return;
+        }
+
+        introShownThisSession = true;
+        GameObject menuRoot = ResolveMenuRoot();
+        if (menuRoot != null)
+        {
+            menuCanvasGroup = menuRoot.GetComponent<CanvasGroup>();
+            if (menuCanvasGroup == null)
+            {
+                menuCanvasGroup = menuRoot.AddComponent<CanvasGroup>();
+            }
+            menuCanvasGroup.alpha = 0f;
+            menuCanvasGroup.interactable = false;
+        }
+
+        GameObject overlay = new GameObject(
+            "LaunchIntroRuntime",
+            typeof(RectTransform),
+            typeof(CanvasGroup),
+            typeof(Image),
+            typeof(Button)
+        );
+        overlay.transform.SetParent(canvas.transform, false);
+        overlay.transform.SetAsLastSibling();
+        RectTransform overlayRect = overlay.GetComponent<RectTransform>();
+        overlayRect.anchorMin = Vector2.zero;
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+
+        Image overlayImage = overlay.GetComponent<Image>();
+        overlayImage.sprite = backgroundSprite;
+        overlayImage.color = new Color(0.22f, 0.26f, 0.34f, 1f);
+        Button skipButton = overlay.GetComponent<Button>();
+        skipButton.transition = Selectable.Transition.None;
+        skipButton.onClick.AddListener(() => skipIntroRequested = true);
+
+        GameObject shadeObject = new GameObject(
+            "IntroShade",
+            typeof(RectTransform),
+            typeof(Image)
+        );
+        shadeObject.transform.SetParent(overlay.transform, false);
+        RectTransform shadeRect = shadeObject.GetComponent<RectTransform>();
+        shadeRect.anchorMin = Vector2.zero;
+        shadeRect.anchorMax = Vector2.one;
+        shadeRect.offsetMin = Vector2.zero;
+        shadeRect.offsetMax = Vector2.zero;
+        shadeObject.GetComponent<Image>().color = new Color(0f, 0.01f, 0.035f, 0.62f);
+
+        GameObject logoObject = new GameObject(
+            "IntroLogo",
+            typeof(RectTransform),
+            typeof(Image)
+        );
+        logoObject.transform.SetParent(overlay.transform, false);
+        RectTransform logoRect = logoObject.GetComponent<RectTransform>();
+        logoRect.anchorMin = new Vector2(0.12f, 0.22f);
+        logoRect.anchorMax = new Vector2(0.88f, 0.78f);
+        logoRect.pivot = new Vector2(0.5f, 0.5f);
+        logoRect.offsetMin = Vector2.zero;
+        logoRect.offsetMax = Vector2.zero;
+        Image logo = logoObject.GetComponent<Image>();
+        logo.sprite = logoSprite;
+        logo.preserveAspect = true;
+        logo.raycastTarget = false;
+        AspectRatioFitter logoFitter = logoObject.AddComponent<AspectRatioFitter>();
+        logoFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        logoFitter.aspectRatio = logoSprite.rect.width / logoSprite.rect.height;
+
+        CanvasGroup group = overlay.GetComponent<CanvasGroup>();
+        group.alpha = 0f;
+        group.blocksRaycasts = true;
+        skipIntroRequested = false;
+        StartCoroutine(PlayLaunchIntro(group, overlay));
+    }
+
+    private IEnumerator PlayLaunchIntro(
+        CanvasGroup group,
+        GameObject overlay
+    )
+    {
+        yield return Fade(group, 0f, 1f, 0.45f);
+        float holdElapsed = 0f;
+        while (holdElapsed < 0.9f && !skipIntroRequested)
+        {
+            holdElapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        yield return Fade(group, 1f, 0f, 0.55f);
+        Destroy(overlay);
+
+        if (menuCanvasGroup != null)
+        {
+            yield return Fade(menuCanvasGroup, 0f, 1f, 0.42f);
+            menuCanvasGroup.interactable = true;
+            SelectFirstMenuButton();
+        }
+    }
+
+    private void SelectFirstMenuButton()
+    {
+        EventSystem eventSystem = EventSystem.current;
+        GameObject menuRoot = ResolveMenuRoot();
+        Button firstButton = menuRoot != null
+            ? menuRoot.GetComponentInChildren<Button>(true)
+            : null;
+        if (eventSystem != null && firstButton != null && firstButton.interactable)
+        {
+            eventSystem.SetSelectedGameObject(firstButton.gameObject);
+        }
+    }
+
+    private static IEnumerator Fade(
+        CanvasGroup group,
+        float from,
+        float to,
+        float duration
+    )
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            group.alpha = Mathf.Lerp(from, to, elapsed / duration);
+            yield return null;
+        }
+        group.alpha = to;
     }
 
     private static void ApplyTextColor(TMP_Text text, Color color, float outlineWidth)

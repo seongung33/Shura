@@ -3,6 +3,11 @@ using UnityEngine.SceneManagement;
 
 public sealed class GameAudioController : MonoBehaviour
 {
+    private const string MusicVolumeKey = "settings.musicVolume";
+    private const string EffectsVolumeKey = "settings.effectsVolume";
+    private const float DefaultMusicVolume = 0.32f;
+    private const float DefaultEffectsVolume = 1f;
+
     private static GameAudioController instance;
 
     private AudioSource musicSource;
@@ -12,6 +17,12 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip clickSound;
     private AudioClip hitSound;
     private AudioClip bossSound;
+
+    public static float MusicVolume =>
+        PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume);
+
+    public static float EffectsVolume =>
+        PlayerPrefs.GetFloat(EffectsVolumeKey, DefaultEffectsVolume);
 
     public static void EnsureExists()
     {
@@ -47,6 +58,27 @@ public sealed class GameAudioController : MonoBehaviour
         instance.effectsSource.PlayOneShot(instance.bossSound, 0.55f);
     }
 
+    public static void SetMusicVolume(float value)
+    {
+        EnsureExists();
+        float volume = Mathf.Clamp01(value);
+        instance.musicSource.volume = volume;
+        PlayerPrefs.SetFloat(MusicVolumeKey, volume);
+    }
+
+    public static void SetEffectsVolume(float value)
+    {
+        EnsureExists();
+        float volume = Mathf.Clamp01(value);
+        instance.effectsSource.volume = volume;
+        PlayerPrefs.SetFloat(EffectsVolumeKey, volume);
+    }
+
+    public static void SaveSettings()
+    {
+        PlayerPrefs.Save();
+    }
+
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -61,8 +93,9 @@ public sealed class GameAudioController : MonoBehaviour
         effectsSource = gameObject.AddComponent<AudioSource>();
         musicSource.loop = true;
         musicSource.playOnAwake = false;
-        musicSource.volume = 0.32f;
+        musicSource.volume = MusicVolume;
         effectsSource.playOnAwake = false;
+        effectsSource.volume = EffectsVolume;
 
         menuMusic = Resources.Load<AudioClip>("Audio/Music/EmptyCity");
         battleMusic = Resources.Load<AudioClip>("Audio/Music/CyberBattle");
