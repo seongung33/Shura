@@ -127,7 +127,7 @@
 | 네트워크 로비 전환 | `Network/Lobby/NetworkLobbySceneLoader.cs` | 호스트 네트워크·참가 코드 준비 후 NGO로 `MultiPlayerLobby` 로드, PlayerObject 보존 |
 | 네트워크 로비 상태 | `Network/Lobby/NetworkLobbyState.cs` | 최대 2개 슬롯의 클라이언트 ID·캐릭터 ID를 서버 쓰기 `NetworkVariable`로 복제 |
 | 네트워크 로비 UI | `Network/Lobby/MultiplayerLobbyUI.cs`, `Network/Lobby/MultiplayerLobbyExitController.cs` | 참가 코드·접속 인원·호스트 시작 UI 바인딩, 세션 종료 후 `MultiPlayerEntry` 복귀 |
-| 네트워크 게임 진입 | `Network/Lobby/NetworkGameFlowController.cs` | 호스트·최소 인원 조건과 NGO `Main` 씬 전환. 현재 정식 씬 직렬화값은 최소 1명·최대 2명 |
+| 네트워크 게임 진입 | `Network/Lobby/NetworkGameFlowController.cs` | 호스트·2인 조건과 NGO `Main` 씬 전환. 코드와 정식·레거시 씬 모두 최소 2명·최대 2명으로 통일 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerMovement.cs` | 실제 네트워크 프리팹에서 사용하는 소유자 이동 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerOwnerSetup.cs` | 비소유 입력·공격·스킬 비활성화와 소유자 카메라 연결 |
 | 네트워크 플레이어 | `Network/Player/NetworkPlayerCharacter.cs` | 서버가 로비 선택 ID를 플레이어 `NetworkVariable`에 보존하고 모든 클라이언트에서 외형·체력·이동속도·기본공격·시작 스킬 적용 |
@@ -373,7 +373,7 @@ MainMenu
 - `MultiPlayerEntry`의 `NetworkManager`는 `UnityTransport`, NGO, `NetworkGameFlowController`, `NetworkSessionState`, `NetworkLobbySceneLoader`를 가진다.
 - 호스트는 세션과 네트워크 준비 후 NGO SceneManager로 `MultiPlayerLobby`를 로드하고, 게스트는 호스트의 현재 씬에 동기화된다.
 - `MultiPlayerLobby`의 씬 배치 `NetworkLobbyState`가 최대 2개 슬롯과 캐릭터 ID를 서버 권한으로 관리한다. 현재 선택 가능한 데이터는 주몽 1개다.
-- `MultiplayerLobbyUI`가 런타임에 `NetworkGameFlowController`와 시작 버튼을 바인딩한다. 코드상 호스트만 시작할 수 있지만 `MultiPlayerEntry` 씬의 `minimumPlayers`는 현재 1이므로 2명 대기 조건은 충족하지 않는다.
+- `MultiplayerLobbyUI`가 런타임에 `NetworkGameFlowController`와 시작 버튼을 바인딩한다. 호스트이면서 2명이 접속한 경우에만 시작 버튼이 활성화되며 런타임에도 최소 인원을 2명 이상으로 보정한다.
 - `MultiplayerLobbyExitController`는 세션과 `NetworkManager`를 종료하고 `MultiPlayerEntry`로 돌아간다.
 
 `Tests/NetworkTest.unity`와 `NetworkTestUI`는 8월 2일 2인 검증에 사용된 레거시 경로다. 해당 경로의 Relay 외부 접속, `Main` 동시 전환과 `NetworkTest` 복귀 기록은 있지만 새 정식 4씬 흐름의 실행 증거로 대체할 수 없다. 새 흐름의 생성·참가·선택·시작·나가기·결과 후 복귀, 강제 이탈·새 방·Web은 별도 회귀가 필요하다.
