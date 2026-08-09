@@ -1987,7 +1987,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkGameFlowController
   networkManager: {fileID: 1344696225}
-  minimumPlayers: 1
+  minimumPlayers: 2
   maximumPlayers: 2
   gameplaySceneName: Main
   onPlayerCountChanged:
