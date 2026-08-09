@@ -176,8 +176,13 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         PlayerHealth playerHealth = GetComponent<PlayerHealth>();
         playerHealth?.ConfigureMaxHealth(data.MaxHealth);
 
+        bool usesJumongAutoTarget = JumongAutoTargetAttack.Supports(data);
+
         GetComponent<DirectionalAutoAttack>()?.ConfigureBasicSkill(
-            data.BasicSkill
+            usesJumongAutoTarget ? null : data.BasicSkill
+        );
+        GetComponent<JumongAutoTargetAttack>()?.ConfigureBasicSkill(
+            usesJumongAutoTarget ? data.BasicSkill : null
         );
         GetComponent<PlayerRuntimeGrowth>()?.ConfigureBasicSkill(
             data.BasicSkill

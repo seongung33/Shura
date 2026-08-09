@@ -131,8 +131,16 @@ public class NetworkStageBootstrap : MonoBehaviour
             ?.ConfigureBaseSpeed(data.MoveSpeed);
         offlinePlayer.GetComponent<Shura.Player.PlayerHealth>()
             ?.ConfigureMaxHealth(data.MaxHealth);
+        bool usesJumongAutoTarget = JumongAutoTargetAttack.Supports(data);
+
         offlinePlayer.GetComponent<DirectionalAutoAttack>()
-            ?.ConfigureBasicSkill(data.BasicSkill);
+            ?.ConfigureBasicSkill(
+                usesJumongAutoTarget ? null : data.BasicSkill
+            );
+        offlinePlayer.GetComponent<JumongAutoTargetAttack>()
+            ?.ConfigureBasicSkill(
+                usesJumongAutoTarget ? data.BasicSkill : null
+            );
         offlinePlayer.GetComponent<PlayerRuntimeGrowth>()
             ?.ConfigureBasicSkill(data.BasicSkill);
         AutoSkillCaster skillCaster =
