@@ -183,6 +183,7 @@ Console 로그:
 | 2026-08-09 | Codex | 진미리 | 메뉴·캐릭터 선택·게임 씬이 즉시 튀어나오는 전환 완화 | 네트워크 SceneManager를 가로채지 않고 `sceneLoaded` 이후 화면 표현만 담당하도록 권한 경계를 유지 | DDOL 전환 캔버스, 0.32초 암전 해제, 전환 중 짧은 입력 차단, 첫 메인 로고 연출과 중복 방지 | Unity 컴파일·싱글·멀티 씬 전환에서 입력 지연과 중복 캔버스 수동 확인 필요 | `SceneFadePresenter.cs` |
 | 2026-08-09 | Codex | 진미리 | 멀티 결과 화면의 역할별 다음 행동과 가독성 보강 | 호스트에게만 제어 권한이 있는 기존 계약을 유지하며 게스트가 빈 화면에 갇힌 것처럼 보이지 않도록 안내를 분리 | 전체 화면 딤, 강조 패널, 승패 색상, 호스트 버튼·게스트 대기 문구, 짧은 등장 애니메이션 | Unity 컴파일·실제 2인 승패에서 양쪽 문구·버튼 권한·재시작·복귀 수동 확인 필요 | `NetworkGameResultPresenter.cs` |
 | 2026-08-09 | Codex | 진미리 | 화면 비율에 따라 메인 메뉴가 넘치거나 배경이 찌그러지는 문제 개선 | 씬 YAML 충돌을 피하면서 기존 런타임 테마에 기준 해상도와 화면 높이 기준 스케일을 적용 | 1280×720 반응형 Canvas, 고정 여백 메뉴, 배경 비율 채우기, 시작 로고 영역 기반 크기, 클릭 생략·첫 버튼 선택 | 전체 C# 컴파일·`git diff --check`; Unity Free Aspect·16:9·4:3과 마우스·키보드 수동 회귀 필요 | `Assets/_Project/Scripts/UI/StartMenuController.cs` |
+| 2026-08-09 | Codex·Image-to-Pixel | 진미리 | 메인 로고를 게임의 픽셀 아트 방향과 통일 | 사용자가 변환한 36색 결과의 글자·문양은 보존하고 불투명 단색 배경만 결정적으로 제거 | 이진 투명 알파 PNG, Point 필터·무압축 Unity Sprite, 런타임 로고 경로 교체 | 이미지 크기·색상·알파 픽셀 검사, 전체 C# 컴파일·`git diff --check`; Unity 실제 화면 수동 확인 필요 | `Assets/Resources/UI/MainMenu/mugung_logo_pixel.png`, `StartMenuController.cs` |
 
 ## 7. 확인된 검토·수정 사례
 

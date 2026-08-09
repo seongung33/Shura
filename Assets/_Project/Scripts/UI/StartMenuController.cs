@@ -9,7 +9,7 @@ public class StartMenuController : MonoBehaviour
 {
     private const string GameTitle = "MUGUNG";
     private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
-    private const string LogoResourcePath = "UI/MainMenu/mugung_logo_transparent";
+    private const string LogoResourcePath = "UI/MainMenu/mugung_logo_pixel";
 
     private static readonly Color PanelColor = new Color(0.015f, 0.025f, 0.05f, 0.52f);
     private static readonly Color AccentColor = new Color(0.08f, 0.72f, 0.88f, 1f);
