@@ -132,6 +132,8 @@ public class NetworkStageBootstrap : MonoBehaviour
             ?.ConfigureMaxHealth(data.MaxHealth);
         offlinePlayer.GetComponent<DirectionalAutoAttack>()
             ?.ConfigureBasicSkill(data.BasicSkill);
+        offlinePlayer.GetComponent<PlayerRuntimeGrowth>()
+            ?.ConfigureBasicSkill(data.BasicSkill);
         offlinePlayer.GetComponent<AutoSkillCaster>()
             ?.ConfigureSkills(data.StartingSkills);
 

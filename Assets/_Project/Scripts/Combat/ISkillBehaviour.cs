@@ -10,7 +10,9 @@ public struct SkillCastContext
     public Vector2 Origin;          // 발사 위치
     public Vector2 Direction;       // 조준 방향 (정규화됨)
     public float Damage;
+    public float Range;
     public float ProjectileSpeed;
+    public int SkillLevel;
     public int PierceBonus;
     public float ExplosionRadiusMultiplier;
     public float ActivationIntervalMultiplier;

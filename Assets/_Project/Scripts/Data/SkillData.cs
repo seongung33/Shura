@@ -42,6 +42,11 @@ public class SkillData : ScriptableObject
     [SerializeField]
     private GameObject skillPrefab;
 
+    [Header("Activation")]
+
+    [SerializeField]
+    private bool requiresManualActivation;
+
     [Header("Progression")]
 
     [Min(1)]
@@ -61,6 +66,7 @@ public class SkillData : ScriptableObject
     public float ProjectileSpeed => projectileSpeed;
 
     public GameObject SkillPrefab => skillPrefab;
+    public bool RequiresManualActivation => requiresManualActivation;
 
     public int MaxLevel => Mathf.Max(1, maxLevel);
 

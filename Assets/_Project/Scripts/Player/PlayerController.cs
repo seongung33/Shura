@@ -16,6 +16,7 @@ namespace Shura.Player
         /// </summary>
         public float SpeedMultiplier { get; set; } = 1f;
         public float GrowthSpeedMultiplier { get; set; } = 1f;
+        public bool SkillMovementOverride { get; set; }
 
         private void Awake()
         {
@@ -37,6 +38,12 @@ namespace Shura.Player
 
         private void FixedUpdate()
         {
+            if (SkillMovementOverride)
+            {
+                rb.linearVelocity = Vector2.zero;
+                return;
+            }
+
             if (GameplayPauseState.IsLevelUpActive)
             {
                 rb.linearVelocity = Vector2.zero;

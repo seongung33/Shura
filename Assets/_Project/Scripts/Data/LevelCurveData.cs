@@ -19,7 +19,10 @@ public sealed class LevelCurveData : ScriptableObject
     private float teamExperienceMultiplier = 1.75f;
 
     [SerializeField]
-    private int[] skillChoiceLevels = { 3, 6, 9 };
+    private int[] skillChoiceLevels =
+    {
+        3, 6, 9, 12, 15, 18, 21, 24, 27, 30
+    };
 
     public int GetBaseNextExperience(int currentLevel)
     {

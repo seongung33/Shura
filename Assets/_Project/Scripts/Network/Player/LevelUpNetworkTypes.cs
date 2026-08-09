@@ -117,8 +117,10 @@ public struct SkillProgressNetworkState :
 public struct SkillCastRuntime : INetworkSerializable
 {
     public float Damage;
+    public float Range;
     public float ProjectileSpeed;
     public float Cooldown;
+    public int SkillLevel;
     public int ProjectileCount;
     public float ProjectileSpreadAngle;
     public int PierceBonus;
@@ -136,8 +138,10 @@ public struct SkillCastRuntime : INetworkSerializable
         return new SkillCastRuntime
         {
             Damage = skill != null ? skill.Damage : 0f,
+            Range = skill != null ? skill.Range : 0f,
             ProjectileSpeed = skill != null ? skill.ProjectileSpeed : 0f,
             Cooldown = skill != null ? skill.Cooldown : 1f,
+            SkillLevel = 1,
             ProjectileCount = 1,
             ExplosionRadiusMultiplier = 1f,
             ActivationIntervalMultiplier = 1f,
@@ -152,8 +156,10 @@ public struct SkillCastRuntime : INetworkSerializable
         where T : IReaderWriter
     {
         serializer.SerializeValue(ref Damage);
+        serializer.SerializeValue(ref Range);
         serializer.SerializeValue(ref ProjectileSpeed);
         serializer.SerializeValue(ref Cooldown);
+        serializer.SerializeValue(ref SkillLevel);
         serializer.SerializeValue(ref ProjectileCount);
         serializer.SerializeValue(ref ProjectileSpreadAngle);
         serializer.SerializeValue(ref PierceBonus);

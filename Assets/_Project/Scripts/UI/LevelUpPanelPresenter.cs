@@ -285,16 +285,16 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
             candidate.SkillPoolIndex
         );
         string levelLabel = currentLevel <= 0
-            ? "NEW"
+            ? "신규 → Lv1"
             : $"Lv{currentLevel} → Lv{candidate.TargetSkillLevel}";
         string result = currentLevel <= 0
-            ? $"선택 시: {skill.DisplayName} Lv1 획득"
+            ? $"신규 습득: {skill.Description}"
             : $"강화: {skill.GetUpgradeSummary(candidate.TargetSkillLevel)}";
 
         return
             $"[{skill.DisplayName}]\n\n" +
             $"{levelLabel}\n\n" +
-            $"속성: {candidate.Element.ToString().ToUpperInvariant()}\n\n" +
+            $"속성: {ElementUtil.GetKoreanName(candidate.Element)}\n\n" +
             $"설명: {skill.Description}\n\n" +
             result;
     }

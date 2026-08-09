@@ -28,6 +28,7 @@ public class DirectionalAutoAttack : MonoBehaviour
     public void ConfigureBasicSkill(SkillData skill)
     {
         basicSkill = skill;
+        runtimeGrowth?.ConfigureBasicSkill(skill);
         nextAttackTime = 0f;
     }
 
@@ -35,6 +36,7 @@ public class DirectionalAutoAttack : MonoBehaviour
     {
         aim = GetComponent<PlayerAimDirection>();
         runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
+        runtimeGrowth?.ConfigureBasicSkill(basicSkill);
     }
 
     private void Update()
@@ -54,11 +56,15 @@ public class DirectionalAutoAttack : MonoBehaviour
             return;
         }
 
+        SkillCastRuntime runtime = runtimeGrowth != null
+            ? runtimeGrowth.GetCastRuntime(basicSkill)
+            : SkillCastRuntime.FromBase(basicSkill);
+
         if (requireEnemyInRange)
         {
             Transform nearestEnemy = EnemyTargetFinder.FindNearestEnemy(
                 transform.position,
-                basicSkill.Range,
+                runtime.Range,
                 enemyLayer
             );
 
@@ -75,9 +81,6 @@ public class DirectionalAutoAttack : MonoBehaviour
             return;
         }
 
-        SkillCastRuntime runtime = runtimeGrowth != null
-            ? runtimeGrowth.GetCastRuntime(basicSkill)
-            : SkillCastRuntime.FromBase(basicSkill);
         nextAttackTime = Time.time + runtime.Cooldown;
     }
 
@@ -154,7 +157,9 @@ public class DirectionalAutoAttack : MonoBehaviour
                 Origin = spawnPosition,
                 Direction = volleyDirection,
                 Damage = runtime.Damage,
+                Range = runtime.Range,
                 ProjectileSpeed = runtime.ProjectileSpeed,
+                SkillLevel = runtime.SkillLevel,
                 PierceBonus = runtime.PierceBonus,
                 ExplosionRadiusMultiplier = runtime.ExplosionRadiusMultiplier,
                 ActivationIntervalMultiplier = runtime.ActivationIntervalMultiplier,

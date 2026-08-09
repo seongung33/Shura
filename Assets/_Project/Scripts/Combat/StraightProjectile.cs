@@ -91,6 +91,11 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
             : 1f;
         effectiveExplosionRadius = explosionRadius * explosionMultiplier;
 
+        float sizeMultiplier = context.ZoneRadiusMultiplier > 0f
+            ? context.ZoneRadiusMultiplier
+            : 1f;
+        transform.localScale *= sizeMultiplier;
+
         // 화살이 날아가는 방향을 바라보게 회전
         transform.right = direction;
 

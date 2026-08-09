@@ -555,6 +555,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   characters:
   - {fileID: 11400000, guid: 449110af271f96648a03a629fd3b7684, type: 2}
+  - {fileID: 11400000, guid: e462c0eac08348f2af9926e044ce01bc, type: 2}
   visualRoot: {fileID: 5997052002095222112}
 --- !u!114 &880000000000000019
 MonoBehaviour:

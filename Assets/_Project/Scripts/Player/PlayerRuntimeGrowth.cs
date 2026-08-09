@@ -15,8 +15,14 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
     private PlayerGrowthNetworkState commonGrowth =
         PlayerGrowthNetworkState.Default;
     private LevelUpSettings settings = new();
+    private SkillData basicSkill;
 
     public bool HasAuthoritativeSkillState { get; private set; }
+
+    public void ConfigureBasicSkill(SkillData configuredBasicSkill)
+    {
+        basicSkill = configuredBasicSkill;
+    }
 
     public void Configure(LevelUpSettings configuredSettings)
     {
@@ -92,12 +98,15 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
             return runtime;
         }
 
-        bool isBasicAttack = skill.SkillId == "basic_arrow";
+        bool isBasicAttack = skill == basicSkill ||
+            (basicSkill == null && skill.SkillId == "basic_arrow");
         SkillRuntimeModifiers skillModifiers = SkillRuntimeModifiers.Default;
+        int skillLevel = 1;
 
         if (!isBasicAttack &&
             ownedSkills.TryGetValue(skill, out OwnedSkill ownedSkill))
         {
+            skillLevel = ownedSkill.Level;
             skillModifiers = skill.GetRuntimeModifiers(ownedSkill.Level);
         }
 
@@ -111,6 +120,11 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
             skill.ProjectileSpeed * commonGrowth.ProjectileSpeedMultiplier *
             skillModifiers.ProjectileSpeedMultiplier
         );
+        runtime.Range = Mathf.Max(
+            0f,
+            skill.Range * skillModifiers.ZoneRadiusMultiplier
+        );
+        runtime.SkillLevel = skillLevel;
 
         float cooldownMultiplier = isBasicAttack
             ? commonGrowth.AttackIntervalMultiplier
@@ -147,6 +161,17 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
             ? Mathf.Max(0, commonGrowth.BasicAttackBounceCount)
             : 0;
         runtime.BounceRange = settings.RicochetRange;
+
+        if (isBasicAttack &&
+            TryGetComponent(out CheokJunGyeongCombatState combatState))
+        {
+            runtime.Cooldown = Mathf.Max(
+                settings.MinimumAttackInterval,
+                runtime.Cooldown * combatState.BasicAttackIntervalMultiplier
+            );
+            runtime.Range *= combatState.BasicAttackRangeMultiplier;
+        }
+
         return runtime;
     }
 

@@ -15,6 +15,7 @@ public class NetworkPlayerMovement : NetworkBehaviour
 
     public float SpeedMultiplier { get; set; } = 1f;
     public float GrowthSpeedMultiplier { get; set; } = 1f;
+    public bool SkillMovementOverride { get; set; }
 
     public void ConfigureBaseSpeed(float value)
     {
@@ -80,6 +81,12 @@ public class NetworkPlayerMovement : NetworkBehaviour
             return;
         }
 
+        if (SkillMovementOverride)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (GameplayPauseState.IsLevelUpActive)
         {
             rigidBody.linearVelocity = Vector2.zero;
@@ -101,5 +108,6 @@ public class NetworkPlayerMovement : NetworkBehaviour
 
         SpeedMultiplier = 1f;
         GrowthSpeedMultiplier = 1f;
+        SkillMovementOverride = false;
     }
 }
