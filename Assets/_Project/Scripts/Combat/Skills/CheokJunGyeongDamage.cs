@@ -124,7 +124,12 @@ internal static class CheokJunGyeongDamage
         IElementReceiver receiver =
             candidate.GetComponentInParent<IElementReceiver>();
         receiver?.RecordElement(element, sourcePlayerId);
-        damageable.TakeDamage(Mathf.Max(0f, damage));
+        RelicCombat.ApplyDamage(
+            damageable,
+            candidate,
+            Mathf.Max(0f, damage),
+            RelicTriggerContext.PlayerDirect(sourcePlayerId, root.position)
+        );
     }
 
     private static Transform GetRoot(Collider2D collider)

@@ -131,7 +131,15 @@ public class ElementalZone : MonoBehaviour
                 enemyCollider.GetComponentInParent<IElementReceiver>();
             receiver?.RecordElement(element, sourcePlayerId);
 
-            damageable.TakeDamage(damagePerTick);
+            RelicCombat.ApplyDamage(
+                damageable,
+                enemyCollider,
+                damagePerTick,
+                RelicTriggerContext.PlayerDirect(
+                    sourcePlayerId,
+                    enemyRoot.position
+                )
+            );
         }
     }
 

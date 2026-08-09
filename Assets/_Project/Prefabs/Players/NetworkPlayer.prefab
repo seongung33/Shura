@@ -35,6 +35,8 @@ GameObject:
   - component: {fileID: 880000000000000018}
   - component: {fileID: 880000000000000019}
   - component: {fileID: 880000000000000020}
+  - component: {fileID: 880000000000000022}
+  - component: {fileID: 880000000000000023}
   m_Layer: 0
   m_Name: NetworkPlayer
   m_TagString: Player
@@ -600,6 +602,42 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkPlayerProgression
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &880000000000000022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3389326965975105325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b8d5f320a664fb68dbcb5f225aaf18d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRelicInventory
+  relicPool:
+  - {fileID: 11400000, guid: b10f1e42c0a34e7cb6fb431385b16f01, type: 2}
+  - {fileID: 11400000, guid: b20f1e42c0a34e7cb6fb431385b16f02, type: 2}
+  - {fileID: 11400000, guid: b30f1e42c0a34e7cb6fb431385b16f03, type: 2}
+  - {fileID: 11400000, guid: b40f1e42c0a34e7cb6fb431385b16f04, type: 2}
+  - {fileID: 11400000, guid: b50f1e42c0a34e7cb6fb431385b16f05, type: 2}
+  - {fileID: 11400000, guid: b60f1e42c0a34e7cb6fb431385b16f06, type: 2}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
+--- !u!114 &880000000000000023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3389326965975105325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c9e60431b7740c7b3e87f268cc04a7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkPlayerRelics
+  ShowTopMostFoldoutHeaderGroup: 1
+  choiceDuration: 15
 --- !u!1 &4417188253547976451
 GameObject:
   m_ObjectHideFlags: 0

@@ -47,6 +47,7 @@ public class EnemySpawner : MonoBehaviour
     private float playerRefreshTimer;
     private int targetAlive;
     private int currentMaxAlive;
+    private int nextEliteSpawnIndex;
     private bool cleanupMode;
     private bool spawningEnabled = true;
 
@@ -89,6 +90,7 @@ public class EnemySpawner : MonoBehaviour
         maxSpawnDistance = stageConfig.SpawnRadiusMax;
         maxAlive = stageConfig.MaxAlive;
         currentMaxAlive = maxAlive;
+        nextEliteSpawnIndex = 0;
     }
 
     private void Update()
@@ -152,6 +154,8 @@ public class EnemySpawner : MonoBehaviour
         {
             spawnTimer = Mathf.Min(spawnTimer, GetSpawnInterval(true));
         }
+
+        TrySpawnScheduledElites(stageElapsedTime);
     }
 
     public void ApplyWaveSettings(float newSpawnInterval, int newMaxAlive)
@@ -271,10 +275,10 @@ public class EnemySpawner : MonoBehaviour
         ResetAssignedCounts();
     }
 
-    private bool SpawnEnemy()
+    private bool SpawnEnemy(EnemySpawnEntry forcedEntry = null)
     {
         PlayerTarget assignedTarget = SelectTarget();
-        EnemySpawnEntry entry = SelectEntry();
+        EnemySpawnEntry entry = forcedEntry ?? SelectEntry();
         GameObject prefab = entry != null ? entry.Prefab : enemyPrefab;
 
         if (assignedTarget == null || assignedTarget.Transform == null || prefab == null)
@@ -332,6 +336,7 @@ public class EnemySpawner : MonoBehaviour
             damageScale *= entry.DamageMultiplier;
             moveScale = entry.MoveSpeedMultiplier;
             experienceReward = CalculateExperienceReward(entry);
+            enemy.transform.localScale *= entry.ScaleMultiplier;
         }
 
         EnemyController controller = enemy.GetComponent<EnemyController>();
@@ -351,6 +356,42 @@ public class EnemySpawner : MonoBehaviour
                 dropAccumulator,
                 currentSegment?.ExperienceOrbBundleSize ?? 3
             );
+
+            if (entry != null && entry.Role == EnemyRole.Elite)
+            {
+                EliteEnemyReward reward =
+                    enemy.GetComponent<EliteEnemyReward>();
+
+                if (reward == null)
+                {
+                    reward = enemy.AddComponent<EliteEnemyReward>();
+                }
+
+                reward.Configure(health);
+            }
+        }
+    }
+
+    private void TrySpawnScheduledElites(float stageElapsedTime)
+    {
+        if (!HasSpawnAuthority() ||
+            stageConfig == null ||
+            stageConfig.EliteEnemy == null)
+        {
+            return;
+        }
+
+        float[] spawnTimes = stageConfig.EliteSpawnTimes;
+
+        while (nextEliteSpawnIndex < spawnTimes.Length &&
+            stageElapsedTime >= spawnTimes[nextEliteSpawnIndex])
+        {
+            if (!SpawnEnemy(stageConfig.EliteEnemy))
+            {
+                return;
+            }
+
+            nextEliteSpawnIndex++;
         }
     }
 

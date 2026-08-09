@@ -83,6 +83,11 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         visualOnly = context.VisualOnly;
         sourcePlayerId = context.SourcePlayerId;
 
+        RelicCombat.ApplyOfflineProjectileModifiers(
+            context.Owner,
+            ref context
+        );
+
         remainingPierce = pierceCount + Mathf.Max(0, context.PierceBonus);
         remainingBounces = Mathf.Max(0, context.BounceCount);
         bounceRange = Mathf.Max(0f, context.BounceRange);
@@ -168,7 +173,15 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         if (!visualOnly)
         {
             RecordElement(other, element);
-            damageable.TakeDamage(damage);
+            RelicCombat.ApplyDamage(
+                damageable,
+                other,
+                damage,
+                RelicTriggerContext.PlayerDirect(
+                    sourcePlayerId,
+                    hitRoot.position
+                )
+            );
         }
 
         SpawnEffect(hitEffectPrefab, hitRoot.position);
@@ -239,7 +252,15 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
             if (!visualOnly)
             {
                 RecordElement(enemyCollider, element);
-                enemyDamageable.TakeDamage(explosionDamage);
+                RelicCombat.ApplyDamage(
+                    enemyDamageable,
+                    enemyCollider,
+                    explosionDamage,
+                    RelicTriggerContext.PlayerDirect(
+                        sourcePlayerId,
+                        enemyRoot.position
+                    )
+                );
             }
         }
 

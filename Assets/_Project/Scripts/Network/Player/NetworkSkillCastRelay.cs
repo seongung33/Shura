@@ -143,6 +143,12 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             ? runtimeGrowth.GetCastRuntime(skill)
             : SkillCastRuntime.FromBase(skill);
 
+        RelicCombat.ApplyNetworkCastModifiers(
+            gameObject,
+            skill,
+            ref runtime
+        );
+
         Vector2 resolvedOrigin = ResolveCastOrigin(
             skill,
             origin,

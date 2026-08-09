@@ -34,6 +34,9 @@ public sealed class EnemySpawnEntry
     [SerializeField, Min(0.01f)]
     private float experienceWeight = 1f;
 
+    [SerializeField, Min(0.01f)]
+    private float scaleMultiplier = 1f;
+
     public EnemyRole Role => role;
     public GameObject Prefab => prefab;
     public float Weight => Mathf.Max(0f, weight);
@@ -41,6 +44,9 @@ public sealed class EnemySpawnEntry
     public float DamageMultiplier => Mathf.Max(0.01f, damageMultiplier);
     public float MoveSpeedMultiplier => Mathf.Max(0.01f, moveSpeedMultiplier);
     public float ExperienceWeight => Mathf.Max(0.01f, experienceWeight);
+    public float ScaleMultiplier => scaleMultiplier > 0f
+        ? scaleMultiplier
+        : 1f;
 }
 
 [Serializable]
@@ -175,6 +181,14 @@ public sealed class StageConfig : ScriptableObject
     [SerializeField, Min(1f)]
     private float bossHealth = 2100f;
 
+    [Header("Elite Rewards")]
+
+    [SerializeField]
+    private EnemySpawnEntry eliteEnemy;
+
+    [SerializeField]
+    private float[] eliteSpawnTimes = { 240f, 480f, 720f };
+
     [Header("Field Supplies")]
 
     [SerializeField]
@@ -208,6 +222,8 @@ public sealed class StageConfig : ScriptableObject
     public float SpawnRadiusMax => Mathf.Max(SpawnRadiusMin, spawnRadiusMax);
     public GameObject BossPrefab => bossPrefab;
     public float BossHealth => Mathf.Max(1f, bossHealth);
+    public EnemySpawnEntry EliteEnemy => eliteEnemy;
+    public float[] EliteSpawnTimes => eliteSpawnTimes ?? Array.Empty<float>();
     public BreakableSupplyObject FieldSupplyPrefab => fieldSupplyPrefab;
     public float FieldSupplyCellSize => Mathf.Max(1f, fieldSupplyCellSize);
     public float FieldSupplySpawnChance =>
@@ -254,6 +270,21 @@ public sealed class StageConfig : ScriptableObject
     {
         cleanupStart = Mathf.Clamp(cleanupStart, 0f, duration);
         spawnRadiusMax = Mathf.Max(spawnRadiusMin, spawnRadiusMax);
+
+        if (eliteSpawnTimes != null)
+        {
+            for (int index = 0; index < eliteSpawnTimes.Length; index++)
+            {
+                eliteSpawnTimes[index] = Mathf.Clamp(
+                    eliteSpawnTimes[index],
+                    0f,
+                    duration
+                );
+            }
+
+            Array.Sort(eliteSpawnTimes);
+        }
+
         fieldSupplyCellSize = Mathf.Max(1f, fieldSupplyCellSize);
         fieldSupplySpawnChance = Mathf.Clamp01(fieldSupplySpawnChance);
         fieldSupplyMinimumPlayerDistance = Mathf.Max(

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a7c6e219f554ea5b2d80c81287f2c31, type: 3}
+  m_Name: Relic_ThunderFragment
+  m_EditorClassIdentifier: Assembly-CSharp::RelicData
+  id: 1
+  displayName: 뇌공의 파편
+  description: 공격 적중 시 10% 확률로 주변 적 최대 3명에게 연쇄 번개 피해
+  triggerChance: 0.1
+  damageMultiplier: 0.4
+  radius: 3
+  maxTargets: 3
+  duration: 0
+  tickInterval: 0.5
