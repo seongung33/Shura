@@ -93,6 +93,30 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         return true;
     }
 
+    public void ResetSkillCooldownsServer()
+    {
+        if (!IsSpawned || !IsServer)
+        {
+            return;
+        }
+
+        for (int index = 0; index < allowedSkills.Count; index++)
+        {
+            if (allowedSkills[index] != configuredBasicSkill)
+            {
+                nextServerCastTimes.Remove(index);
+            }
+        }
+
+        ResetSkillCooldownsRpc();
+    }
+
+    [Rpc(SendTo.Owner, InvokePermission = RpcInvokePermission.Server)]
+    private void ResetSkillCooldownsRpc()
+    {
+        GetComponent<AutoSkillCaster>()?.ResetSkillCooldowns();
+    }
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
     private void RequestCastRpc(
         int skillIndex,
