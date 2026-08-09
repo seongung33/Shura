@@ -25,6 +25,7 @@ public class StartMenuController : MonoBehaviour
     private void Awake()
     {
         GameAudioController.EnsureExists();
+        MainMenuSettingsPanel.ApplySavedDisplaySetting();
         ApplyVisualTheme();
         ShowLaunchIntro();
     }
@@ -135,7 +136,7 @@ public class StartMenuController : MonoBehaviour
             {
                 StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 2f), ButtonColor, compactLayout);
                 button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(ShowSettingsNotice);
+                button.onClick.AddListener(OpenSettings);
             }
             else if (text == "게임 종료")
             {
@@ -232,13 +233,9 @@ public class StartMenuController : MonoBehaviour
         return startMenuPanel;
     }
 
-    private void ShowSettingsNotice()
+    private void OpenSettings()
     {
-        if (subtitleText != null)
-        {
-            subtitleText.text = "설정 기능은 현재 준비 중입니다.";
-            ApplyTextColor(subtitleText, new Color(1f, 0.78f, 0.28f, 1f), 0.12f);
-        }
+        MainMenuSettingsPanel.Show(GetComponentInParent<Canvas>());
     }
 
     private static void StyleButton(Button button, TMP_Text tmpLabel, Text legacyLabel, Vector2 position, Color normalColor, bool compactLayout)
