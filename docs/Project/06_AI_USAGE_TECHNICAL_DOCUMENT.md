@@ -191,6 +191,7 @@ Console 로그:
 | 2026-08-09 | Codex | 진미리 | 연속 머지 이후 제출 직전 필수 구성 누락을 초보자도 확인할 수 있게 자동화 | 게임 로직을 변경하지 않고 Unity Editor 메뉴에서 읽기 전용 점검만 수행 | 필수 Build Scene·첫 MainMenu·핵심 UI/전투 에셋·전체 프로젝트 프리팹 Missing Script 검사, 한국어 결과 창, 팀 폰트 누락 `.meta` 보존 | Editor C# 컴파일·에셋 경로·`git diff --check`; Unity 메뉴 실행 결과 수동 확인 필요 | `SubmissionPreflightValidator.cs`, `Mulmaru*.ttf.meta` |
 | 2026-08-09 | Codex | 진미리 | 멀티 입장 화면의 퇴장 버튼·접속 인원이 검게 표시되고 준비 시간 초과가 성공색으로 보이는 문제 수정 | Relay·씬 직렬화는 유지하고 TMP 재질색과 런타임 시각 계층만 보정 | 버튼·인원 글자의 vertex·face 색 통일, 도시 배경·패널 형제 순서 고정, 초과·종료 상태 실패색 처리 | 전체 C# 컴파일 경고·오류 0, `git diff --check`; Unity 방 생성 전·후와 16:9 수동 회귀 필요 | `MultiplayerEntryUI.cs` |
 | 2026-08-09 | Codex | 진미리 | 메뉴 선택 중 밝은 도시 배경과 청록 패널이 버튼보다 먼저 보이는 시각 우선순위 개선 | 첫 로고 연출의 어두운 분위기는 유지하면서 메뉴 조작 대상을 즉시 찾도록 명도·강조 단계만 조정 | 도시 배경 틴트·딤 강화, 중앙 패널 불투명도 증가, 테두리 절제, 싱글 플레이 주 버튼과 나머지 보조 버튼 분리 | 전체 C# 컴파일·`git diff --check`; Unity 시작 연출 이후 Free Aspect·16:9 수동 회귀 필요 | `StartMenuController.cs` |
+| 2026-08-09 | Codex | 진미리 | 일반 적 원본은 보존하면서 작은 화면에서 점처럼 보이고 세 종류가 구분되지 않는 문제 개선 | 팀의 스폰·체력·속도 수치는 유지하고 렌더링과 프리팹 배율만 역할별로 조정 | 빠른 적 0.8·일반 1.15·탱커 1.65 배율, 청색·중립·적색 색조, 맵 위 렌더 순서 구분 | 프리팹 YAML·참조·`git diff --check`; Unity 다수 스폰·충돌·피격 수동 회귀 필요 | `Enemy_fast.prefab`, `Enemy_normal.prefab`, `Enemy_tank.prefab` |
 
 ## 7. 확인된 검토·수정 사례
 

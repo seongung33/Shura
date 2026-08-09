@@ -8,6 +8,8 @@ public sealed class TeamLevelUpCoordinator : MonoBehaviour
 
     private TeamExperience teamExperience;
     private LevelUpSettings settings = new();
+    private bool levelUpRequestPending;
+    private int pendingTeamLevel;
     private bool sessionActive;
     private int activeTeamLevel;
     private int activeSessionId;
@@ -51,7 +53,17 @@ public sealed class TeamLevelUpCoordinator : MonoBehaviour
 
     private void Update()
     {
-        if (!sessionActive || !IsServerSession())
+        if (!IsServerSession())
+        {
+            return;
+        }
+
+        if (levelUpRequestPending && !sessionActive)
+        {
+            TryStartPendingSessionServer();
+        }
+
+        if (!sessionActive)
         {
             return;
         }
@@ -130,17 +142,47 @@ public sealed class TeamLevelUpCoordinator : MonoBehaviour
 
     private bool HandleLevelUpRequested(int teamLevel)
     {
+        if (!IsServerSession() || sessionActive || levelUpRequestPending)
+        {
+            return false;
+        }
+
+        levelUpRequestPending = true;
+        pendingTeamLevel = teamLevel;
+        TryStartPendingSessionServer();
+
+        // TeamExperience must keep this level pending while persistent network
+        // players finish their spawn and character configuration callbacks.
+        return true;
+    }
+
+    private bool TryStartPendingSessionServer()
+    {
+        if (!levelUpRequestPending || sessionActive || !IsServerSession())
+        {
+            return false;
+        }
+
+        if (!TryStartLevelUpSessionServer(pendingTeamLevel))
+        {
+            return false;
+        }
+
+        levelUpRequestPending = false;
+        pendingTeamLevel = 0;
+        return true;
+    }
+
+    private bool TryStartLevelUpSessionServer(int teamLevel)
+    {
         if (!IsServerSession() || sessionActive)
         {
             return false;
         }
 
         RemoveMissingPlayers();
-
-        if (players.Count == 0)
-        {
-            RegisterExistingPlayers();
-        }
+        RegisterExistingPlayers();
+        RemoveMissingPlayers();
 
         if (players.Count == 0)
         {
@@ -151,9 +193,6 @@ public sealed class TeamLevelUpCoordinator : MonoBehaviour
         {
             if (!player.CanParticipateInLevelUp)
             {
-                Debug.LogWarning(
-                    "레벨업 후보를 만들 수 없는 네트워크 플레이어가 있어 선택 단계를 건너뜁니다."
-                );
                 return false;
             }
         }
@@ -234,6 +273,8 @@ public sealed class TeamLevelUpCoordinator : MonoBehaviour
         }
 
         sessionActive = false;
+        levelUpRequestPending = false;
+        pendingTeamLevel = 0;
 
         foreach (NetworkPlayerProgression player in players)
         {
