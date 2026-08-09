@@ -5,7 +5,8 @@ using UnityEngine;
 
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(PlayerRuntimeGrowth))]
-public sealed class NetworkPlayerProgression : NetworkBehaviour
+public sealed class NetworkPlayerProgression : NetworkBehaviour,
+    ILevelUpChoiceSource
 {
     private const int MaximumCards = 3;
     private const int MaximumOwnedSkills = 3;

@@ -12,7 +12,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
     private readonly TMP_Text[] cardTexts = new TMP_Text[CardCount];
     private readonly Button[] cardButtons = new Button[CardCount];
 
-    private NetworkPlayerProgression progression;
+    private ILevelUpChoiceSource progression;
     private GameObject canvasObject;
     private GameObject panelObject;
     private TMP_Text levelText;
@@ -21,7 +21,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
     private int displayedSessionId = -1;
     private bool requestPending;
 
-    public void Bind(NetworkPlayerProgression configuredProgression)
+    public void Bind(ILevelUpChoiceSource configuredProgression)
     {
         progression = configuredProgression;
         CreateUi();

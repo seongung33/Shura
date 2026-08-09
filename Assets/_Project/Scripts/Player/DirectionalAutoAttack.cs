@@ -28,6 +28,7 @@ public class DirectionalAutoAttack : MonoBehaviour
     public void ConfigureBasicSkill(SkillData skill)
     {
         basicSkill = skill;
+        runtimeGrowth ??= GetComponent<PlayerRuntimeGrowth>();
         runtimeGrowth?.ConfigureBasicSkill(skill);
         nextAttackTime = 0f;
     }

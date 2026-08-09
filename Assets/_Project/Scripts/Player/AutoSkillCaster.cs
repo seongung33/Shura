@@ -120,6 +120,7 @@ public class AutoSkillCaster : MonoBehaviour
         IReadOnlyList<RuntimeSkillLoadout> skills
     )
     {
+        runtimeGrowth ??= GetComponent<PlayerRuntimeGrowth>();
         Dictionary<SkillData, EquippedSkill> existing = new();
 
         foreach (EquippedSkill equipped in equippedSkills)

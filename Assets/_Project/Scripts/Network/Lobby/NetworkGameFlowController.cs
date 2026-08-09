@@ -8,7 +8,7 @@ using TMPro;
 public class NetworkGameFlowController : MonoBehaviour
 {
     [SerializeField] private NetworkManager networkManager;
-    [SerializeField, Min(2)] private int minimumPlayers = 2;
+    [SerializeField, Min(1)] private int minimumPlayers = 1;
     [SerializeField, Min(1)] private int maximumPlayers = 2;
     [SerializeField] private string gameplaySceneName;
     [SerializeField] private UnityEvent<int> onPlayerCountChanged;
@@ -37,7 +37,7 @@ public class NetworkGameFlowController : MonoBehaviour
     private void Awake()
     {
         maximumPlayers = Mathf.Max(2, maximumPlayers);
-        minimumPlayers = Mathf.Clamp(minimumPlayers, 2, maximumPlayers);
+        minimumPlayers = Mathf.Clamp(minimumPlayers, 1, maximumPlayers);
 
         if (networkManager == null)
         {

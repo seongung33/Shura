@@ -131,6 +131,16 @@ public class NetworkStageBootstrap : MonoBehaviour
             ?.ConfigureBaseSpeed(data.MoveSpeed);
         offlinePlayer.GetComponent<Shura.Player.PlayerHealth>()
             ?.ConfigureMaxHealth(data.MaxHealth);
+        PlayerRuntimeGrowth runtimeGrowth =
+            offlinePlayer.GetComponent<PlayerRuntimeGrowth>();
+
+        if (runtimeGrowth == null)
+        {
+            runtimeGrowth = offlinePlayer.gameObject
+                .AddComponent<PlayerRuntimeGrowth>();
+        }
+
+        runtimeGrowth.ConfigureBasicSkill(data.BasicSkill);
         bool usesJumongAutoTarget = JumongAutoTargetAttack.Supports(data);
 
         offlinePlayer.GetComponent<DirectionalAutoAttack>()
@@ -141,12 +151,21 @@ public class NetworkStageBootstrap : MonoBehaviour
             ?.ConfigureBasicSkill(
                 usesJumongAutoTarget ? data.BasicSkill : null
             );
-        offlinePlayer.GetComponent<PlayerRuntimeGrowth>()
-            ?.ConfigureBasicSkill(data.BasicSkill);
         AutoSkillCaster skillCaster =
             offlinePlayer.GetComponent<AutoSkillCaster>();
         skillCaster?.ConfigureSkills(data.StartingSkills);
         skillCaster?.ConfigureUltimateSkill(data.UltimateSkill);
+
+        LocalPlayerProgression progression =
+            offlinePlayer.GetComponent<LocalPlayerProgression>();
+
+        if (progression == null)
+        {
+            progression = offlinePlayer.gameObject
+                .AddComponent<LocalPlayerProgression>();
+        }
+
+        progression.Configure(data, levelUpSettings);
 
         ApplyOfflineCharacterVisual(data);
         Debug.Log($"싱글 캐릭터 적용: {data.characterName}");
