@@ -22,6 +22,7 @@ public class NetworkSkillCastRelay : NetworkBehaviour
     private readonly List<SkillData> configuredStartingSkills = new();
     private PlayerRuntimeGrowth runtimeGrowth;
     private SkillData configuredBasicSkill;
+    private SkillData configuredUltimateSkill;
 
     private void Awake()
     {
@@ -31,14 +32,17 @@ public class NetworkSkillCastRelay : NetworkBehaviour
     public void ConfigureAllowedSkills(
         SkillData basicSkill,
         IReadOnlyList<SkillData> startingSkills,
-        IReadOnlyList<SkillData> levelUpSkills = null
+        IReadOnlyList<SkillData> levelUpSkills = null,
+        SkillData ultimateSkill = null
     )
     {
         allowedSkills.Clear();
         configuredStartingSkills.Clear();
         configuredBasicSkill = basicSkill;
+        configuredUltimateSkill = ultimateSkill;
 
         AddAllowedSkill(basicSkill);
+        AddAllowedSkill(ultimateSkill);
 
         if (startingSkills != null)
         {
@@ -115,10 +119,22 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             ? runtimeGrowth.GetCastRuntime(skill)
             : SkillCastRuntime.FromBase(skill);
 
+        Vector2 resolvedOrigin = ResolveCastOrigin(
+            skill,
+            origin,
+            normalizedDirection,
+            runtime.Range
+        );
+
+        if (!IsFinite(resolvedOrigin))
+        {
+            return;
+        }
+
         nextServerCastTimes[skillIndex] = Time.time + runtime.Cooldown;
         SpawnSkillVolley(
             skill,
-            origin,
+            resolvedOrigin,
             normalizedDirection,
             element,
             runtime,
@@ -126,7 +142,7 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         );
         SpawnSkillVisualRpc(
             skillIndex,
-            origin,
+            resolvedOrigin,
             normalizedDirection,
             element,
             runtime
@@ -218,15 +234,21 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             return element == ElementType.None;
         }
 
+        if (skill == configuredUltimateSkill && skill.ForceNoElement)
+        {
+            return element == ElementType.None;
+        }
+
         if (element == ElementType.None)
         {
             return false;
         }
 
-        bool isConfiguredStartingSkill =
-            configuredStartingSkills.Contains(skill);
+        bool isConfiguredInnateSkill =
+            configuredStartingSkills.Contains(skill) ||
+            skill == configuredUltimateSkill;
 
-        if (!isConfiguredStartingSkill &&
+        if (!isConfiguredInnateSkill &&
             runtimeGrowth != null &&
             runtimeGrowth.HasAuthoritativeSkillState)
         {
@@ -246,6 +268,25 @@ public class NetworkSkillCastRelay : NetworkBehaviour
 
         serverSkillElements[skillIndex] = element;
         return true;
+    }
+
+    private Vector2 ResolveCastOrigin(
+        SkillData skill,
+        Vector2 requestedOrigin,
+        Vector2 direction,
+        float searchRange
+    )
+    {
+        ISkillCastOriginResolver resolver =
+            skill.SkillPrefab.GetComponent<ISkillCastOriginResolver>();
+        return resolver != null
+            ? resolver.ResolveCastOrigin(
+                gameObject,
+                direction,
+                searchRange,
+                enemyLayer
+            )
+            : requestedOrigin;
     }
 
     private void SpawnSkillVolley(

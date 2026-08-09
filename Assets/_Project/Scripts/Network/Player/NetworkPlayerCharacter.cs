@@ -189,14 +189,15 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         IReadOnlyList<SkillData> networkStartingSkills =
             GetNetworkStartingSkills(data);
 
-        GetComponent<AutoSkillCaster>()?.ConfigureSkills(
-            networkStartingSkills
-        );
+        AutoSkillCaster skillCaster = GetComponent<AutoSkillCaster>();
+        skillCaster?.ConfigureSkills(networkStartingSkills);
+        skillCaster?.ConfigureUltimateSkill(data.UltimateSkill);
 
         GetComponent<NetworkSkillCastRelay>()?.ConfigureAllowedSkills(
             data.BasicSkill,
             networkStartingSkills,
-            data.LevelUpSkills
+            data.LevelUpSkills,
+            data.UltimateSkill
         );
 
         progression?.ConfigureCharacter(data);

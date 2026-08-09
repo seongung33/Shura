@@ -45,7 +45,10 @@ public class SkillData : ScriptableObject
     [Header("Activation")]
 
     [SerializeField]
-    private bool requiresManualActivation;
+    private bool forceNoElement;
+
+    [SerializeField]
+    private bool ignoreCooldownModifiers;
 
     [Header("Progression")]
 
@@ -66,7 +69,8 @@ public class SkillData : ScriptableObject
     public float ProjectileSpeed => projectileSpeed;
 
     public GameObject SkillPrefab => skillPrefab;
-    public bool RequiresManualActivation => requiresManualActivation;
+    public bool ForceNoElement => forceNoElement;
+    public bool IgnoreCooldownModifiers => ignoreCooldownModifiers;
 
     public int MaxLevel => Mathf.Max(1, maxLevel);
 

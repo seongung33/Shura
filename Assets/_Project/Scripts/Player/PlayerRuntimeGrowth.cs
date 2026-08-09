@@ -126,10 +126,12 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
         );
         runtime.SkillLevel = skillLevel;
 
-        float cooldownMultiplier = isBasicAttack
-            ? commonGrowth.AttackIntervalMultiplier
-            : commonGrowth.SkillCooldownMultiplier *
-                skillModifiers.CooldownMultiplier;
+        float cooldownMultiplier = skill.IgnoreCooldownModifiers
+            ? 1f
+            : isBasicAttack
+                ? commonGrowth.AttackIntervalMultiplier
+                : commonGrowth.SkillCooldownMultiplier *
+                    skillModifiers.CooldownMultiplier;
         float minimumCooldown = isBasicAttack
             ? settings.MinimumAttackInterval
             : settings.MinimumSkillCooldown;

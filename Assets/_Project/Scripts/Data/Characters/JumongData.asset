@@ -21,6 +21,7 @@ MonoBehaviour:
   maxHealth: 100
   moveSpeed: 5
   basicSkill: {fileID: 11400000, guid: 314896e113a3c04458d39cb923046d5e, type: 2}
+  ultimateSkill: {fileID: 11400000, guid: c6ee41a423e34f7fabd11cd8c67ef3d2, type: 2}
   startingSkills:
   - {fileID: 11400000, guid: b94bc1cafa5e7c8488c3ac8bba38c81c, type: 2}
   - {fileID: 11400000, guid: 1c1287c5d0b4c3540b7d3d74a788ee34, type: 2}

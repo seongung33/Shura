@@ -44,6 +44,7 @@ public class AutoSkillCaster : MonoBehaviour
     private NetworkSkillCastRelay networkRelay;
     private bool hasStarted;
     private readonly HashSet<SkillData> persistentSkills = new();
+    private EquippedSkill ultimateSkill;
 
     private void Awake()
     {
@@ -86,6 +87,20 @@ public class AutoSkillCaster : MonoBehaviour
         {
             AssignRandomElements();
         }
+    }
+
+    public void ConfigureUltimateSkill(SkillData skill)
+    {
+        ultimateSkill = skill == null
+            ? null
+            : new EquippedSkill
+            {
+                data = skill,
+                element = skill.ForceNoElement
+                    ? ElementType.None
+                    : ElementUtil.GetRandomElement(),
+                level = 1
+            };
     }
 
     public void ConfigureProgressionSkills(
@@ -157,19 +172,13 @@ public class AutoSkillCaster : MonoBehaviour
             Keyboard.current != null &&
             Keyboard.current.rKey.wasPressedThisFrame;
 
+        if (manualCastRequested && ultimateSkill != null)
+        {
+            TryCast(ultimateSkill, false);
+        }
+
         foreach (EquippedSkill skill in equippedSkills)
         {
-            if (skill.data != null && skill.data.RequiresManualActivation)
-            {
-                if (manualCastRequested)
-                {
-                    TryCast(skill, false);
-                    manualCastRequested = false;
-                }
-
-                continue;
-            }
-
             TryCast(skill, requireEnemyInRange);
         }
     }
@@ -282,9 +291,16 @@ public class AutoSkillCaster : MonoBehaviour
             return;
         }
 
+        Vector2 resolvedOrigin = ResolveLocalCastOrigin(
+            skill.data,
+            spawnPosition,
+            direction,
+            runtime.Range
+        );
+
         if (!CastLocalVolley(
                 skill.data,
-                spawnPosition,
+                resolvedOrigin,
                 direction,
                 skill.element,
                 runtime
@@ -294,6 +310,25 @@ public class AutoSkillCaster : MonoBehaviour
         }
 
         skill.nextCastTime = Time.time + runtime.Cooldown;
+    }
+
+    private Vector2 ResolveLocalCastOrigin(
+        SkillData skill,
+        Vector2 requestedOrigin,
+        Vector2 direction,
+        float searchRange
+    )
+    {
+        ISkillCastOriginResolver resolver =
+            skill.SkillPrefab.GetComponent<ISkillCastOriginResolver>();
+        return resolver != null
+            ? resolver.ResolveCastOrigin(
+                gameObject,
+                direction,
+                searchRange,
+                enemyLayer
+            )
+            : requestedOrigin;
     }
 
     private bool CastLocalVolley(
