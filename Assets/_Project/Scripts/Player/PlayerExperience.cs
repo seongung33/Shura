@@ -82,6 +82,10 @@ public class PlayerExperience : MonoBehaviour
                 return;
             }
 
+            PickupFeedbackPresenter.ShowExperience(
+                orb.transform.position,
+                orb.ExperienceAmount
+            );
             AddExperience(orb.ExperienceAmount);
             Destroy(other.gameObject);
         }

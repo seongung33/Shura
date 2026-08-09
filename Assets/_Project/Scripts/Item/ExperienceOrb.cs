@@ -150,6 +150,10 @@ public class ExperienceOrb : NetworkBehaviour
         }
 
         collectionRequested = true;
+        PickupFeedbackPresenter.ShowExperience(
+            transform.position,
+            ExperienceAmount
+        );
 
         if (IsServer)
         {

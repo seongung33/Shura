@@ -24,6 +24,9 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip warriorUltimateSound;
     private AudioClip levelUpSound;
     private AudioClip upgradeConfirmSound;
+    private AudioClip experiencePickupSound;
+    private AudioClip itemPickupSound;
+    private float nextExperienceSoundTime;
     private Coroutine musicFadeRoutine;
 
     public static float MusicVolume =>
@@ -88,6 +91,35 @@ public sealed class GameAudioController : MonoBehaviour
         instance.effectsSource.PlayOneShot(instance.upgradeConfirmSound, 0.52f);
     }
 
+    public static void PlayExperiencePickup()
+    {
+        EnsureExists();
+        if (Time.unscaledTime < instance.nextExperienceSoundTime)
+        {
+            return;
+        }
+
+        instance.nextExperienceSoundTime = Time.unscaledTime + 0.055f;
+        instance.effectsSource.pitch = Random.Range(0.96f, 1.08f);
+        instance.effectsSource.PlayOneShot(instance.experiencePickupSound, 0.28f);
+        instance.effectsSource.pitch = 1f;
+    }
+
+    public static void PlayItemPickup(FieldItemType itemType)
+    {
+        EnsureExists();
+        instance.effectsSource.pitch = itemType switch
+        {
+            FieldItemType.Health => 0.92f,
+            FieldItemType.Magnet => 1.08f,
+            FieldItemType.EnemyFreeze => 0.78f,
+            FieldItemType.SkillCooldownReset => 1.18f,
+            _ => 1f
+        };
+        instance.effectsSource.PlayOneShot(instance.itemPickupSound, 0.58f);
+        instance.effectsSource.pitch = 1f;
+    }
+
     public static void PlayBossWarning()
     {
         EnsureExists();
@@ -144,6 +176,8 @@ public sealed class GameAudioController : MonoBehaviour
         warriorUltimateSound = CreateUltimateCue("WarriorUltimate", true);
         levelUpSound = CreateLevelUpCue();
         upgradeConfirmSound = CreateUpgradeConfirmCue();
+        experiencePickupSound = CreateExperiencePickupCue();
+        itemPickupSound = CreateItemPickupCue();
 
         SceneManager.sceneLoaded += HandleSceneLoaded;
         PlayMusicForScene(SceneManager.GetActiveScene().name);
@@ -336,6 +370,37 @@ public sealed class GameAudioController : MonoBehaviour
                 float low = Mathf.Sin(2f * Mathf.PI * 392f * time);
                 float high = Mathf.Sin(2f * Mathf.PI * 784f * time);
                 return (low * 0.18f + high * 0.2f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateExperiencePickupCue()
+    {
+        return CreateLayeredClip(
+            "ExperiencePickup",
+            0.12f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 2f);
+                float frequency = Mathf.Lerp(620f, 980f, progress);
+                return Mathf.Sin(2f * Mathf.PI * frequency * time) * 0.22f * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateItemPickupCue()
+    {
+        return CreateLayeredClip(
+            "FieldItemPickup",
+            0.38f,
+            (progress, time) =>
+            {
+                float envelope = 1f - Mathf.SmoothStep(0.45f, 1f, progress);
+                float low = Mathf.Sin(2f * Mathf.PI * 330f * time);
+                float high = Mathf.Sin(2f * Mathf.PI * 660f * time);
+                float sparkle = Mathf.Sin(2f * Mathf.PI * 1320f * time) *
+                    Mathf.Pow(1f - progress, 3f);
+                return (low * 0.16f + high * 0.2f + sparkle * 0.1f) * envelope;
             }
         );
     }
