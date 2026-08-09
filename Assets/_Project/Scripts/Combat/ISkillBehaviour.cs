@@ -11,6 +11,15 @@ public struct SkillCastContext
     public Vector2 Direction;       // 조준 방향 (정규화됨)
     public float Damage;
     public float ProjectileSpeed;
+    public int PierceBonus;
+    public float ExplosionRadiusMultiplier;
+    public float ActivationIntervalMultiplier;
+    public float ZoneRadiusMultiplier;
+    public float ZoneDurationMultiplier;
+    public float MovementSpeedMultiplier;
+    public float ZoneDamageMultiplier;
+    public int BounceCount;
+    public float BounceRange;
     public ElementType Element;     // 습득 시 랜덤 부여된 속성
     public LayerMask EnemyLayer;
     public bool VisualOnly;         // 네트워크 표시용 복제본은 피해를 주지 않음

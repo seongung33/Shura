@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,12 +11,16 @@ public sealed class TeamExperience : MonoBehaviour
     private int currentLevel = 1;
     private int currentExperience;
     private int experienceToNextLevel = 10;
+    private bool levelUpChoicePending;
 
     public static TeamExperience Active { get; private set; }
 
     public int CurrentLevel => currentLevel;
     public int CurrentExperience => currentExperience;
     public int ExperienceToNextLevel => experienceToNextLevel;
+
+    public event Func<int, bool> LevelUpChoiceRequested;
+    public event Action ProgressReset;
 
     public void Configure(LevelCurveData configuredLevelCurve)
     {
@@ -69,17 +74,8 @@ public sealed class TeamExperience : MonoBehaviour
             return;
         }
 
-        int previousLevel = currentLevel;
         currentExperience += amount;
-
-        while (currentExperience >= experienceToNextLevel)
-        {
-            currentExperience -= experienceToNextLevel;
-            currentLevel++;
-            experienceToNextLevel = GetNextLevelExperience(currentLevel);
-        }
-
-        PublishState(currentLevel - previousLevel);
+        ProcessPendingExperience();
     }
 
     public void ResetProgress()
@@ -92,7 +88,50 @@ public sealed class TeamExperience : MonoBehaviour
         currentLevel = 1;
         currentExperience = 0;
         experienceToNextLevel = GetNextLevelExperience(currentLevel);
+        levelUpChoicePending = false;
         PublishState(0, true);
+        ProgressReset?.Invoke();
+    }
+
+    public void CompleteLevelUpChoice(int completedLevel)
+    {
+        if (!HasServerAuthority() ||
+            !levelUpChoicePending ||
+            completedLevel != currentLevel)
+        {
+            return;
+        }
+
+        levelUpChoicePending = false;
+        ProcessPendingExperience();
+    }
+
+    private void ProcessPendingExperience()
+    {
+        if (levelUpChoicePending)
+        {
+            PublishState(0);
+            return;
+        }
+
+        while (currentExperience >= experienceToNextLevel)
+        {
+            currentExperience -= experienceToNextLevel;
+            currentLevel++;
+            experienceToNextLevel = GetNextLevelExperience(currentLevel);
+            PublishState(1);
+
+            bool waitForChoice =
+                LevelUpChoiceRequested?.Invoke(currentLevel) ?? false;
+
+            if (waitForChoice)
+            {
+                levelUpChoicePending = true;
+                return;
+            }
+        }
+
+        PublishState(0);
     }
 
     private int GetNextLevelExperience(int level)

@@ -55,9 +55,13 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
     private ulong sourcePlayerId;
 
     private bool isActive;
-    private float endTime;
+    private float remainingDuration;
     private float nextTrampleTime;
     private Vector2 lastZonePosition;
+    private float activationIntervalMultiplier = 1f;
+    private float zoneRadiusMultiplier = 1f;
+    private float zoneDurationMultiplier = 1f;
+    private float zoneDamageRuntimeMultiplier = 1f;
 
     public void Cast(SkillCastContext context)
     {
@@ -67,6 +71,21 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
         enemyLayer = context.EnemyLayer;
         visualOnly = context.VisualOnly;
         sourcePlayerId = context.SourcePlayerId;
+        activationIntervalMultiplier = context.ActivationIntervalMultiplier > 0f
+            ? context.ActivationIntervalMultiplier
+            : 1f;
+        zoneRadiusMultiplier = context.ZoneRadiusMultiplier > 0f
+            ? context.ZoneRadiusMultiplier
+            : 1f;
+        zoneDurationMultiplier = context.ZoneDurationMultiplier > 0f
+            ? context.ZoneDurationMultiplier
+            : 1f;
+        zoneDamageRuntimeMultiplier = context.ZoneDamageMultiplier > 0f
+            ? context.ZoneDamageMultiplier
+            : 1f;
+        float movementMultiplier = context.MovementSpeedMultiplier > 0f
+            ? context.MovementSpeedMultiplier
+            : 1f;
 
         ownerController =
             owner.GetComponent<Shura.Player.PlayerController>();
@@ -75,12 +94,14 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
 
         if (ownerController != null)
         {
-            ownerController.SpeedMultiplier = speedMultiplier;
+            ownerController.SpeedMultiplier =
+                speedMultiplier * movementMultiplier;
         }
 
         if (ownerNetworkMovement != null)
         {
-            ownerNetworkMovement.SpeedMultiplier = speedMultiplier;
+            ownerNetworkMovement.SpeedMultiplier =
+                speedMultiplier * movementMultiplier;
         }
 
         // 플레이어를 따라다니도록 부착
@@ -89,7 +110,7 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
 
         ElementVisuals.ApplyColor(gameObject, element);
 
-        endTime = Time.time + duration;
+        remainingDuration = duration;
         lastZonePosition = owner.transform.position;
 
         SpawnZone();
@@ -104,7 +125,14 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
             return;
         }
 
-        if (owner == null || Time.time >= endTime)
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
+
+        remainingDuration -= Time.deltaTime;
+
+        if (owner == null || remainingDuration <= 0f)
         {
             EndDash();
             return;
@@ -124,7 +152,8 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
             return;
         }
 
-        nextTrampleTime = Time.time + trampleInterval;
+        nextTrampleTime =
+            Time.time + trampleInterval * activationIntervalMultiplier;
 
         Collider2D[] enemiesInRange =
             Physics2D.OverlapCircleAll(
@@ -197,10 +226,12 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
 
         zone.Initialize(
             element,
-            damage * zoneDamageMultiplier,
+            damage * zoneDamageMultiplier * zoneDamageRuntimeMultiplier,
             enemyLayer,
             visualOnly,
-            sourcePlayerId
+            sourcePlayerId,
+            zoneRadiusMultiplier,
+            zoneDurationMultiplier
         );
     }
 

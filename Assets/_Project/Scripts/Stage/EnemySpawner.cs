@@ -86,6 +86,11 @@ public class EnemySpawner : MonoBehaviour
     {
         RemoveDestroyedEnemies();
 
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
+
         if (!HasSpawnAuthority())
         {
             return;

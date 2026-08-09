@@ -28,6 +28,10 @@ public class EnemyAttack : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
         
         // 부딪힌 대상이 플레이어가 아니면 종료
         if (!collision.gameObject.CompareTag("Player"))

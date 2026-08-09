@@ -14,6 +14,7 @@ public class NetworkPlayerMovement : NetworkBehaviour
     private Vector2 moveInput;
 
     public float SpeedMultiplier { get; set; } = 1f;
+    public float GrowthSpeedMultiplier { get; set; } = 1f;
 
     public void ConfigureBaseSpeed(float value)
     {
@@ -79,8 +80,14 @@ public class NetworkPlayerMovement : NetworkBehaviour
             return;
         }
 
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
+            return;
+        }
+
         rigidBody.linearVelocity =
-            moveInput * moveSpeed * SpeedMultiplier;
+            moveInput * moveSpeed * SpeedMultiplier * GrowthSpeedMultiplier;
     }
 
     public override void OnNetworkDespawn()
@@ -93,5 +100,6 @@ public class NetworkPlayerMovement : NetworkBehaviour
         }
 
         SpeedMultiplier = 1f;
+        GrowthSpeedMultiplier = 1f;
     }
 }

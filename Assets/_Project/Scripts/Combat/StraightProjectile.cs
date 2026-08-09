@@ -55,13 +55,17 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
 
     private bool isInitialized;
     private int remainingPierce;
+    private int remainingBounces;
+    private float bounceRange;
+    private float effectiveExplosionRadius;
+    private float remainingLifeTime;
 
     // 같은 적을 두 번 때리는 것 방지 (관통 시 콜라이더 중복 진입 대응)
     private readonly HashSet<int> hitEnemyIds = new HashSet<int>();
 
     private void Awake()
     {
-        Destroy(gameObject, lifeTime);
+        remainingLifeTime = lifeTime;
     }
 
     public void Cast(SkillCastContext context)
@@ -79,7 +83,13 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         visualOnly = context.VisualOnly;
         sourcePlayerId = context.SourcePlayerId;
 
-        remainingPierce = pierceCount;
+        remainingPierce = pierceCount + Mathf.Max(0, context.PierceBonus);
+        remainingBounces = Mathf.Max(0, context.BounceCount);
+        bounceRange = Mathf.Max(0f, context.BounceRange);
+        float explosionMultiplier = context.ExplosionRadiusMultiplier > 0f
+            ? context.ExplosionRadiusMultiplier
+            : 1f;
+        effectiveExplosionRadius = explosionRadius * explosionMultiplier;
 
         // 화살이 날아가는 방향을 바라보게 회전
         transform.right = direction;
@@ -93,6 +103,19 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
     {
         if (!isInitialized)
         {
+            return;
+        }
+
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
+
+        remainingLifeTime -= Time.deltaTime;
+
+        if (remainingLifeTime <= 0f)
+        {
+            Destroy(gameObject);
             return;
         }
 
@@ -147,9 +170,14 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
 
         // TODO(연계): 명중한 적에게 (element, 플레이어 ID, 시간) 기록 → SynergyResolver 연동
 
-        if (explosionRadius > 0f)
+        if (effectiveExplosionRadius > 0f)
         {
             Explode(hitRoot.position, enemyId);
+        }
+
+        if (TryRicochet(hitRoot.position))
+        {
+            return;
         }
 
         if (remainingPierce > 0)
@@ -166,7 +194,7 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         Collider2D[] enemiesInRange =
             Physics2D.OverlapCircleAll(
                 center,
-                explosionRadius,
+                effectiveExplosionRadius,
                 enemyLayer
             );
 
@@ -213,6 +241,73 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
         SpawnEffect(explosionEffectPrefab, center);
     }
 
+    private bool TryRicochet(Vector2 center)
+    {
+        if (remainingBounces <= 0 || bounceRange <= 0f)
+        {
+            return false;
+        }
+
+        Collider2D[] nearby = Physics2D.OverlapCircleAll(
+            center,
+            bounceRange,
+            enemyLayer
+        );
+        Transform nearest = null;
+        float nearestDistance = float.MaxValue;
+        HashSet<int> checkedIds = new HashSet<int>();
+
+        foreach (Collider2D candidate in nearby)
+        {
+            IDamageable damageable =
+                candidate.GetComponentInParent<IDamageable>();
+
+            if (damageable == null)
+            {
+                continue;
+            }
+
+            Transform candidateRoot =
+                candidate.attachedRigidbody != null
+                    ? candidate.attachedRigidbody.transform
+                    : candidate.transform.root;
+            int candidateId = candidateRoot.gameObject.GetInstanceID();
+
+            if (!checkedIds.Add(candidateId) || hitEnemyIds.Contains(candidateId))
+            {
+                continue;
+            }
+
+            float distance = Vector2.SqrMagnitude(
+                (Vector2)candidateRoot.position - center
+            );
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = candidateRoot;
+            }
+        }
+
+        if (nearest == null)
+        {
+            return false;
+        }
+
+        Vector2 nextDirection = (Vector2)nearest.position - center;
+
+        if (nextDirection.sqrMagnitude < 0.001f)
+        {
+            return false;
+        }
+
+        remainingBounces--;
+        direction = nextDirection.normalized;
+        transform.position = center + direction * 0.05f;
+        transform.right = direction;
+        return true;
+    }
+
     private void SpawnEffect(AutoDestroyEffect effectPrefab, Vector2 position)
     {
         if (effectPrefab == null)
@@ -237,10 +332,14 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (explosionRadius > 0f)
+        float radius = Application.isPlaying
+            ? effectiveExplosionRadius
+            : explosionRadius;
+
+        if (radius > 0f)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, explosionRadius);
+            Gizmos.DrawWireSphere(transform.position, radius);
         }
     }
 }

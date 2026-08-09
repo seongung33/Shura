@@ -32,13 +32,17 @@ public class ElementalZone : MonoBehaviour
 
     private bool isInitialized;
     private float nextTickTime;
+    private float activeRadius;
+    private float remainingDuration;
 
     public void Initialize(
         ElementType newElement,
         float newDamagePerTick,
         LayerMask newEnemyLayer,
         bool newVisualOnly = false,
-        ulong newSourcePlayerId = ulong.MaxValue
+        ulong newSourcePlayerId = ulong.MaxValue,
+        float radiusMultiplier = 1f,
+        float durationMultiplier = 1f
     )
     {
         element = newElement;
@@ -46,16 +50,13 @@ public class ElementalZone : MonoBehaviour
         enemyLayer = newEnemyLayer;
         visualOnly = newVisualOnly;
         sourcePlayerId = newSourcePlayerId;
+        activeRadius = radius * Mathf.Max(0.01f, radiusMultiplier);
+        remainingDuration = duration * Mathf.Max(0.01f, durationMultiplier);
 
         ElementVisuals.ApplyColor(gameObject, element);
 
         // 스프라이트가 지름 1 유닛 기준일 때 radius에 맞게 크기 조정
-        transform.localScale = Vector3.one * (radius * 2f);
-
-        if (Application.isPlaying)
-        {
-            Destroy(gameObject, duration);
-        }
+        transform.localScale = Vector3.one * (activeRadius * 2f);
 
         isInitialized = true;
     }
@@ -64,6 +65,19 @@ public class ElementalZone : MonoBehaviour
     {
         if (!isInitialized)
         {
+            return;
+        }
+
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
+
+        remainingDuration -= Time.deltaTime;
+
+        if (remainingDuration <= 0f)
+        {
+            Destroy(gameObject);
             return;
         }
 
@@ -85,7 +99,7 @@ public class ElementalZone : MonoBehaviour
         Collider2D[] enemiesInRange =
             Physics2D.OverlapCircleAll(
                 transform.position,
-                radius,
+                activeRadius,
                 enemyLayer
             );
 
@@ -124,6 +138,9 @@ public class ElementalZone : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, radius);
+        float drawRadius = Application.isPlaying && activeRadius > 0f
+            ? activeRadius
+            : radius;
+        Gizmos.DrawWireSphere(transform.position, drawRadius);
     }
 }

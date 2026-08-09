@@ -15,6 +15,7 @@ namespace Shura.Player
         /// 스킬(예: 적토마)이 일시적으로 이동 속도를 조절할 때 사용하는 배율. 기본 1.
         /// </summary>
         public float SpeedMultiplier { get; set; } = 1f;
+        public float GrowthSpeedMultiplier { get; set; } = 1f;
 
         private void Awake()
         {
@@ -36,9 +37,16 @@ namespace Shura.Player
 
         private void FixedUpdate()
         {
+            if (GameplayPauseState.IsLevelUpActive)
+            {
+                rb.linearVelocity = Vector2.zero;
+                return;
+            }
+
             // Clamp to unit length so diagonal input isn't faster than a single axis.
             Vector2 direction = moveInput.sqrMagnitude > 1f ? moveInput.normalized : moveInput;
-            rb.linearVelocity = direction * moveSpeed * SpeedMultiplier;
+            rb.linearVelocity =
+                direction * moveSpeed * SpeedMultiplier * GrowthSpeedMultiplier;
         }
     }
 }

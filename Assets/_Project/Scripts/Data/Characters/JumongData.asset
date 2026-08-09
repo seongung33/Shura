@@ -25,3 +25,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b94bc1cafa5e7c8488c3ac8bba38c81c, type: 2}
   - {fileID: 11400000, guid: 1c1287c5d0b4c3540b7d3d74a788ee34, type: 2}
   - {fileID: 11400000, guid: 43082ef0076ab49418911e9ef22af01a, type: 2}
+  levelUpSkills:
+  - {fileID: 11400000, guid: b94bc1cafa5e7c8488c3ac8bba38c81c, type: 2}
+  - {fileID: 11400000, guid: 1c1287c5d0b4c3540b7d3d74a788ee34, type: 2}
+  - {fileID: 11400000, guid: 43082ef0076ab49418911e9ef22af01a, type: 2}

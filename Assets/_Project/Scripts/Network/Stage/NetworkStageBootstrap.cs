@@ -13,6 +13,10 @@ public class NetworkStageBootstrap : MonoBehaviour
     [SerializeField]
     private LevelCurveData levelCurve;
 
+    [Header("Level Up")]
+    [SerializeField]
+    private LevelUpSettings levelUpSettings = new();
+
     [Header("Players")]
     [SerializeField]
     private GameObject playerPrefab;
@@ -213,6 +217,10 @@ public class NetworkStageBootstrap : MonoBehaviour
 
         TeamExperience teamExperience = runtimeObject.AddComponent<TeamExperience>();
         teamExperience.Configure(levelCurve);
+
+        TeamLevelUpCoordinator levelUpCoordinator =
+            runtimeObject.AddComponent<TeamLevelUpCoordinator>();
+        levelUpCoordinator.Configure(teamExperience, levelUpSettings);
 
         EnemySpawner enemySpawner = runtimeObject.AddComponent<EnemySpawner>();
         enemySpawner.Configure(enemyPrefab);

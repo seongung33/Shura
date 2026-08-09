@@ -29,9 +29,19 @@ public class CharacterData : ScriptableObject
     [SerializeField]
     private List<SkillData> startingSkills = new List<SkillData>();
 
+    [Tooltip("네트워크 레벨업에서 획득/강화 후보로 사용할 스킬. 비어 있으면 시작 스킬을 재사용합니다.")]
+    [SerializeField]
+    private List<SkillData> levelUpSkills = new List<SkillData>();
+
     public GameObject GameplayVisualPrefab => gameplayVisualPrefab;
     public float MaxHealth => maxHealth;
     public float MoveSpeed => moveSpeed;
     public SkillData BasicSkill => basicSkill;
     public IReadOnlyList<SkillData> StartingSkills => startingSkills;
+    public IReadOnlyList<SkillData> LevelUpSkills =>
+        levelUpSkills != null && levelUpSkills.Count > 0
+            ? levelUpSkills
+            : startingSkills;
+    public bool UsesLevelUpSkillPool =>
+        levelUpSkills != null && levelUpSkills.Count > 0;
 }

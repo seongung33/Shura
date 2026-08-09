@@ -20,3 +20,27 @@ MonoBehaviour:
   range: 8
   projectileSpeed: 22
   skillPrefab: {fileID: 6003205801813729232, guid: c6734181a998aec43bd1fb77846aeb72, type: 3}
+  maxLevel: 5
+  levelUpgrades:
+  - level: 2
+    summary: ""
+    effects:
+    - type: 0
+      amount: 0.2
+  - level: 3
+    summary: ""
+    effects:
+    - type: 5
+      amount: 1
+  - level: 4
+    summary: ""
+    effects:
+    - type: 2
+      amount: 0.15
+  - level: 5
+    summary: ""
+    effects:
+    - type: 5
+      amount: 1
+    - type: 0
+      amount: 0.25

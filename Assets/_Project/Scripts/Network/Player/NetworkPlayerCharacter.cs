@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Shura.Player;
 using Unity.Netcode;
@@ -179,14 +180,25 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
             data.BasicSkill
         );
 
+        NetworkPlayerProgression progression =
+            GetComponent<NetworkPlayerProgression>();
+
+        IReadOnlyList<SkillData> networkStartingSkills =
+            progression != null && data.UsesLevelUpSkillPool
+                ? Array.Empty<SkillData>()
+                : data.StartingSkills;
+
         GetComponent<AutoSkillCaster>()?.ConfigureSkills(
-            data.StartingSkills
+            networkStartingSkills
         );
 
         GetComponent<NetworkSkillCastRelay>()?.ConfigureAllowedSkills(
             data.BasicSkill,
-            data.StartingSkills
+            networkStartingSkills,
+            data.LevelUpSkills
         );
+
+        progression?.ConfigureCharacter(data);
 
         if (IsServer)
         {

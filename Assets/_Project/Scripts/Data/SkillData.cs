@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(
@@ -41,6 +42,15 @@ public class SkillData : ScriptableObject
     [SerializeField]
     private GameObject skillPrefab;
 
+    [Header("Progression")]
+
+    [Min(1)]
+    [SerializeField]
+    private int maxLevel = 5;
+
+    [SerializeField]
+    private List<SkillLevelUpgradeDefinition> levelUpgrades = new();
+
     public string SkillId => skillId;
     public string DisplayName => displayName;
     public string Description => description;
@@ -51,4 +61,121 @@ public class SkillData : ScriptableObject
     public float ProjectileSpeed => projectileSpeed;
 
     public GameObject SkillPrefab => skillPrefab;
+
+    public int MaxLevel => Mathf.Max(1, maxLevel);
+
+    public SkillRuntimeModifiers GetRuntimeModifiers(int level)
+    {
+        SkillRuntimeModifiers modifiers = SkillRuntimeModifiers.Default;
+
+        if (levelUpgrades == null)
+        {
+            return modifiers;
+        }
+
+        int clampedLevel = Mathf.Clamp(level, 1, MaxLevel);
+
+        foreach (SkillLevelUpgradeDefinition upgrade in levelUpgrades)
+        {
+            if (upgrade == null || upgrade.Level > clampedLevel)
+            {
+                continue;
+            }
+
+            foreach (SkillUpgradeEffectDefinition effect in upgrade.Effects)
+            {
+                modifiers.Apply(effect);
+            }
+        }
+
+        return modifiers;
+    }
+
+    public string GetUpgradeSummary(int targetLevel)
+    {
+        SkillLevelUpgradeDefinition upgrade = GetLevelUpgrade(targetLevel);
+
+        if (upgrade == null)
+        {
+            return targetLevel <= 1 ? "신규 스킬 획득" : "스킬 성능 강화";
+        }
+
+        if (!string.IsNullOrWhiteSpace(upgrade.Summary))
+        {
+            return upgrade.Summary;
+        }
+
+        List<string> descriptions = new();
+
+        foreach (SkillUpgradeEffectDefinition effect in upgrade.Effects)
+        {
+            string description = DescribeEffect(effect);
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                descriptions.Add(description);
+            }
+        }
+
+        return descriptions.Count > 0
+            ? string.Join(", ", descriptions)
+            : "스킬 성능 강화";
+    }
+
+    private SkillLevelUpgradeDefinition GetLevelUpgrade(int targetLevel)
+    {
+        if (levelUpgrades == null)
+        {
+            return null;
+        }
+
+        foreach (SkillLevelUpgradeDefinition upgrade in levelUpgrades)
+        {
+            if (upgrade != null && upgrade.Level == targetLevel)
+            {
+                return upgrade;
+            }
+        }
+
+        return null;
+    }
+
+    private static string DescribeEffect(SkillUpgradeEffectDefinition effect)
+    {
+        if (effect == null)
+        {
+            return string.Empty;
+        }
+
+        int percent = Mathf.RoundToInt(effect.Amount * 100f);
+        int count = Mathf.Max(0, Mathf.RoundToInt(effect.Amount));
+
+        switch (effect.Type)
+        {
+            case SkillUpgradeType.DamagePercent:
+                return $"피해 +{percent}%";
+            case SkillUpgradeType.ActivationIntervalReduction:
+                return $"발동 주기 -{percent}%";
+            case SkillUpgradeType.CooldownReduction:
+                return $"쿨다운 -{percent}%";
+            case SkillUpgradeType.ProjectileCount:
+                return $"투사체 +{count}";
+            case SkillUpgradeType.ProjectileSpeedPercent:
+                return $"투사체 속도 +{percent}%";
+            case SkillUpgradeType.PierceCount:
+                return $"관통 +{count}";
+            case SkillUpgradeType.ExplosionRadiusPercent:
+                return $"폭발 범위 +{percent}%";
+            case SkillUpgradeType.ZoneRadiusPercent:
+                return $"장판 범위 +{percent}%";
+            case SkillUpgradeType.ZoneDurationPercent:
+                return $"장판 지속시간 +{percent}%";
+            case SkillUpgradeType.MovementSpeedPercent:
+                return $"이동속도 보너스 +{percent}%";
+            case SkillUpgradeType.ZoneDamagePercent:
+                return $"장판 피해 +{percent}%";
+            default:
+                return string.Empty;
+        }
+    }
 }
