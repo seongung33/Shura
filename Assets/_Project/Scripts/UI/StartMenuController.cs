@@ -11,9 +11,10 @@ public class StartMenuController : MonoBehaviour
     private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
     private const string LogoResourcePath = "UI/MainMenu/mugung_logo_pixel";
 
-    private static readonly Color PanelColor = new Color(0.015f, 0.025f, 0.05f, 0.52f);
+    private static readonly Color PanelColor = new Color(0.012f, 0.026f, 0.055f, 0.88f);
     private static readonly Color AccentColor = new Color(0.08f, 0.72f, 0.88f, 1f);
-    private static readonly Color ButtonColor = new Color(0.08f, 0.34f, 0.48f, 1f);
+    private static readonly Color PrimaryButtonColor = new Color(0.055f, 0.39f, 0.55f, 1f);
+    private static readonly Color ButtonColor = new Color(0.035f, 0.15f, 0.27f, 1f);
     private static readonly Color DisabledColor = new Color(0.12f, 0.17f, 0.24f, 1f);
     private static readonly Color PrimaryTextColor = new Color(0.82f, 0.93f, 1f, 1f);
     private static bool introShownThisSession;
@@ -105,8 +106,8 @@ public class StartMenuController : MonoBehaviour
         {
             panelOutline = menuRoot.AddComponent<Outline>();
         }
-        panelOutline.effectColor = new Color(0.08f, 0.7f, 0.88f, 0.46f);
-        panelOutline.effectDistance = new Vector2(2f, -2f);
+        panelOutline.effectColor = new Color(0.08f, 0.7f, 0.88f, 0.32f);
+        panelOutline.effectDistance = new Vector2(1f, -1f);
 
         CreateLogo(menuRoot.transform, compactLayout);
         float subtitleY = compactLayout ? 75f : 82f;
@@ -132,7 +133,7 @@ public class StartMenuController : MonoBehaviour
 
             if (text == "싱글 플레이")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY), ButtonColor, compactLayout);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY), PrimaryButtonColor, compactLayout);
             }
             else if (text == "멀티 플레이")
             {
@@ -228,7 +229,9 @@ public class StartMenuController : MonoBehaviour
         background.rectTransform.offsetMin = Vector2.zero;
         background.rectTransform.offsetMax = Vector2.zero;
         background.sprite = Resources.Load<Sprite>(BackgroundResourcePath);
-        background.color = Color.white;
+        // 메뉴에서는 정보 탐색이 우선이므로 첫 로고 연출과 비슷한
+        // 저명도 톤을 유지하고 도시의 네온은 분위기만 남긴다.
+        background.color = new Color(0.66f, 0.72f, 0.82f, 1f);
         background.raycastTarget = false;
         if (background.sprite != null)
         {
@@ -243,7 +246,7 @@ public class StartMenuController : MonoBehaviour
         StretchLabel(shade.rectTransform);
         shade.rectTransform.offsetMin = Vector2.zero;
         shade.rectTransform.offsetMax = Vector2.zero;
-        shade.color = new Color(0f, 0.015f, 0.035f, 0.3f);
+        shade.color = new Color(0f, 0.01f, 0.03f, 0.52f);
         shade.raycastTarget = false;
     }
 
