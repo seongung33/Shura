@@ -133,7 +133,7 @@ public class StartMenuController : MonoBehaviour
 
             if (text == "싱글 플레이")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY), PrimaryButtonColor, compactLayout);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY), ButtonColor, compactLayout, true);
             }
             else if (text == "멀티 플레이")
             {
@@ -309,7 +309,7 @@ public class StartMenuController : MonoBehaviour
         MainMenuHowToPanel.Show(GetComponentInParent<Canvas>());
     }
 
-    private static void StyleButton(Button button, TMP_Text tmpLabel, Text legacyLabel, Vector2 position, Color normalColor, bool compactLayout)
+    private static void StyleButton(Button button, TMP_Text tmpLabel, Text legacyLabel, Vector2 position, Color normalColor, bool compactLayout, bool defaultFocused = false)
     {
         RectTransform rect = button.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -334,10 +334,18 @@ public class StartMenuController : MonoBehaviour
         colors.fadeDuration = 0.08f;
         button.colors = colors;
 
-        if (button.GetComponent<MainMenuButtonMotion>() == null)
+        MainMenuButtonMotion motion = button.GetComponent<MainMenuButtonMotion>();
+        if (motion == null)
         {
-            button.gameObject.AddComponent<MainMenuButtonMotion>();
+            motion = button.gameObject.AddComponent<MainMenuButtonMotion>();
         }
+        motion.ConfigureFocusColors(
+            normalColor,
+            defaultFocused ? PrimaryButtonColor :
+                normalColor == ButtonColor ? PrimaryButtonColor : normalColor * 1.12f,
+            defaultFocused
+        );
+        button.transition = Selectable.Transition.None;
 
         if (tmpLabel != null)
         {
