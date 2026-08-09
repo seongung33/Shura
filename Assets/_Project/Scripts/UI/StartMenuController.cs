@@ -19,6 +19,10 @@ public class StartMenuController : MonoBehaviour
     {
         SceneManager.LoadScene("MultiPlayerEntry");
     }
+    public void OpenSinglePlayerScene()
+    {
+        SceneManager.LoadScene("Main");
+    }
     public void OpenMainMenuScene()
     {
         SceneManager.LoadScene("MainMenu");

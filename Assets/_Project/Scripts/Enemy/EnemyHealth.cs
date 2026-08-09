@@ -55,6 +55,11 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
     private float localHealth;
     private bool isDead;
     private ElementalStatusController elementalStatus;
+    private float runtimeExperienceReward;
+    private int experienceBundleSize = 1;
+    private ExperienceDropAccumulator dropAccumulator;
+
+    public ExperienceOrb ExperienceOrbPrefab => experienceOrbPrefab;
 
     public float CurrentHealth
     {
@@ -67,8 +72,23 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
     private void Awake()
     {
         localHealth = maxHealth;
+        runtimeExperienceReward = experienceReward;
         isDead = false;
         elementalStatus = new ElementalStatusController();
+    }
+
+    public void ConfigureRuntime(
+        float healthMultiplier,
+        float configuredExperienceReward,
+        ExperienceDropAccumulator configuredAccumulator,
+        int configuredBundleSize
+    )
+    {
+        maxHealth *= Mathf.Max(0.01f, healthMultiplier);
+        localHealth = maxHealth;
+        runtimeExperienceReward = Mathf.Max(0f, configuredExperienceReward);
+        dropAccumulator = configuredAccumulator;
+        experienceBundleSize = Mathf.Max(1, configuredBundleSize);
     }
 
     public override void OnNetworkSpawn()
@@ -336,28 +356,30 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
         {
             if (IsServer)
             {
-                SpawnNetworkExperienceOrb();
+                DropExperience();
                 NetworkObject.Despawn(true);
             }
 
             return;
         }
 
-        if (experienceOrbPrefab != null)
-        {
-            ExperienceOrb experienceOrb = Instantiate(
-                experienceOrbPrefab,
-                transform.position,
-                Quaternion.identity
-            );
-            experienceOrb.Initialize(experienceReward);
-        }
+        DropExperience();
 
         Destroy(gameObject);
     }
 
-    private void SpawnNetworkExperienceOrb()
+    private void DropExperience()
     {
+        if (dropAccumulator != null)
+        {
+            dropAccumulator.Add(
+                transform.position,
+                runtimeExperienceReward,
+                experienceBundleSize
+            );
+            return;
+        }
+
         if (experienceOrbPrefab == null)
         {
             return;
@@ -368,21 +390,22 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
             transform.position,
             Quaternion.identity
         );
-        experienceOrb.Initialize(experienceReward);
+        experienceOrb.Initialize(Mathf.Max(1, Mathf.RoundToInt(runtimeExperienceReward)));
 
-        NetworkObject orbNetworkObject =
-            experienceOrb.GetComponent<NetworkObject>();
-
-        if (orbNetworkObject == null)
+        if (IsSpawned)
         {
-            Debug.LogError(
-                "ExperienceOrb에 NetworkObject가 없어 네트워크 생성할 수 없습니다."
-            );
-            Destroy(experienceOrb.gameObject);
-            return;
-        }
+            NetworkObject orbNetworkObject =
+                experienceOrb.GetComponent<NetworkObject>();
 
-        orbNetworkObject.Spawn();
+            if (orbNetworkObject != null)
+            {
+                orbNetworkObject.Spawn();
+            }
+            else
+            {
+                Destroy(experienceOrb.gameObject);
+            }
+        }
     }
 
     private static bool IsValidDamage(float damage)
