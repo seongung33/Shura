@@ -32,10 +32,16 @@ public static class CharacterSelectVisualTheme
         backdrop.color = Background;
         backdrop.raycastTarget = false;
 
-        CreateText(themeRoot, "영웅 선택", font, 42, FontStyles.Bold,
+        bool multiplayerLobby = FindRect(canvas.transform, "StartGameButton") != null;
+        string heading = multiplayerLobby ? "협동 영웅 선택" : "영웅 선택";
+        string subtitle = multiplayerLobby
+            ? "동료와 영웅을 정하고 전투 준비를 완료하세요"
+            : "전장에 함께할 영웅을 선택하세요";
+
+        CreateText(themeRoot, heading, font, 42, FontStyles.Bold,
             new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(298f, -30f), new Vector2(500f, 60f),
             TextAlignmentOptions.Left, PrimaryText);
-        CreateText(themeRoot, "전장에 함께할 영웅을 선택하세요", font, 20, FontStyles.Normal,
+        CreateText(themeRoot, subtitle, font, 20, FontStyles.Normal,
             new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(308f, -88f), new Vector2(520f, 36f),
             TextAlignmentOptions.Left, SecondaryText);
 
@@ -53,6 +59,8 @@ public static class CharacterSelectVisualTheme
         StylePlayersPanel(players, font);
         StyleCharacterList(list, font);
         StyleInfoPanel(info, font);
+        if (multiplayerLobby)
+            StyleLobbyChrome(canvas.transform, font);
     }
 
     public static void StyleCharacterCard(Transform card)
@@ -222,8 +230,45 @@ public static class CharacterSelectVisualTheme
 
         StyleButton(FindRect(panel, "BackButton"), "뒤로", false,
             new Vector2(0f, 0f), new Vector2(0.48f, 0f), new Vector2(24f, 28f), new Vector2(-8f, 92f));
-        StyleButton(FindRect(panel, "StartButton"), "게임 시작", true,
+        RectTransform startButton = FindRect(panel, "StartButton") ??
+            FindRect(panel, "StartGameButton");
+        StyleButton(startButton, "게임 시작", true,
             new Vector2(0.48f, 0f), new Vector2(1f, 0f), new Vector2(8f, 28f), new Vector2(-24f, 92f));
+    }
+
+    private static void StyleLobbyChrome(Transform canvas, TMP_FontAsset font)
+    {
+        TMP_Text joinCode = FindText(canvas, "JoinCodeText");
+        if (joinCode != null)
+        {
+            SetAnchored(joinCode.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-280f, -34f), new Vector2(500f, 42f));
+            StyleText(joinCode, 24f, FontStyles.Bold, PrimaryText, TextAlignmentOptions.Right);
+            if (font != null)
+                joinCode.font = font;
+        }
+
+        TMP_Text playerCount = FindText(canvas, "PlayerCountText");
+        if (playerCount != null)
+        {
+            SetAnchored(playerCount.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-280f, -76f), new Vector2(500f, 34f));
+            StyleText(playerCount, 19f, FontStyles.Bold, Accent, TextAlignmentOptions.Right);
+            if (font != null)
+                playerCount.font = font;
+        }
+
+        TMP_Text status = FindText(canvas, "StatusText");
+        if (status != null)
+        {
+            SetAnchored(status.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -104f), new Vector2(620f, 34f));
+            StyleText(status, 18f, FontStyles.Bold, SecondaryText, TextAlignmentOptions.Center);
+            if (font != null)
+                status.font = font;
+        }
+
+        RectTransform leaveButton = FindRect(canvas, "LeaveRoomButton");
+        StyleButton(leaveButton, "로비 나가기", false,
+            Vector2.zero, Vector2.zero, new Vector2(28f, 28f), new Vector2(250f, 92f));
+
     }
 
     private static void StyleButton(RectTransform rect, string label, bool primary,
@@ -236,6 +281,7 @@ public static class CharacterSelectVisualTheme
         rect.anchorMax = anchorMax;
         rect.offsetMin = offsetMin;
         rect.offsetMax = offsetMax;
+        rect.localScale = Vector3.one;
 
         Image image = rect.GetComponent<Image>();
         if (image != null)
@@ -249,6 +295,9 @@ public static class CharacterSelectVisualTheme
             colors.highlightedColor = primary ? new Color(0.8f, 1f, 1f, 1f) : new Color(1f, 1f, 1f, 0.86f);
             colors.pressedColor = new Color(0.7f, 0.85f, 0.9f, 1f);
             button.colors = colors;
+            if (button.GetComponent<MainMenuButtonMotion>() == null)
+                button.gameObject.AddComponent<MainMenuButtonMotion>();
+            button.onClick.AddListener(GameAudioController.PlayButtonClick);
         }
 
         TMP_Text text = rect.GetComponentInChildren<TMP_Text>(true);
@@ -354,6 +403,20 @@ public static class CharacterSelectVisualTheme
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = position;
         rect.sizeDelta = size;
+    }
+
+    private static void SetAnchored(RectTransform rect, Vector2 anchor, Vector2 pivot,
+        Vector2 position, Vector2 size)
+    {
+        if (rect == null)
+            return;
+
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = pivot;
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        rect.localScale = Vector3.one;
     }
 
     private static void SetLeftCenter(RectTransform rect, float x, Vector2 size)
