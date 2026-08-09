@@ -502,6 +502,7 @@ public class StartMenuController : MonoBehaviour
         GameObject overlay
     )
     {
+        GameAudioController.PlayLogoReveal();
         yield return Fade(group, 0f, 1f, 0.45f);
         float holdElapsed = 0f;
         while (holdElapsed < 0.9f && !skipIntroRequested)
