@@ -10,6 +10,7 @@ public class NetworkPlayerOwnerSetup : NetworkBehaviour
     private PlayerAutoAttack autoAttack;
     private PlayerAimDirection aimDirection;
     private DirectionalAutoAttack directionalAutoAttack;
+    private JumongAutoTargetAttack jumongAutoTargetAttack;
     private AutoSkillCaster autoSkillCaster;
     private PlayerExperience playerExperience;
 
@@ -19,6 +20,7 @@ public class NetworkPlayerOwnerSetup : NetworkBehaviour
         autoAttack = GetComponent<PlayerAutoAttack>();
         aimDirection = GetComponent<PlayerAimDirection>();
         directionalAutoAttack = GetComponent<DirectionalAutoAttack>();
+        jumongAutoTargetAttack = GetComponent<JumongAutoTargetAttack>();
         autoSkillCaster = GetComponent<AutoSkillCaster>();
         playerExperience = GetComponent<PlayerExperience>();
 
@@ -69,6 +71,11 @@ public class NetworkPlayerOwnerSetup : NetworkBehaviour
         if (directionalAutoAttack != null)
         {
             directionalAutoAttack.enabled = isEnabled;
+        }
+
+        if (jumongAutoTargetAttack != null)
+        {
+            jumongAutoTargetAttack.enabled = isEnabled;
         }
 
         if (autoSkillCaster != null)
