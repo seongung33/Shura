@@ -22,6 +22,8 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip logoRevealSound;
     private AudioClip archerUltimateSound;
     private AudioClip warriorUltimateSound;
+    private AudioClip levelUpSound;
+    private AudioClip upgradeConfirmSound;
     private Coroutine musicFadeRoutine;
 
     public static float MusicVolume =>
@@ -72,6 +74,18 @@ public sealed class GameAudioController : MonoBehaviour
             ? instance.warriorUltimateSound
             : instance.archerUltimateSound;
         instance.effectsSource.PlayOneShot(clip, 0.82f);
+    }
+
+    public static void PlayLevelUp()
+    {
+        EnsureExists();
+        instance.effectsSource.PlayOneShot(instance.levelUpSound, 0.68f);
+    }
+
+    public static void PlayUpgradeConfirm()
+    {
+        EnsureExists();
+        instance.effectsSource.PlayOneShot(instance.upgradeConfirmSound, 0.52f);
     }
 
     public static void PlayBossWarning()
@@ -128,6 +142,8 @@ public sealed class GameAudioController : MonoBehaviour
         logoRevealSound = CreateLogoStinger();
         archerUltimateSound = CreateUltimateCue("ArcherUltimate", false);
         warriorUltimateSound = CreateUltimateCue("WarriorUltimate", true);
+        levelUpSound = CreateLevelUpCue();
+        upgradeConfirmSound = CreateUpgradeConfirmCue();
 
         SceneManager.sceneLoaded += HandleSceneLoaded;
         PlayMusicForScene(SceneManager.GetActiveScene().name);
@@ -288,6 +304,38 @@ public sealed class GameAudioController : MonoBehaviour
                     ? Random.Range(-0.45f, 0.45f) * Mathf.Pow(1f - progress, 5f)
                     : Mathf.Sin(2f * Mathf.PI * frequency * 2f * time) * 0.22f;
                 return (core * (warrior ? 0.42f : 0.28f) + texture) * attack * release;
+            }
+        );
+    }
+
+    private static AudioClip CreateLevelUpCue()
+    {
+        return CreateLayeredClip(
+            "LevelUp",
+            0.72f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Sin(Mathf.PI * progress);
+                int step = Mathf.Min(3, Mathf.FloorToInt(progress * 4f));
+                float[] notes = { 261.63f, 329.63f, 392f, 523.25f };
+                float note = Mathf.Sin(2f * Mathf.PI * notes[step] * time);
+                float shimmer = Mathf.Sin(2f * Mathf.PI * notes[step] * 2f * time) * 0.18f;
+                return (note * 0.28f + shimmer) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateUpgradeConfirmCue()
+    {
+        return CreateLayeredClip(
+            "UpgradeConfirm",
+            0.2f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 2f);
+                float low = Mathf.Sin(2f * Mathf.PI * 392f * time);
+                float high = Mathf.Sin(2f * Mathf.PI * 784f * time);
+                return (low * 0.18f + high * 0.2f) * envelope;
             }
         );
     }
