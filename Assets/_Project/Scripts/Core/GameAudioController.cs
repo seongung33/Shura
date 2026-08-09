@@ -20,6 +20,8 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip strongHitSound;
     private AudioClip bossSound;
     private AudioClip logoRevealSound;
+    private AudioClip archerUltimateSound;
+    private AudioClip warriorUltimateSound;
     private Coroutine musicFadeRoutine;
 
     public static float MusicVolume =>
@@ -61,6 +63,15 @@ public sealed class GameAudioController : MonoBehaviour
     {
         EnsureExists();
         instance.effectsSource.PlayOneShot(instance.logoRevealSound, 0.72f);
+    }
+
+    public static void PlayUltimateCue(bool warrior)
+    {
+        EnsureExists();
+        AudioClip clip = warrior
+            ? instance.warriorUltimateSound
+            : instance.archerUltimateSound;
+        instance.effectsSource.PlayOneShot(clip, 0.82f);
     }
 
     public static void PlayBossWarning()
@@ -115,6 +126,8 @@ public sealed class GameAudioController : MonoBehaviour
         strongHitSound = CreateImpact("StrongHit", true);
         bossSound = CreateBossWarning();
         logoRevealSound = CreateLogoStinger();
+        archerUltimateSound = CreateUltimateCue("ArcherUltimate", false);
+        warriorUltimateSound = CreateUltimateCue("WarriorUltimate", true);
 
         SceneManager.sceneLoaded += HandleSceneLoaded;
         PlayMusicForScene(SceneManager.GetActiveScene().name);
@@ -254,6 +267,27 @@ public sealed class GameAudioController : MonoBehaviour
                     Mathf.Pow(1f - progress, 4f);
                 return (root * 0.22f + fifth * 0.16f + octave * 0.12f + shimmer * 0.08f) *
                     swell * release;
+            }
+        );
+    }
+
+    private static AudioClip CreateUltimateCue(string name, bool warrior)
+    {
+        return CreateLayeredClip(
+            name,
+            warrior ? 0.52f : 0.44f,
+            (progress, time) =>
+            {
+                float attack = Mathf.SmoothStep(0f, 1f, Mathf.Min(1f, progress * 16f));
+                float release = 1f - Mathf.SmoothStep(0.45f, 1f, progress);
+                float frequency = warrior
+                    ? Mathf.Lerp(82f, 42f, progress)
+                    : Mathf.Lerp(520f, 980f, progress);
+                float core = Mathf.Sin(2f * Mathf.PI * frequency * time);
+                float texture = warrior
+                    ? Random.Range(-0.45f, 0.45f) * Mathf.Pow(1f - progress, 5f)
+                    : Mathf.Sin(2f * Mathf.PI * frequency * 2f * time) * 0.22f;
+                return (core * (warrior ? 0.42f : 0.28f) + texture) * attack * release;
             }
         );
     }
