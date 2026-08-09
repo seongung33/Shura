@@ -246,6 +246,8 @@ public class NetworkStageBootstrap : MonoBehaviour
 
         StageHudPresenter hud = runtimeObject.AddComponent<StageHudPresenter>();
         hud.Configure(waveManager, enemySpawner);
+
+        runtimeObject.AddComponent<GameplayPauseMenu>();
     }
 
     private void TryBindLocalCamera()
