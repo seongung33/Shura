@@ -19,7 +19,9 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         new Dictionary<int, float>();
     private readonly Dictionary<int, ElementType> serverSkillElements =
         new Dictionary<int, ElementType>();
+    private readonly List<SkillData> configuredStartingSkills = new();
     private PlayerRuntimeGrowth runtimeGrowth;
+    private SkillData configuredBasicSkill;
 
     private void Awake()
     {
@@ -33,6 +35,8 @@ public class NetworkSkillCastRelay : NetworkBehaviour
     )
     {
         allowedSkills.Clear();
+        configuredStartingSkills.Clear();
+        configuredBasicSkill = basicSkill;
 
         AddAllowedSkill(basicSkill);
 
@@ -41,6 +45,11 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             foreach (SkillData skill in startingSkills)
             {
                 AddAllowedSkill(skill);
+
+                if (skill != null && !configuredStartingSkills.Contains(skill))
+                {
+                    configuredStartingSkills.Add(skill);
+                }
             }
         }
 
@@ -204,7 +213,7 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         ElementType element
     )
     {
-        if (skill.SkillId == "basic_arrow")
+        if (skill == configuredBasicSkill)
         {
             return element == ElementType.None;
         }
@@ -214,7 +223,11 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             return false;
         }
 
-        if (runtimeGrowth != null &&
+        bool isConfiguredStartingSkill =
+            configuredStartingSkills.Contains(skill);
+
+        if (!isConfiguredStartingSkill &&
+            runtimeGrowth != null &&
             runtimeGrowth.HasAuthoritativeSkillState)
         {
             return runtimeGrowth.TryGetSkillState(
@@ -296,7 +309,9 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             Origin = origin,
             Direction = direction,
             Damage = runtime.Damage,
+            Range = runtime.Range,
             ProjectileSpeed = runtime.ProjectileSpeed,
+            SkillLevel = runtime.SkillLevel,
             PierceBonus = runtime.PierceBonus,
             ExplosionRadiusMultiplier = runtime.ExplosionRadiusMultiplier,
             ActivationIntervalMultiplier = runtime.ActivationIntervalMultiplier,

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// 보유 스킬을 쿨다운마다 자동 시전한다 (뱀서류 방식).
@@ -40,12 +41,15 @@ public class AutoSkillCaster : MonoBehaviour
 
     private PlayerAimDirection aim;
     private PlayerRuntimeGrowth runtimeGrowth;
+    private NetworkSkillCastRelay networkRelay;
     private bool hasStarted;
+    private readonly HashSet<SkillData> persistentSkills = new();
 
     private void Awake()
     {
         aim = GetComponent<PlayerAimDirection>();
         runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
+        networkRelay = GetComponent<NetworkSkillCastRelay>();
     }
 
     private void Start()
@@ -57,6 +61,7 @@ public class AutoSkillCaster : MonoBehaviour
     public void ConfigureSkills(IReadOnlyList<SkillData> skills)
     {
         equippedSkills.Clear();
+        persistentSkills.Clear();
 
         if (skills != null)
         {
@@ -73,6 +78,7 @@ public class AutoSkillCaster : MonoBehaviour
                     element = ElementType.None,
                     level = 1
                 });
+                persistentSkills.Add(skill);
             }
         }
 
@@ -98,6 +104,14 @@ public class AutoSkillCaster : MonoBehaviour
 
         List<EquippedSkill> synchronized = new();
 
+        foreach (EquippedSkill equipped in equippedSkills)
+        {
+            if (equipped.data != null && persistentSkills.Contains(equipped.data))
+            {
+                synchronized.Add(equipped);
+            }
+        }
+
         if (skills != null)
         {
             foreach (RuntimeSkillLoadout loadout in skills)
@@ -120,7 +134,11 @@ public class AutoSkillCaster : MonoBehaviour
 
                 equipped.element = loadout.Element;
                 equipped.level = loadout.Level;
-                synchronized.Add(equipped);
+
+                if (!persistentSkills.Contains(equipped.data))
+                {
+                    synchronized.Add(equipped);
+                }
             }
         }
 
@@ -134,10 +152,33 @@ public class AutoSkillCaster : MonoBehaviour
             return;
         }
 
+        bool manualCastRequested =
+            CanReadManualInput() &&
+            Keyboard.current != null &&
+            Keyboard.current.rKey.wasPressedThisFrame;
+
         foreach (EquippedSkill skill in equippedSkills)
         {
-            TryCast(skill);
+            if (skill.data != null && skill.data.RequiresManualActivation)
+            {
+                if (manualCastRequested)
+                {
+                    TryCast(skill, false);
+                    manualCastRequested = false;
+                }
+
+                continue;
+            }
+
+            TryCast(skill, requireEnemyInRange);
         }
+    }
+
+    private bool CanReadManualInput()
+    {
+        return networkRelay == null ||
+            !networkRelay.IsSpawned ||
+            networkRelay.IsOwner;
     }
 
     /// <summary>
@@ -186,7 +227,7 @@ public class AutoSkillCaster : MonoBehaviour
         }
     }
 
-    private void TryCast(EquippedSkill skill)
+    private void TryCast(EquippedSkill skill, bool needsEnemyInRange)
     {
         if (skill.data == null || skill.data.SkillPrefab == null)
         {
@@ -198,11 +239,15 @@ public class AutoSkillCaster : MonoBehaviour
             return;
         }
 
-        if (requireEnemyInRange)
+        SkillCastRuntime runtime = runtimeGrowth != null
+            ? runtimeGrowth.GetCastRuntime(skill.data)
+            : SkillCastRuntime.FromBase(skill.data);
+
+        if (needsEnemyInRange)
         {
             Transform nearestEnemy = EnemyTargetFinder.FindNearestEnemy(
                 transform.position,
-                skill.data.Range,
+                runtime.Range,
                 enemyLayer
             );
 
@@ -219,13 +264,6 @@ public class AutoSkillCaster : MonoBehaviour
 
         Vector2 direction =
             aim != null ? aim.AimDirection : Vector2.right;
-
-        SkillCastRuntime runtime = runtimeGrowth != null
-            ? runtimeGrowth.GetCastRuntime(skill.data)
-            : SkillCastRuntime.FromBase(skill.data);
-
-        NetworkSkillCastRelay networkRelay =
-            GetComponent<NetworkSkillCastRelay>();
 
         if (networkRelay != null && networkRelay.IsSpawned)
         {
@@ -301,7 +339,9 @@ public class AutoSkillCaster : MonoBehaviour
                 Origin = origin,
                 Direction = volleyDirection,
                 Damage = runtime.Damage,
+                Range = runtime.Range,
                 ProjectileSpeed = runtime.ProjectileSpeed,
+                SkillLevel = runtime.SkillLevel,
                 PierceBonus = runtime.PierceBonus,
                 ExplosionRadiusMultiplier = runtime.ExplosionRadiusMultiplier,
                 ActivationIntervalMultiplier = runtime.ActivationIntervalMultiplier,

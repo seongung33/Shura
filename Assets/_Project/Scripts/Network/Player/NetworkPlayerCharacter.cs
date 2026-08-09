@@ -179,14 +179,15 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         GetComponent<DirectionalAutoAttack>()?.ConfigureBasicSkill(
             data.BasicSkill
         );
+        GetComponent<PlayerRuntimeGrowth>()?.ConfigureBasicSkill(
+            data.BasicSkill
+        );
 
         NetworkPlayerProgression progression =
             GetComponent<NetworkPlayerProgression>();
 
         IReadOnlyList<SkillData> networkStartingSkills =
-            progression != null && data.UsesLevelUpSkillPool
-                ? Array.Empty<SkillData>()
-                : data.StartingSkills;
+            GetNetworkStartingSkills(data);
 
         GetComponent<AutoSkillCaster>()?.ConfigureSkills(
             networkStartingSkills
@@ -260,5 +261,43 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         }
 
         return characters[selectedCharacterId];
+    }
+
+    private static IReadOnlyList<SkillData> GetNetworkStartingSkills(
+        CharacterData character
+    )
+    {
+        if (character == null || character.StartingSkills == null)
+        {
+            return Array.Empty<SkillData>();
+        }
+
+        if (!character.UsesLevelUpSkillPool)
+        {
+            return character.StartingSkills;
+        }
+
+        List<SkillData> innateSkills = new();
+
+        foreach (SkillData startingSkill in character.StartingSkills)
+        {
+            bool isLevelUpSkill = false;
+
+            foreach (SkillData levelUpSkill in character.LevelUpSkills)
+            {
+                if (startingSkill == levelUpSkill)
+                {
+                    isLevelUpSkill = true;
+                    break;
+                }
+            }
+
+            if (startingSkill != null && !isLevelUpSkill)
+            {
+                innateSkills.Add(startingSkill);
+            }
+        }
+
+        return innateSkills;
     }
 }

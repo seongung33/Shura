@@ -57,7 +57,10 @@ public sealed class LevelUpSettings
     private float choiceDuration = 15f;
 
     [SerializeField]
-    private int[] skillChoiceLevels = { 3, 6, 9 };
+    private int[] skillChoiceLevels =
+    {
+        3, 6, 9, 12, 15, 18, 21, 24, 27, 30
+    };
 
     [SerializeField]
     private ElementType[] allowedLevelUpElements =

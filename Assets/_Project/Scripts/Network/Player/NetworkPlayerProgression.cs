@@ -8,6 +8,7 @@ using UnityEngine;
 public sealed class NetworkPlayerProgression : NetworkBehaviour
 {
     private const int MaximumCards = 3;
+    private const int MaximumOwnedSkills = 3;
 
     private static readonly List<NetworkPlayerProgression> SpawnedPlayers =
         new();
@@ -126,6 +127,9 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour
     public void ConfigureCharacter(CharacterData character)
     {
         configuredCharacter = character;
+        runtimeGrowth.ConfigureBasicSkill(character != null
+            ? character.BasicSkill
+            : null);
         skillPool.Clear();
         initialOwnedSkillIndices.Clear();
 
@@ -366,13 +370,16 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour
         if (isSkillChoiceLevel)
         {
             List<int> eligibleSkills = new();
+            int ownedSkillCount = skillStates.Count;
 
             for (int index = 0; index < skillPool.Count; index++)
             {
                 SkillData skill = skillPool[index];
                 int currentLevel = GetCurrentSkillLevel(index);
 
-                if (skill != null && currentLevel < skill.MaxLevel)
+                if (skill != null &&
+                    currentLevel < skill.MaxLevel &&
+                    (currentLevel > 0 || ownedSkillCount < MaximumOwnedSkills))
                 {
                     eligibleSkills.Add(index);
                 }
@@ -416,7 +423,9 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour
 
         foreach (GeneralUpgradeDefinition definition in settings.GeneralUpgrades)
         {
-            if (definition != null && !pool.Contains(definition.Type))
+            if (definition != null &&
+                IsGeneralUpgradeApplicable(definition.Type) &&
+                !pool.Contains(definition.Type))
             {
                 pool.Add(definition.Type);
             }
@@ -541,7 +550,8 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour
             return true;
         }
 
-        if (candidate.TargetSkillLevel != 1 ||
+        if (skillStates.Count >= MaximumOwnedSkills ||
+            candidate.TargetSkillLevel != 1 ||
             !settings.IsAllowedElement(candidate.Element))
         {
             return false;
@@ -554,6 +564,21 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour
             Element = candidate.Element
         });
         return true;
+    }
+
+    private bool IsGeneralUpgradeApplicable(GeneralUpgradeType type)
+    {
+        if (type != GeneralUpgradeType.BasicAttackRicochet)
+        {
+            return true;
+        }
+
+        SkillData basicSkill = configuredCharacter != null
+            ? configuredCharacter.BasicSkill
+            : null;
+        return basicSkill != null &&
+            basicSkill.SkillPrefab != null &&
+            basicSkill.SkillPrefab.GetComponent<StraightProjectile>() != null;
     }
 
     private bool TryGetSkillState(

@@ -463,6 +463,7 @@ MonoBehaviour:
   myPlayerSlotUI: {fileID: 2126286328}
   characters:
   - {fileID: 11400000, guid: 449110af271f96648a03a629fd3b7684, type: 2}
+  - {fileID: 11400000, guid: e462c0eac08348f2af9926e044ce01bc, type: 2}
 --- !u!1 &446878812
 GameObject:
   m_ObjectHideFlags: 0

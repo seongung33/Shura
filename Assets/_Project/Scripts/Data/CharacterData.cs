@@ -4,6 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewCharacterData", menuName = "Game/Character Data")]
 public class CharacterData : ScriptableObject
 {
+    [SerializeField, Min(0)]
+    private int characterId;
+
     [Header("기본 정보")]
     public string characterName;
     public string role;
@@ -33,6 +36,7 @@ public class CharacterData : ScriptableObject
     [SerializeField]
     private List<SkillData> levelUpSkills = new List<SkillData>();
 
+    public int CharacterId => characterId;
     public GameObject GameplayVisualPrefab => gameplayVisualPrefab;
     public float MaxHealth => maxHealth;
     public float MoveSpeed => moveSpeed;
