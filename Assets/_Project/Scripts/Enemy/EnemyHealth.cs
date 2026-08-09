@@ -186,7 +186,7 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
             Debug.Log($"보스 체력: {nextHealth} / {maxHealth}");
         }
 
-        PlayHitEffectSynced();
+        PlayHitEffectSynced(damage, nextHealth <= 0f);
 
         if (nextHealth <= 0f)
         {
@@ -194,22 +194,17 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
         }
     }
 
-    private void PlayHitEffectSynced()
+    private void PlayHitEffectSynced(float damage, bool defeated)
     {
-        if (hitEffectPrefab == null)
-        {
-            return;
-        }
-
         if (!IsSpawned)
         {
-            PlayHitEffect();
+            PlayHitEffect(damage, defeated);
             return;
         }
 
         if (IsServer)
         {
-            PlayHitEffectRpc();
+            PlayHitEffectRpc(damage, defeated);
         }
     }
 
@@ -217,13 +212,19 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
         SendTo.ClientsAndHost,
         InvokePermission = RpcInvokePermission.Server
     )]
-    private void PlayHitEffectRpc()
+    private void PlayHitEffectRpc(float damage, bool defeated)
     {
-        PlayHitEffect();
+        PlayHitEffect(damage, defeated);
     }
 
-    private void PlayHitEffect()
+    private void PlayHitEffect(float damage, bool defeated)
     {
+        CombatFeedbackPresenter.PlayHit(this, damage, defeated);
+
+        if (hitEffectPrefab == null)
+        {
+            return;
+        }
         Vector3 spawnPosition = hitEffectPoint != null
             ? hitEffectPoint.position
             : transform.position;
