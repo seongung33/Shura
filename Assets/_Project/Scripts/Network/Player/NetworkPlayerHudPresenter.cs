@@ -49,6 +49,15 @@ public class NetworkPlayerHudPresenter : NetworkBehaviour
 
     private void Update()
     {
+        if (FindFirstObjectByType<StageHudPresenter>() != null)
+        {
+            if (hudPanel != null && hudPanel.activeSelf)
+            {
+                hudPanel.SetActive(false);
+            }
+            return;
+        }
+
         if (!IsOwner || hudPanel == null || !hudPanel.activeSelf)
         {
             return;
@@ -157,7 +166,8 @@ public class NetworkPlayerHudPresenter : NetworkBehaviour
         }
 
         hudPanel.SetActive(
-            SceneManager.GetActiveScene().name == gameplaySceneName
+            SceneManager.GetActiveScene().name == gameplaySceneName &&
+            FindFirstObjectByType<StageHudPresenter>() == null
         );
     }
 }

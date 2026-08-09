@@ -7,6 +7,9 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
     [SerializeField]
     private float maxHealth = 100f;
 
+    [SerializeField]
+    private bool isBoss;
+
     [Header("Experience Drop")]
 
     [SerializeField]
@@ -68,6 +71,9 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
             return IsSpawned ? networkHealth.Value : localHealth;
         }
     }
+
+    public float MaxHealth => maxHealth;
+    public bool IsBoss => isBoss;
 
     private void Awake()
     {

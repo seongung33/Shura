@@ -478,7 +478,10 @@ Assets/_Project/
 
 ### Main 네트워크 HUD
 
-- `NetworkPlayerHudPresenter`는 소유 플레이어에서만 HUD Canvas를 생성해 각 화면에 자신의 상태만 표시한다.
-- HUD는 `Main` 씬에서만 활성화되며 로비와 결과 이후 로비 복귀 화면에는 표시하지 않는다.
+- `StageHudPresenter`가 `Main`의 공통 HUD Canvas를 런타임 생성한다. 상단 중앙에는 남은 시간만 표시하고, 좌측 상단에는 참가 플레이어별 초상화·캐릭터명·체력 막대를 세로로 배치한다. 싱글에서는 로컬 플레이어 한 명만 표시한다.
+- 하단 중앙에는 로컬 플레이어의 레벨·경험치 막대를 표시한다. 기존 `NetworkPlayerHudPresenter`는 `StageHudPresenter`가 존재할 때 중복 HUD를 숨긴다.
+- `EnemyHealth.IsBoss`가 설정된 적이 존재할 때만 상단 보스 체력 막대를 노출한다. 현재 `BossJangsanTiger.prefab`에 보스 플래그가 설정되어 있다.
+- 오프라인 결과에서는 `StageHudPresenter`가 큰 승리·패배 오버레이와 다시 시작·메인 메뉴 버튼을 제공한다. 네트워크 결과는 기존 `NetworkGameResultPresenter` 흐름을 유지한다.
+- Maplestory TMP 동적 폰트는 다중 아틀라스를 허용해 런타임에 필요한 한글 글리프가 누락되지 않도록 한다.
 - 좌측 상단 앵커와 `CanvasScaler`를 사용해 창 크기와 화면 비율 변경에도 일정한 여백을 유지한다.
 - HP는 서버 동기화 체력, 레벨과 EXP는 서버 동기화 성장 상태가 반영된 로컬 플레이어 컴포넌트에서 읽는다.

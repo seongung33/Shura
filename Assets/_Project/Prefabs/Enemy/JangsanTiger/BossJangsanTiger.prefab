@@ -360,6 +360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 500
+  isBoss: 1
   experienceOrbPrefab: {fileID: 9144952894622143770, guid: a46fd4ce12b8fdb4a942ac769960accd, type: 3}
   experienceReward: 20
   hitEffectPrefab: {fileID: 2975729885742132498, guid: 02fd72f557ecd1b4ca423cc2b9e106bb, type: 3}
