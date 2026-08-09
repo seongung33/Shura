@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class StartMenuController : MonoBehaviour
 {
-    private const string GameTitle = "MUGUNG";
+    private const string GameTitle = "무궁";
     private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
     private const string LogoResourcePath = "UI/MainMenu/mugung_logo_pixel";
 
