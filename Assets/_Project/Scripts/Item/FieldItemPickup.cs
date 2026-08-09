@@ -92,12 +92,20 @@ public sealed class FieldItemPickup : NetworkBehaviour
 
         if (IsSpawned)
         {
+            PlayPickupFeedbackRpc(ItemType, transform.position);
             NetworkObject.Despawn(true);
         }
         else
         {
+            PickupFeedbackPresenter.ShowItem(transform.position, ItemType);
             Destroy(gameObject);
         }
+    }
+
+    [Rpc(SendTo.ClientsAndHost, InvokePermission = RpcInvokePermission.Server)]
+    private void PlayPickupFeedbackRpc(FieldItemType itemType, Vector3 position)
+    {
+        PickupFeedbackPresenter.ShowItem(position, itemType);
     }
 
     private bool TryApplyEffect(PlayerHealth playerHealth)
