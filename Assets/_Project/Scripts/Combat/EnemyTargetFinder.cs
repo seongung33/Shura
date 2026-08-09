@@ -20,16 +20,17 @@ public static class EnemyTargetFinder
 
         foreach (Collider2D enemyCollider in enemyColliders)
         {
-            EnemyHealth enemyHealth =
-                enemyCollider.GetComponentInParent<EnemyHealth>();
+            IDamageable damageable =
+                enemyCollider.GetComponentInParent<IDamageable>();
+            Component damageableComponent = damageable as Component;
 
-            if (enemyHealth == null)
+            if (damageableComponent == null)
             {
                 continue;
             }
 
             Vector2 enemyPosition =
-                enemyHealth.transform.position;
+                damageableComponent.transform.position;
 
             Vector2 difference =
                 enemyPosition - searchOrigin;
@@ -43,7 +44,7 @@ public static class EnemyTargetFinder
             }
 
             nearestDistanceSquared = distanceSquared;
-            nearestEnemy = enemyHealth.transform;
+            nearestEnemy = damageableComponent.transform;
         }
 
         return nearestEnemy;
