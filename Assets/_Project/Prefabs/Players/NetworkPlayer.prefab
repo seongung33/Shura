@@ -542,7 +542,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkGameResultActions
   ShowTopMostFoldoutHeaderGroup: 1
   gameplaySceneName: Main
-  lobbySceneName: NetworkTest
+  multiplayerEntrySceneName: MultiPlayerEntry
   shutdownDelay: 0.25
 --- !u!114 &880000000000000016
 MonoBehaviour:

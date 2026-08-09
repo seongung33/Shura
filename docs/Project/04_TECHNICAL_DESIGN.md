@@ -239,7 +239,7 @@ PlayerAutoAttack
 - `EnemyController`는 `Start`와 `FixedUpdate`에서 플레이어를 찾는 현재 코드 흐름이 서로 다르므로 추적 로직을 수정할 때 두 경로를 함께 확인한다.
 - `GameManager`는 현재 `PlayerHealth.IsDead`를 매 프레임 확인한다. `PlayerHealth.onDeath` 이벤트 기반으로 바꾸는 경우 관련 담당자와 공개 계약을 함께 갱신한다.
 - `GameManager`의 보스 사망 판정은 생성된 GameObject가 제거되었는지를 본다. 네트워크 세션에서는 서버만 보스를 생성·판정하고 `NetworkGameResultState`에 승리를 전달한다.
-- `NetworkGameResultActions`와 `NetworkPlayer.prefab`의 결과 후 로비 이름은 아직 `NetworkTest`다. 새 정식 흐름의 `MultiPlayerEntry` 또는 `MultiPlayerLobby`로 돌아가지 않으므로 두 로비 체계를 통합해야 한다.
+- `NetworkGameResultActions`와 `NetworkPlayer.prefab`의 결과 후 복귀 대상은 정식 `MultiPlayerEntry`다. 세션·NetworkManager를 정리한 뒤 일반 SceneManager로 진입하며 실제 2인 종료·새 방 회귀는 별도 검증이 필요하다.
 - 현재 `CombatTest`는 사실상 카메라만 있는 상태이므로 전투 회귀의 정본 씬으로 사용하기 전에 구성을 복구하거나 `PlayerTest`·`StageTest`로 테스트 기준을 통일한다.
 - `PlayerHealthDebugTester`는 Space 키 피해 확인용 테스트 컴포넌트다. 실제 공격 시스템의 필수 구성요소로 사용하지 않는다.
 
