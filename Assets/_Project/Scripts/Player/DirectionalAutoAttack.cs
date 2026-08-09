@@ -61,9 +61,11 @@ public class DirectionalAutoAttack : MonoBehaviour
             ? runtimeGrowth.GetCastRuntime(basicSkill)
             : SkillCastRuntime.FromBase(basicSkill);
 
+        Transform nearestEnemy = null;
+
         if (requireEnemyInRange)
         {
-            Transform nearestEnemy = EnemyTargetFinder.FindNearestEnemy(
+            nearestEnemy = EnemyTargetFinder.FindNearestEnemy(
                 transform.position,
                 runtime.Range,
                 enemyLayer
@@ -75,7 +77,7 @@ public class DirectionalAutoAttack : MonoBehaviour
             }
         }
 
-        bool wasFired = Fire();
+        bool wasFired = Fire(nearestEnemy);
 
         if (!wasFired)
         {
@@ -85,7 +87,7 @@ public class DirectionalAutoAttack : MonoBehaviour
         nextAttackTime = Time.time + runtime.Cooldown;
     }
 
-    private bool Fire()
+    private bool Fire(Transform target)
     {
         if (basicSkill.SkillPrefab == null)
         {
@@ -101,8 +103,18 @@ public class DirectionalAutoAttack : MonoBehaviour
                 ? firePoint.position
                 : transform.position;
 
-        Vector2 direction =
-            aim != null ? aim.AimDirection : Vector2.right;
+        Vector2 direction = target != null
+            ? (Vector2)(target.position - transform.position)
+            : aim != null ? aim.AimDirection : Vector2.right;
+
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            direction = Vector2.right;
+        }
+        else
+        {
+            direction.Normalize();
+        }
 
         SkillCastRuntime runtime = runtimeGrowth != null
             ? runtimeGrowth.GetCastRuntime(basicSkill)
