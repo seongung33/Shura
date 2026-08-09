@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Shura.Player;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 로비에서 서버가 확정한 캐릭터 ID를 플레이어와 함께 보존하고,
@@ -10,6 +11,8 @@ using UnityEngine;
 [RequireComponent(typeof(NetworkObject))]
 public sealed class NetworkPlayerCharacter : NetworkBehaviour
 {
+    private const string LobbySceneName = "MultiPlayerLobby";
+
     [SerializeField]
     private List<CharacterData> characters = new List<CharacterData>();
 
@@ -41,6 +44,7 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         characterId.OnValueChanged += HandleCharacterChanged;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
 
         if (IsServer)
         {
@@ -48,11 +52,13 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         }
 
         ApplyCharacter(characterId.Value);
+        RefreshVisualVisibility(SceneManager.GetActiveScene().name);
     }
 
     public override void OnNetworkDespawn()
     {
         characterId.OnValueChanged -= HandleCharacterChanged;
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
         UnbindLobbyState();
     }
 
@@ -124,6 +130,26 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         ApplyCharacter(current);
     }
 
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshVisualVisibility(scene.name);
+    }
+
+    private void RefreshVisualVisibility(string sceneName)
+    {
+        bool isVisible = sceneName != LobbySceneName;
+
+        if (activeVisual != null)
+        {
+            activeVisual.SetActive(isVisible);
+        }
+
+        if (fallbackRenderer != null)
+        {
+            fallbackRenderer.enabled = activeVisual == null && isVisible;
+        }
+    }
+
     private void ApplyCharacter(int selectedCharacterId)
     {
         CharacterData data = GetCharacter(selectedCharacterId);
@@ -190,6 +216,7 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
             Debug.LogWarning(
                 $"{data.name}에 전투 외형 프리팹이 없어 기본 표시를 사용합니다."
             );
+            RefreshVisualVisibility(SceneManager.GetActiveScene().name);
             return;
         }
 
@@ -208,6 +235,8 @@ public sealed class NetworkPlayerCharacter : NetworkBehaviour
         {
             fallbackRenderer.enabled = false;
         }
+
+        RefreshVisualVisibility(SceneManager.GetActiveScene().name);
     }
 
     private CharacterData GetCharacter(int selectedCharacterId)
