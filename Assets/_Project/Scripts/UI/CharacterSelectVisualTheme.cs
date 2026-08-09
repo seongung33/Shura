@@ -178,11 +178,11 @@ public static class CharacterSelectVisualTheme
         GridLayoutGroup layout = grid.GetComponent<GridLayoutGroup>();
         if (layout != null)
         {
-            layout.cellSize = new Vector2(340f, 390f);
+            layout.cellSize = new Vector2(320f, 390f);
             layout.spacing = new Vector2(24f, 24f);
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            layout.constraintCount = 1;
+            layout.constraintCount = 2;
         }
 
         CreateText(panel, "새로운 영웅은 추후 공개됩니다", font, 16, FontStyles.Normal,
