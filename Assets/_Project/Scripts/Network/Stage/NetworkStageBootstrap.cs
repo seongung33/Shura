@@ -235,6 +235,8 @@ public class NetworkStageBootstrap : MonoBehaviour
             runtimeObject.AddComponent<TeamLevelUpCoordinator>();
         levelUpCoordinator.Configure(teamExperience, levelUpSettings);
 
+        runtimeObject.AddComponent<RelicRewardCoordinator>();
+
         EnemySpawner enemySpawner = runtimeObject.AddComponent<EnemySpawner>();
         enemySpawner.Configure(enemyPrefab);
 

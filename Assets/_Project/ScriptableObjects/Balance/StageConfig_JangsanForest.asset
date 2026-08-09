@@ -22,6 +22,19 @@ MonoBehaviour:
   spawnRadiusMax: 13
   bossPrefab: {fileID: 8930158983480263104, guid: 705e6211b456de8448ed5a3231c8c565, type: 3}
   bossHealth: 2100
+  eliteEnemy:
+    role: 4
+    prefab: {fileID: 8930158983480263104, guid: ba32fe1680861704cb0a7be32793bfb1, type: 3}
+    weight: 0
+    healthMultiplier: 4
+    damageMultiplier: 1.5
+    moveSpeedMultiplier: 0.85
+    experienceWeight: 6
+    scaleMultiplier: 1.5
+  eliteSpawnTimes:
+  - 240
+  - 480
+  - 720
   fieldSupplyPrefab: {fileID: 620000000000000005, guid: 9e03b20e098544eeac9df3ac2fa2fecc, type: 3}
   fieldSupplyCellSize: 24
   fieldSupplySpawnChance: 0.25

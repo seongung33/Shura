@@ -190,7 +190,15 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
                 enemyCollider.GetComponentInParent<IElementReceiver>();
             receiver?.RecordElement(element, sourcePlayerId);
 
-            damageable.TakeDamage(damage);
+            RelicCombat.ApplyDamage(
+                damageable,
+                enemyCollider,
+                damage,
+                RelicTriggerContext.PlayerDirect(
+                    sourcePlayerId,
+                    enemyRoot.position
+                )
+            );
         }
     }
 

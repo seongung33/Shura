@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -62,6 +63,8 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
     private int experienceBundleSize = 1;
     private ExperienceDropAccumulator dropAccumulator;
 
+    public event Action<EnemyHealth> Died;
+
     public ExperienceOrb ExperienceOrbPrefab => experienceOrbPrefab;
 
     public float CurrentHealth
@@ -74,6 +77,7 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
 
     public float MaxHealth => maxHealth;
     public bool IsBoss => isBoss;
+    public bool IsDead => isDead;
 
     private void Awake()
     {
@@ -361,6 +365,7 @@ public class EnemyHealth : NetworkBehaviour, IDamageable, IElementReceiver
         }
 
         isDead = true;
+        Died?.Invoke(this);
 
         if (IsSpawned)
         {

@@ -101,7 +101,15 @@ public class Projectile : MonoBehaviour
         }
 
         Debug.Log($"적에게 {damage} 피해 적용");
-        damageable.TakeDamage(damage);
+        RelicCombat.ApplyDamage(
+            damageable,
+            other,
+            damage,
+            RelicTriggerContext.PlayerDirect(
+                ulong.MaxValue,
+                hitRoot.position
+            )
+        );
 
         Destroy(gameObject);
     }
