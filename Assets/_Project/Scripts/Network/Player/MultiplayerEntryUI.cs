@@ -17,6 +17,16 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
 {
     private const string JoinCodeFontName = "LiberationSans SDF";
 
+    private static readonly Color ScreenColor =
+        new Color32(5, 12, 25, 255);
+    private static readonly Color PanelColor =
+        new Color32(7, 39, 52, 244);
+    private static readonly Color PrimaryColor =
+        new Color32(20, 177, 216, 255);
+    private static readonly Color ButtonColor =
+        new Color32(7, 31, 67, 255);
+    private static readonly Color TextColor =
+        new Color32(224, 242, 255, 255);
     [Header("Relay UI")]
 
     [SerializeField]
@@ -59,6 +69,7 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
     private async void Start()
     {
         ResolveReferences();
+        ApplyVisualTheme();
         RegisterCallbacks();
         RefreshControls();
         await InitializeServicesAsync();
@@ -394,6 +405,257 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         }
     }
 
+    private void ApplyVisualTheme()
+    {
+        Canvas canvas = GetComponentInParent<Canvas>();
+
+        if (canvas == null)
+        {
+            canvas = FindFirstObjectByType<Canvas>();
+        }
+
+        if (canvas == null)
+        {
+            return;
+        }
+
+        Camera sceneCamera = Camera.main;
+        if (sceneCamera != null)
+        {
+            sceneCamera.backgroundColor = ScreenColor;
+        }
+
+        RectTransform canvasRect = canvas.transform as RectTransform;
+        if (canvasRect == null)
+        {
+            return;
+        }
+
+        TMP_FontAsset uiFont = createRoomButton != null
+            ? createRoomButton.GetComponentInChildren<TMP_Text>(true)?.font
+            : null;
+
+        EnsureBackdrop(canvasRect);
+        EnsureHeading(canvasRect, uiFont);
+
+        StyleText(statusText, 24f, TextColor, FontStyles.Bold, uiFont);
+        SetRect(statusText, new Vector2(0f, 165f), new Vector2(620f, 56f));
+
+        StyleText(joinCodeText, 27f, TextColor, FontStyles.Bold, uiFont);
+        SetRect(joinCodeText, new Vector2(0f, 105f), new Vector2(620f, 48f));
+
+        StyleButton(createRoomButton, new Vector2(0f, 35f), "방 만들기", true);
+        StyleButton(joinRoomButton, new Vector2(0f, -35f), "방 참가", true);
+        StyleInput(joinCodeInput, new Vector2(0f, -105f));
+        StylePlayerCount(canvasRect, uiFont);
+        StyleButton(backButton, new Vector2(0f, -225f), "뒤로가기", false);
+        StyleButton(leaveRoomButton, new Vector2(0f, -225f), "방 나가기", false);
+    }
+
+    private static void EnsureBackdrop(RectTransform canvasRect)
+    {
+        Transform existing = canvasRect.Find("EntryBackdrop");
+        GameObject backdrop = existing != null
+            ? existing.gameObject
+            : new GameObject("EntryBackdrop", typeof(RectTransform), typeof(Image));
+
+        RectTransform rect = backdrop.GetComponent<RectTransform>();
+        rect.SetParent(canvasRect, false);
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(720f, 680f);
+
+        Image image = backdrop.GetComponent<Image>();
+        image.color = PanelColor;
+        image.raycastTarget = false;
+        backdrop.transform.SetAsFirstSibling();
+
+        Outline outline = backdrop.GetComponent<Outline>();
+        if (outline == null)
+        {
+            outline = backdrop.AddComponent<Outline>();
+        }
+
+        outline.effectColor = PrimaryColor;
+        outline.effectDistance = new Vector2(3f, -3f);
+    }
+
+    private static void EnsureHeading(RectTransform canvasRect, TMP_FontAsset uiFont)
+    {
+        Transform existing = canvasRect.Find("EntryHeading");
+        TMP_Text heading;
+
+        if (existing == null)
+        {
+            GameObject headingObject = new GameObject(
+                "EntryHeading",
+                typeof(RectTransform),
+                typeof(TextMeshProUGUI)
+            );
+            headingObject.transform.SetParent(canvasRect, false);
+            heading = headingObject.GetComponent<TMP_Text>();
+        }
+        else
+        {
+            heading = existing.GetComponent<TMP_Text>();
+        }
+
+        heading.text = "멀티플레이";
+        heading.alignment = TextAlignmentOptions.Center;
+        heading.color = TextColor;
+        heading.fontSize = 48f;
+        heading.fontStyle = FontStyles.Bold;
+        if (uiFont != null)
+        {
+            heading.font = uiFont;
+        }
+        heading.raycastTarget = false;
+        SetRect(heading, new Vector2(0f, 255f), new Vector2(620f, 70f));
+    }
+
+    private static void StylePlayerCount(
+        RectTransform canvasRect,
+        TMP_FontAsset uiFont
+    )
+    {
+        TMP_Text[] texts = canvasRect.GetComponentsInChildren<TMP_Text>(true);
+
+        foreach (TMP_Text candidate in texts)
+        {
+            if (candidate == null ||
+                !candidate.text.TrimStart().StartsWith("접속 인원"))
+            {
+                continue;
+            }
+
+            StyleText(candidate, 20f, TextColor, FontStyles.Bold, uiFont);
+            SetRect(candidate, new Vector2(0f, -165f), new Vector2(500f, 38f));
+            break;
+        }
+    }
+
+    private static void StyleButton(
+        Button button,
+        Vector2 position,
+        string label,
+        bool primary
+    )
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        SetRect(button, position, new Vector2(500f, 58f));
+
+        Image image = button.GetComponent<Image>();
+        if (image != null)
+        {
+            image.color = primary ? ButtonColor : new Color32(16, 54, 74, 255);
+            image.raycastTarget = true;
+            button.targetGraphic = image;
+        }
+
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color32(119, 220, 244, 255);
+        colors.pressedColor = new Color32(44, 146, 180, 255);
+        colors.selectedColor = colors.highlightedColor;
+        colors.disabledColor = new Color32(65, 77, 91, 210);
+        colors.colorMultiplier = 1f;
+        button.colors = colors;
+
+        TMP_Text[] buttonTexts = button.GetComponentsInChildren<TMP_Text>(true);
+        foreach (TMP_Text buttonText in buttonTexts)
+        {
+            buttonText.text = label;
+            buttonText.color = TextColor;
+            buttonText.fontSize = 28f;
+            buttonText.fontStyle = FontStyles.Bold;
+            buttonText.alignment = TextAlignmentOptions.Center;
+            buttonText.raycastTarget = false;
+        }
+
+        Text[] legacyTexts = button.GetComponentsInChildren<Text>(true);
+        foreach (Text legacyText in legacyTexts)
+        {
+            legacyText.text = label;
+            legacyText.color = TextColor;
+            legacyText.fontSize = 28;
+            legacyText.fontStyle = FontStyle.Bold;
+            legacyText.alignment = TextAnchor.MiddleCenter;
+            legacyText.raycastTarget = false;
+        }
+    }
+
+    private static void StyleInput(TMP_InputField input, Vector2 position)
+    {
+        if (input == null)
+        {
+            return;
+        }
+
+        SetRect(input, position, new Vector2(500f, 58f));
+
+        Image background = input.GetComponent<Image>();
+        if (background != null)
+        {
+            background.color = new Color32(224, 242, 255, 255);
+        }
+
+        input.textComponent.color = new Color32(8, 30, 51, 255);
+        input.textComponent.fontSize = 25f;
+        input.textComponent.fontStyle = FontStyles.Bold;
+
+        if (input.placeholder is TMP_Text placeholder)
+        {
+            placeholder.text = "참가 코드 6자리 입력";
+            placeholder.color = new Color32(75, 103, 126, 210);
+            placeholder.fontSize = 22f;
+        }
+    }
+
+    private static void StyleText(
+        TMP_Text text,
+        float fontSize,
+        Color color,
+        FontStyles style,
+        TMP_FontAsset uiFont
+    )
+    {
+        if (text == null)
+        {
+            return;
+        }
+
+        text.color = color;
+        text.fontSize = fontSize;
+        text.fontStyle = style;
+        if (uiFont != null)
+        {
+            text.font = uiFont;
+        }
+        text.alignment = TextAlignmentOptions.Center;
+        text.textWrappingMode = TextWrappingModes.Normal;
+    }
+
+    private static void SetRect(Component component, Vector2 position, Vector2 size)
+    {
+        if (component == null || component.transform is not RectTransform rect)
+        {
+            return;
+        }
+
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        rect.localScale = Vector3.one;
+    }
+
     private void RegisterCallbacks()
     {
         if (callbacksRegistered)
@@ -505,16 +767,15 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
             leaveRoomButton.gameObject.SetActive(hasSession);
             leaveRoomButton.interactable =
                 hasSession &&
-                !operationInProgress &&
-                !transitionInProgress;
+                !operationInProgress;
         }
 
         if (backButton != null)
         {
             backButton.gameObject.SetActive(!hasSession);
-            backButton.interactable =
-                !operationInProgress &&
-                !transitionInProgress;
+            // Returning to the main menu must remain available while the
+            // online service or scene transition is still being prepared.
+            backButton.interactable = !operationInProgress;
         }
     }
 
