@@ -21,6 +21,14 @@ namespace Shura.Player
             rb = GetComponent<Rigidbody2D>();
         }
 
+        public void ConfigureBaseSpeed(float value)
+        {
+            if (value > 0f && !float.IsNaN(value) && !float.IsInfinity(value))
+            {
+                moveSpeed = value;
+            }
+        }
+
         public void OnMove(InputValue value)
         {
             moveInput = value.Get<Vector2>();

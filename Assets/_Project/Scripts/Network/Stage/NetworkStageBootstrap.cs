@@ -109,6 +109,57 @@ public class NetworkStageBootstrap : MonoBehaviour
         {
             offlinePlayer.gameObject.AddComponent<PlayerExperience>();
         }
+
+        ApplyOfflineCharacterSelection();
+    }
+
+    private void ApplyOfflineCharacterSelection()
+    {
+        CharacterData data = SinglePlayerSelection.Character;
+
+        if (offlinePlayer == null || data == null)
+        {
+            return;
+        }
+
+        offlinePlayer.GetComponent<Shura.Player.PlayerController>()
+            ?.ConfigureBaseSpeed(data.MoveSpeed);
+        offlinePlayer.GetComponent<Shura.Player.PlayerHealth>()
+            ?.ConfigureMaxHealth(data.MaxHealth);
+        offlinePlayer.GetComponent<DirectionalAutoAttack>()
+            ?.ConfigureBasicSkill(data.BasicSkill);
+        offlinePlayer.GetComponent<AutoSkillCaster>()
+            ?.ConfigureSkills(data.StartingSkills);
+
+        ApplyOfflineCharacterVisual(data);
+        Debug.Log($"싱글 캐릭터 적용: {data.characterName}");
+    }
+
+    private void ApplyOfflineCharacterVisual(CharacterData data)
+    {
+        if (data.GameplayVisualPrefab == null)
+        {
+            return;
+        }
+
+        SpriteRenderer fallbackRenderer =
+            offlinePlayer.GetComponent<SpriteRenderer>();
+
+        if (fallbackRenderer != null)
+        {
+            fallbackRenderer.enabled = false;
+        }
+
+        GameObject visual = Instantiate(
+            data.GameplayVisualPrefab,
+            offlinePlayer
+        );
+        visual.name = $"{data.characterName}Visual";
+        visual.transform.SetLocalPositionAndRotation(
+            Vector3.zero,
+            Quaternion.identity
+        );
+        visual.transform.localScale = Vector3.one;
     }
 
     private void EnsurePlayerObjects()
