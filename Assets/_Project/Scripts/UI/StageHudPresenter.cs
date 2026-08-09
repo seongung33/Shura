@@ -8,6 +8,14 @@ using UnityEngine.UI;
 
 public sealed class StageHudPresenter : MonoBehaviour
 {
+    private sealed class LoadoutSlot
+    {
+        public Image Icon;
+        public Image[] LevelPips;
+        public Image CooldownFill;
+        public TMP_Text Cooldown;
+    }
+
     private sealed class PlayerView
     {
         public GameObject Root;
@@ -16,12 +24,21 @@ public sealed class StageHudPresenter : MonoBehaviour
         public TMP_Text Name;
         public TMP_Text Health;
         public PlayerHealth Target;
+        public CharacterData Character;
+        public AutoSkillCaster SkillCaster;
+        public PlayerRelicInventory Relics;
+        public LoadoutSlot BasicWeapon;
+        public LoadoutSlot[] Skills;
+        public LoadoutSlot[] RelicSlots;
+        public LoadoutSlot Ultimate;
     }
 
     private static readonly Color PanelColor = new Color(0.035f, 0.055f, 0.11f, 0.92f);
     private static readonly Color AccentColor = new Color(0.25f, 0.76f, 0.92f, 1f);
     private static readonly Color HealthColor = new Color(0.95f, 0.25f, 0.28f, 1f);
     private static readonly Color ExperienceColor = new Color(0.97f, 0.78f, 0.16f, 1f);
+    private static readonly Color LevelPipActiveColor = new Color(1f, 0.76f, 0.16f, 1f);
+    private static readonly Color LevelPipInactiveColor = new Color(0.12f, 0.16f, 0.24f, 1f);
     private static readonly Color PrimaryTextColor = new Color(0.96f, 0.98f, 1f, 1f);
 
     private readonly List<PlayerView> playerViews = new List<PlayerView>();
@@ -158,15 +175,15 @@ public sealed class StageHudPresenter : MonoBehaviour
     {
         GameObject root = CreatePanel(playerList, $"PlayerStatus_{index + 1}", new Color(0.04f, 0.07f, 0.14f, 0.94f));
         RectTransform rect = root.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(440f, 116f);
+        rect.sizeDelta = new Vector2(820f, 104f);
 
         Image portrait = CreateImage(root.transform, "Portrait");
         RectTransform portraitRect = portrait.rectTransform;
         portraitRect.anchorMin = new Vector2(0f, 0.5f);
         portraitRect.anchorMax = new Vector2(0f, 0.5f);
         portraitRect.pivot = new Vector2(0f, 0.5f);
-        portraitRect.anchoredPosition = new Vector2(14f, 0f);
-        portraitRect.sizeDelta = new Vector2(88f, 88f);
+        portraitRect.anchoredPosition = new Vector2(12f, 0f);
+        portraitRect.sizeDelta = new Vector2(76f, 76f);
         portrait.preserveAspect = true;
 
         CharacterData character = ResolveCharacter(player);
@@ -174,16 +191,47 @@ public sealed class StageHudPresenter : MonoBehaviour
         portrait.enabled = portrait.sprite != null;
 
         TMP_Text name = CreateText(root.transform, "PlayerName", TextAlignmentOptions.MidlineLeft, 27f);
-        SetRect(name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(116f, -15f), new Vector2(298f, 40f), new Vector2(0f, 1f));
+        SetRect(name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(100f, -12f), new Vector2(276f, 36f), new Vector2(0f, 1f));
         string characterName = character != null ? character.characterName : "주몽";
         name.text = $"플레이어 {index + 1}   {characterName}";
 
         GameObject healthBackground = CreatePanel(root.transform, "HealthBar", new Color(0.16f, 0.18f, 0.24f, 1f));
-        SetRect(healthBackground.GetComponent<RectTransform>(), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(116f, 18f), new Vector2(298f, 28f), Vector2.zero);
+        SetRect(healthBackground.GetComponent<RectTransform>(), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(100f, 16f), new Vector2(276f, 25f), Vector2.zero);
         Image healthFill = CreateFill(healthBackground.transform, "Fill", HealthColor);
 
         TMP_Text health = CreateText(root.transform, "HealthText", TextAlignmentOptions.Center, 21f);
-        SetRect(health.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(116f, 18f), new Vector2(298f, 28f), Vector2.zero);
+        SetRect(health.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(100f, 16f), new Vector2(276f, 25f), Vector2.zero);
+
+        LoadoutSlot basicWeapon = CreateLoadoutSlot(root.transform, "BasicWeapon", 390f, 1);
+        LoadoutSlot[] skills = new LoadoutSlot[3];
+        LoadoutSlot[] relics = new LoadoutSlot[3];
+
+        for (int slot = 0; slot < skills.Length; slot++)
+        {
+            skills[slot] = CreateLoadoutSlot(
+                root.transform,
+                $"Skill_{slot + 1}",
+                444f + slot * 50f,
+                5
+            );
+        }
+
+        for (int slot = 0; slot < relics.Length; slot++)
+        {
+            relics[slot] = CreateLoadoutSlot(
+                root.transform,
+                $"Relic_{slot + 1}",
+                600f + slot * 50f,
+                1
+            );
+        }
+
+        LoadoutSlot ultimate = CreateLoadoutSlot(
+            root.transform,
+            "Ultimate",
+            756f,
+            0
+        );
 
         playerViews.Add(new PlayerView
         {
@@ -192,7 +240,14 @@ public sealed class StageHudPresenter : MonoBehaviour
             HealthFill = healthFill,
             Name = name,
             Health = health,
-            Target = player.GetComponent<PlayerHealth>()
+            Target = player.GetComponent<PlayerHealth>(),
+            Character = character,
+            SkillCaster = player.GetComponent<AutoSkillCaster>(),
+            Relics = player.GetComponent<PlayerRelicInventory>(),
+            BasicWeapon = basicWeapon,
+            Skills = skills,
+            RelicSlots = relics,
+            Ultimate = ultimate
         });
     }
 
@@ -218,7 +273,77 @@ public sealed class StageHudPresenter : MonoBehaviour
             float current = Mathf.Clamp(view.Target.CurrentHealth, 0f, max);
             SetBarValue(view.HealthFill, current / max);
             view.Health.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            UpdateLoadout(view);
         }
+    }
+
+    private static void UpdateLoadout(PlayerView view)
+    {
+        SetSlot(view.BasicWeapon, view.Character?.BasicSkill?.Icon, 1);
+
+        IReadOnlyList<AutoSkillCaster.EquippedSkill> equipped =
+            view.SkillCaster != null ? view.SkillCaster.EquippedSkills : null;
+
+        for (int index = 0; index < view.Skills.Length; index++)
+        {
+            AutoSkillCaster.EquippedSkill skill =
+                equipped != null && index < equipped.Count
+                    ? equipped[index]
+                    : null;
+            SetSlot(
+                view.Skills[index],
+                skill?.data?.Icon,
+                skill?.level ?? 0
+            );
+        }
+
+        for (int index = 0; index < view.RelicSlots.Length; index++)
+        {
+            RelicData relic = view.Relics?.GetOwnedRelic(index);
+            SetSlot(view.RelicSlots[index], relic?.Icon, relic != null ? 1 : 0);
+        }
+
+        UpdateUltimateSlot(view.Ultimate, view.SkillCaster);
+    }
+
+    private static void SetSlot(LoadoutSlot slot, Sprite sprite, int level)
+    {
+        bool occupied = sprite != null || level > 0;
+        slot.Icon.sprite = sprite;
+        slot.Icon.enabled = sprite != null;
+        for (int index = 0; index < slot.LevelPips.Length; index++)
+        {
+            slot.LevelPips[index].color = occupied && index < level
+                ? LevelPipActiveColor
+                : LevelPipInactiveColor;
+        }
+    }
+
+    private static void UpdateUltimateSlot(
+        LoadoutSlot slot,
+        AutoSkillCaster caster
+    )
+    {
+        SkillData ultimate = caster?.UltimateSkill;
+        slot.Icon.sprite = ultimate?.Icon;
+        slot.Icon.enabled = slot.Icon.sprite != null;
+
+        float remaining = caster != null
+            ? caster.UltimateCooldownRemaining
+            : 0f;
+        float duration = caster != null
+            ? caster.UltimateCooldownDuration
+            : 0f;
+        bool coolingDown = ultimate != null && remaining > 0f;
+
+        slot.CooldownFill.gameObject.SetActive(coolingDown);
+        slot.Cooldown.gameObject.SetActive(coolingDown);
+        slot.CooldownFill.fillAmount = duration > 0f
+            ? Mathf.Clamp01(remaining / duration)
+            : 0f;
+        slot.Cooldown.text = coolingDown
+            ? Mathf.CeilToInt(remaining).ToString()
+            : string.Empty;
     }
 
     private void UpdateExperience()
@@ -333,7 +458,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         GameObject playerPanel = new GameObject("PlayerStatusList", typeof(RectTransform), typeof(VerticalLayoutGroup));
         playerPanel.transform.SetParent(canvasObject.transform, false);
         playerList = playerPanel.GetComponent<RectTransform>();
-        SetRect(playerList, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -28f), new Vector2(440f, 250f), new Vector2(0f, 1f));
+        SetRect(playerList, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -28f), new Vector2(820f, 226f), new Vector2(0f, 1f));
         VerticalLayoutGroup layout = playerPanel.GetComponent<VerticalLayoutGroup>();
         layout.spacing = 12f;
         layout.childControlHeight = false;
@@ -424,6 +549,110 @@ public sealed class StageHudPresenter : MonoBehaviour
         GameObject imageObject = new GameObject(name, typeof(RectTransform), typeof(Image));
         imageObject.transform.SetParent(parent, false);
         return imageObject.GetComponent<Image>();
+    }
+
+    private static LoadoutSlot CreateLoadoutSlot(
+        Transform parent,
+        string name,
+        float x,
+        int levelPipCount
+    )
+    {
+        GameObject root = CreatePanel(
+            parent,
+            name,
+            new Color(0.025f, 0.035f, 0.07f, 0.98f)
+        );
+        SetRect(
+            root.GetComponent<RectTransform>(),
+            new Vector2(0f, 0.5f),
+            new Vector2(0f, 0.5f),
+            new Vector2(x, 0f),
+            new Vector2(48f, 78f),
+            new Vector2(0f, 0.5f)
+        );
+
+        Image icon = CreateImage(root.transform, "Icon");
+        SetRect(
+            icon.rectTransform,
+            new Vector2(0.5f, 1f),
+            new Vector2(0.5f, 1f),
+            new Vector2(0f, -2f),
+            new Vector2(42f, 56f),
+            new Vector2(0.5f, 1f)
+        );
+        icon.preserveAspect = true;
+        icon.raycastTarget = false;
+        icon.enabled = false;
+
+        Image[] levelPips = new Image[Mathf.Max(0, levelPipCount)];
+        float pipSize = levelPipCount <= 1 ? 10f : 6f;
+        float pipSpacing = levelPipCount <= 1 ? 0f : 2f;
+        float pipRowWidth = levelPipCount * pipSize +
+            Mathf.Max(0, levelPipCount - 1) * pipSpacing;
+
+        for (int index = 0; index < levelPips.Length; index++)
+        {
+            Image pip = CreateImage(root.transform, $"LevelPip_{index + 1}");
+            SetRect(
+                pip.rectTransform,
+                new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(
+                    -pipRowWidth * 0.5f + pipSize * 0.5f +
+                    index * (pipSize + pipSpacing),
+                    4f
+                ),
+                new Vector2(pipSize, pipSize),
+                new Vector2(0.5f, 0f)
+            );
+            pip.color = LevelPipInactiveColor;
+            pip.raycastTarget = false;
+            levelPips[index] = pip;
+        }
+
+        Image cooldownFill = CreateImage(root.transform, "CooldownFill");
+        SetRect(
+            cooldownFill.rectTransform,
+            new Vector2(0.5f, 1f),
+            new Vector2(0.5f, 1f),
+            new Vector2(0f, -2f),
+            new Vector2(42f, 56f),
+            new Vector2(0.5f, 1f)
+        );
+        cooldownFill.color = new Color(0f, 0f, 0f, 0.72f);
+        cooldownFill.type = Image.Type.Filled;
+        cooldownFill.fillMethod = Image.FillMethod.Radial360;
+        cooldownFill.fillOrigin = (int)Image.Origin360.Top;
+        cooldownFill.fillClockwise = false;
+        cooldownFill.raycastTarget = false;
+
+        TMP_Text cooldown = CreateText(
+            root.transform,
+            "Cooldown",
+            TextAlignmentOptions.Center,
+            25f
+        );
+        cooldown.fontSizeMin = 13f;
+        SetRect(
+            cooldown.rectTransform,
+            new Vector2(0.5f, 1f),
+            new Vector2(0.5f, 1f),
+            new Vector2(0f, -2f),
+            new Vector2(42f, 56f),
+            new Vector2(0.5f, 1f)
+        );
+
+        cooldownFill.gameObject.SetActive(false);
+        cooldown.gameObject.SetActive(false);
+
+        return new LoadoutSlot
+        {
+            Icon = icon,
+            LevelPips = levelPips,
+            CooldownFill = cooldownFill,
+            Cooldown = cooldown
+        };
     }
 
     private static Image CreateFill(Transform parent, string name, Color color)

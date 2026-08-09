@@ -16,7 +16,7 @@ public sealed class LevelCurveData : ScriptableObject
     private float quadraticCoefficient = 0.32f;
 
     [SerializeField, Min(1f)]
-    private float teamExperienceMultiplier = 1.75f;
+    private float teamExperienceMultiplier = 2f;
 
     [SerializeField]
     private int[] skillChoiceLevels =

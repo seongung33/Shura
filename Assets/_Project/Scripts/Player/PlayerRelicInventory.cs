@@ -51,6 +51,8 @@ public sealed class PlayerRelicInventory : MonoBehaviour
         ? networkRelics.CandidateCount
         : localCandidates.Count;
     public int OwnedCount => ownedRelics.Count;
+    public bool HasRelic(RelicId id) =>
+        id != RelicId.None && ownedRelics.Contains(id);
     public bool CanRunAuthoritativeEffects =>
         !IsNetworkControlled || networkRelics.IsServer;
 
@@ -236,6 +238,13 @@ public sealed class PlayerRelicInventory : MonoBehaviour
         }
 
         return null;
+    }
+
+    public RelicData GetOwnedRelic(int index)
+    {
+        return index >= 0 && index < ownedRelics.Count
+            ? GetRelicData(ownedRelics[index])
+            : null;
     }
 
     public List<RelicId> GenerateCandidates()
@@ -428,9 +437,11 @@ public sealed class PlayerRelicInventory : MonoBehaviour
         }
     }
 
-    private static bool TryRoll(RelicData relic)
+    private bool TryRoll(RelicData relic)
     {
-        return relic != null && UnityEngine.Random.value < relic.TriggerChance;
+        return relic != null &&
+            HasRelic(relic.Id) &&
+            UnityEngine.Random.value < relic.TriggerChance;
     }
 
     private void NotifyStateChanged()

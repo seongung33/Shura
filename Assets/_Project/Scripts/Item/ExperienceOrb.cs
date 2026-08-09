@@ -11,6 +11,12 @@ public class ExperienceOrb : NetworkBehaviour
     private float attractionSpeed = 12f;
 
     [SerializeField, Min(0.1f)]
+    private float attractionRadius = 2f;
+
+    [SerializeField, Min(0.1f)]
+    private float automaticCollectionDistance = 0.9f;
+
+    [SerializeField, Min(0.1f)]
     private float collectionValidationDistance = 2f;
 
     private readonly NetworkVariable<int> networkExperienceAmount =
@@ -21,6 +27,18 @@ public class ExperienceOrb : NetworkBehaviour
 
     private Transform attractionTarget;
     private bool collectionRequested;
+    private float nextTargetSearchTime;
+
+    private static readonly System.Collections.Generic.List<Transform>
+        PlayerTargets = new();
+    private static float nextPlayerCacheRefreshTime;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetPlayerCache()
+    {
+        PlayerTargets.Clear();
+        nextPlayerCacheRefreshTime = 0f;
+    }
 
     public int ExperienceAmount
     {
@@ -34,6 +52,26 @@ public class ExperienceOrb : NetworkBehaviour
 
     private void Update()
     {
+        bool hasCollectionAuthority = !IsSpawned || IsServer;
+
+        if (hasCollectionAuthority && attractionTarget == null &&
+            Time.time >= nextTargetSearchTime)
+        {
+            nextTargetSearchTime = Time.time + 0.2f;
+            attractionTarget = FindNearestPlayer();
+
+            if (IsSpawned && attractionTarget != null)
+            {
+                NetworkObject targetNetworkObject =
+                    attractionTarget.GetComponent<NetworkObject>();
+
+                if (targetNetworkObject != null && targetNetworkObject.IsSpawned)
+                {
+                    networkAttractionTarget.Value = targetNetworkObject;
+                }
+            }
+        }
+
         if (attractionTarget == null)
         {
             return;
@@ -44,6 +82,99 @@ public class ExperienceOrb : NetworkBehaviour
             attractionTarget.position,
             attractionSpeed * Time.deltaTime
         );
+
+        if (hasCollectionAuthority &&
+            Vector2.Distance(transform.position, attractionTarget.position) <=
+            automaticCollectionDistance)
+        {
+            CollectAutomatically();
+        }
+    }
+
+    private Transform FindNearestPlayer()
+    {
+        RefreshPlayerTargets();
+        Transform nearest = null;
+        float nearestDistanceSquared = attractionRadius * attractionRadius;
+        Vector2 position = transform.position;
+
+        foreach (Transform candidate in PlayerTargets)
+        {
+            if (candidate == null)
+            {
+                continue;
+            }
+
+            float distanceSquared = ((Vector2)candidate.position - position)
+                .sqrMagnitude;
+
+            if (distanceSquared <= nearestDistanceSquared)
+            {
+                nearest = candidate;
+                nearestDistanceSquared = distanceSquared;
+            }
+        }
+
+        return nearest;
+    }
+
+    private static void RefreshPlayerTargets()
+    {
+        if (Time.time < nextPlayerCacheRefreshTime)
+        {
+            return;
+        }
+
+        nextPlayerCacheRefreshTime = Time.time + 0.5f;
+        PlayerTargets.Clear();
+
+        foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            if (player.GetComponent<PlayerExperience>() != null)
+            {
+                PlayerTargets.Add(player.transform);
+            }
+        }
+    }
+
+    private void CollectAutomatically()
+    {
+        if (collectionRequested || attractionTarget == null)
+        {
+            return;
+        }
+
+        collectionRequested = true;
+
+        if (IsSpawned)
+        {
+            NetworkPlayerExperience networkExperience =
+                attractionTarget.GetComponent<NetworkPlayerExperience>();
+
+            if (networkExperience == null)
+            {
+                collectionRequested = false;
+                attractionTarget = null;
+                return;
+            }
+
+            networkExperience.GrantExperienceServer(networkExperienceAmount.Value);
+            NetworkObject.Despawn(true);
+            return;
+        }
+
+        PlayerExperience playerExperience =
+            attractionTarget.GetComponent<PlayerExperience>();
+
+        if (playerExperience == null)
+        {
+            collectionRequested = false;
+            attractionTarget = null;
+            return;
+        }
+
+        playerExperience.AddExperience(experienceAmount);
+        Destroy(gameObject);
     }
 
     public override void OnNetworkSpawn()

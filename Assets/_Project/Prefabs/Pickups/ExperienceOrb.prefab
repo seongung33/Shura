@@ -143,7 +143,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExperienceOrb
   experienceAmount: 1
-  attractionSpeed: 12
+  attractionSpeed: 14
+  attractionRadius: 2
+  automaticCollectionDistance: 0.9
   collectionValidationDistance: 2
 --- !u!114 &880000000000000201
 MonoBehaviour:

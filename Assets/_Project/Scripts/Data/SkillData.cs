@@ -15,6 +15,9 @@ public class SkillData : ScriptableObject
     [SerializeField]
     private string displayName;
 
+    [SerializeField]
+    private Sprite icon;
+
     [TextArea]
     [SerializeField]
     private string description;
@@ -62,6 +65,7 @@ public class SkillData : ScriptableObject
     public string SkillId => skillId;
     public string DisplayName => displayName;
     public string Description => description;
+    public Sprite Icon => icon;
 
     public float Cooldown => cooldown;
     public float Damage => damage;

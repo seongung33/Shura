@@ -55,7 +55,7 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
 
         EnsureInstance();
         instance.StartCoroutine(instance.FlashSprite(target));
-        instance.CreateDamageNumber(target.transform.position, damage, target.IsBoss, defeated);
+        instance.CreateDamageNumber(target.transform.position, damage, target.IsBoss);
 
         Shura.Camera.CameraFollow cameraFollow = FindFirstObjectByType<Shura.Camera.CameraFollow>();
         cameraFollow?.Shake(defeated || target.IsBoss ? 0.12f : 0.05f, defeated ? 0.18f : 0.08f);
@@ -109,7 +109,7 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         }
     }
 
-    private void CreateDamageNumber(Vector3 worldPosition, float damage, bool boss, bool defeated)
+    private void CreateDamageNumber(Vector3 worldPosition, float damage, bool boss)
     {
         GameObject numberObject = new GameObject("DamageNumber", typeof(RectTransform), typeof(TextMeshProUGUI));
         numberObject.transform.SetParent(canvas.transform, false);
@@ -121,15 +121,13 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         rect.sizeDelta = new Vector2(180f, 70f);
 
         TMP_Text text = numberObject.GetComponent<TMP_Text>();
-        text.text = defeated ? $"{Mathf.CeilToInt(damage)}  처치!" : Mathf.CeilToInt(damage).ToString();
+        text.text = Mathf.CeilToInt(damage).ToString();
         text.alignment = TextAlignmentOptions.Center;
         text.fontStyle = FontStyles.Bold;
-        text.fontSize = defeated ? 42f : boss ? 34f : 28f;
-        Color numberColor = defeated
-            ? new Color(1f, 0.82f, 0.18f)
-            : boss
-                ? new Color(1f, 0.48f, 0.32f)
-                : new Color(1f, 0.94f, 0.9f);
+        text.fontSize = boss ? 34f : 28f;
+        Color numberColor = boss
+            ? new Color(1f, 0.48f, 0.32f)
+            : new Color(1f, 0.94f, 0.9f);
         ApplyReadableColor(text, numberColor);
         text.outlineWidth = 0.2f;
         text.outlineColor = Color.black;

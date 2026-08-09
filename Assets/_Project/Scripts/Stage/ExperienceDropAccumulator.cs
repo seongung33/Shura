@@ -4,8 +4,6 @@ using UnityEngine;
 public sealed class ExperienceDropAccumulator : MonoBehaviour
 {
     private ExperienceOrb orbPrefab;
-    private float pendingExperience;
-    private Vector3 latestPosition;
 
     public void SetOrbPrefab(ExperienceOrb configuredOrbPrefab)
     {
@@ -21,34 +19,14 @@ public sealed class ExperienceDropAccumulator : MonoBehaviour
         int bundleSize
     )
     {
-        if (experience <= 0f)
-        {
-            return;
-        }
-
-        latestPosition = position;
-        pendingExperience += experience;
-
-        int safeBundleSize = Mathf.Max(1, bundleSize);
-
-        while (pendingExperience >= safeBundleSize)
-        {
-            pendingExperience -= safeBundleSize;
-            SpawnOrb(latestPosition, safeBundleSize);
-        }
+        int amount = float.IsNaN(experience) || float.IsInfinity(experience)
+            ? 1
+            : Mathf.Max(1, Mathf.RoundToInt(experience));
+        SpawnOrb(position, amount);
     }
 
     public void Flush()
     {
-        int amount = Mathf.FloorToInt(pendingExperience);
-
-        if (amount <= 0)
-        {
-            return;
-        }
-
-        pendingExperience -= amount;
-        SpawnOrb(latestPosition, amount);
     }
 
     private void SpawnOrb(Vector3 position, int amount)

@@ -18,6 +18,7 @@ public sealed class MainMenuSettingsPanel : MonoBehaviour
     private CanvasGroup canvasGroup;
     private RectTransform panelRect;
     private TMP_Text fullScreenLabel;
+    private TMP_Text screenShakeLabel;
     private bool closing;
 
     public static void ApplySavedDisplaySetting()
@@ -85,7 +86,7 @@ public sealed class MainMenuSettingsPanel : MonoBehaviour
         panelRect = (RectTransform)panel.transform;
         panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = new Vector2(600f, 500f);
+        panelRect.sizeDelta = new Vector2(600f, 600f);
         panel.GetComponent<Image>().color = PanelColor;
         Outline outline = panel.GetComponent<Outline>();
         outline.effectColor = new Color(0.08f, 0.72f, 0.88f, 0.85f);
@@ -115,18 +116,29 @@ public sealed class MainMenuSettingsPanel : MonoBehaviour
             panel.transform,
             "FullScreenButton",
             string.Empty,
-            new Vector2(0f, -85f),
+            new Vector2(0f, -55f),
             new Vector2(440f, 64f),
             ToggleFullScreen
         );
         fullScreenLabel = fullScreenButton.GetComponentInChildren<TMP_Text>();
         RefreshFullScreenLabel();
 
+        Button screenShakeButton = CreateButton(
+            panel.transform,
+            "ScreenShakeButton",
+            string.Empty,
+            new Vector2(0f, -130f),
+            new Vector2(440f, 64f),
+            ToggleScreenShake
+        );
+        screenShakeLabel = screenShakeButton.GetComponentInChildren<TMP_Text>();
+        RefreshScreenShakeLabel();
+
         CreateButton(
             panel.transform,
             "CloseButton",
             "닫기",
-            new Vector2(0f, -185f),
+            new Vector2(0f, -225f),
             new Vector2(220f, 62f),
             Close
         );
@@ -253,6 +265,24 @@ public sealed class MainMenuSettingsPanel : MonoBehaviour
             fullScreenLabel.text = Screen.fullScreen
                 ? "화면 모드   전체 화면"
                 : "화면 모드   창 모드";
+        }
+    }
+
+    private void ToggleScreenShake()
+    {
+        Shura.Camera.CameraFollow.ScreenShakeEnabled =
+            !Shura.Camera.CameraFollow.ScreenShakeEnabled;
+        RefreshScreenShakeLabel();
+    }
+
+    private void RefreshScreenShakeLabel()
+    {
+        if (screenShakeLabel != null)
+        {
+            screenShakeLabel.text =
+                Shura.Camera.CameraFollow.ScreenShakeEnabled
+                    ? "화면 흔들림   켜짐"
+                    : "화면 흔들림   꺼짐";
         }
     }
 
