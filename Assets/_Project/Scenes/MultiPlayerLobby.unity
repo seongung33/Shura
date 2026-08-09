@@ -1510,7 +1510,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkLobbyState
   ShowTopMostFoldoutHeaderGroup: 1
-  availableCharacterCount: 1
+  availableCharacterCount: 2
 --- !u!1 &704803624
 GameObject:
   m_ObjectHideFlags: 0
