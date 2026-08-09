@@ -17,6 +17,11 @@ public class NetworkEnemyAuthoritySetup : NetworkBehaviour
         rigidBody = GetComponent<Rigidbody2D>();
         colliders = GetComponents<Collider2D>();
 
+        foreach (Collider2D enemyCollider in colliders)
+        {
+            enemyCollider.isTrigger = true;
+        }
+
         if (rigidBody != null)
         {
             originalBodyType = rigidBody.bodyType;

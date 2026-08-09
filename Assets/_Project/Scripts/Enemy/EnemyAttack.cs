@@ -41,6 +41,16 @@ public class EnemyAttack : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
+        TryAttack(collision.gameObject);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryAttack(other.gameObject);
+    }
+
+    private void TryAttack(GameObject contactObject)
+    {
         if (GameplayPauseState.IsLevelUpActive ||
             Time.time < frozenUntil)
         {
@@ -48,12 +58,12 @@ public class EnemyAttack : MonoBehaviour
         }
         
         // 부딪힌 대상이 플레이어가 아니면 종료
-        if (!collision.gameObject.CompareTag("Player"))
+        if (!contactObject.CompareTag("Player"))
         {
             return;
         }
         IDamageable damageable =
-            collision.gameObject.GetComponent<IDamageable>();
+            contactObject.GetComponent<IDamageable>();
 
         // 위에서 검사했지만 Player에 IDamageable 이 없는 것을 알 수 있다.
         if (damageable == null)
@@ -61,7 +71,7 @@ public class EnemyAttack : MonoBehaviour
             return;
         }
 
-        if (!TryAcquireAttackSlot(collision.gameObject))
+        if (!TryAcquireAttackSlot(contactObject))
         {
             return;
         }
@@ -106,7 +116,17 @@ public class EnemyAttack : MonoBehaviour
 
     private void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.gameObject == slottedPlayer)
+        ReleaseAttackSlotIfNeeded(collision.gameObject);
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        ReleaseAttackSlotIfNeeded(other.gameObject);
+    }
+
+    private void ReleaseAttackSlotIfNeeded(GameObject contactObject)
+    {
+        if (contactObject == slottedPlayer)
         {
             ReleaseAttackSlot();
         }
