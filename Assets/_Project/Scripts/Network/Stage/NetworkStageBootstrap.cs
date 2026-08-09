@@ -56,6 +56,7 @@ public class NetworkStageBootstrap : MonoBehaviour
 
     private void Start()
     {
+        GameAudioController.EnsureExists();
         cameraFollow = FindFirstObjectByType<CameraFollow>();
 
         if (IsNetworkSessionRunning())
@@ -254,6 +255,8 @@ public class NetworkStageBootstrap : MonoBehaviour
 
         StageHudPresenter hud = runtimeObject.AddComponent<StageHudPresenter>();
         hud.Configure(waveManager, enemySpawner);
+
+        runtimeObject.AddComponent<CombatFeedbackPresenter>();
 
         runtimeObject.AddComponent<GameplayPauseMenu>();
     }

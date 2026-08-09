@@ -199,6 +199,8 @@ public class GameManager : MonoBehaviour
 
         bossSpawned = true;
 
+        CombatFeedbackPresenter.ShowBossWarning("장산범");
+
         Debug.Log("보스 등장");
     }
 

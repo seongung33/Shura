@@ -30,6 +30,17 @@
 |---|---|---|---|---|---|---|---|
 | AI-A-001 | 장산범 본체·피격 FX | OpenAI 이미지 생성 | 2179년 사이버펑크 장산범, 은백색 털·기계 골격·적안 / 흰 털 피격 FX | 2026-08-03 | 크로마키 제거, Point 축소, 64×64 프레임 슬라이스 | `Assets/_Project/Art/Enemies/Jangsantiger/`, `BossJangsanTiger.prefab`; `StageTest`·`Main` 참조 | 담당자 확인 불가 |
 | AI-A-002 | 주몽 콘셉트 이미지 | OpenAI Media Service API(C2PA 메타데이터) | 확인 불가 | 2026-08-04(C2PA 기록) | 확인 불가 | `docs/Project/Playable_character/jumong/컨셉이미지.png`; 런타임 직접 참조는 확인하지 않음 | 담당자 확인 불가 |
+| AI-A-003 | 그림자 도깨비 일반 적 | OpenAI 이미지 생성 | 한국 설화풍 그림자 도깨비, 16비트 픽셀 아트, 남색·청록·붉은 눈 | 2026-08-09 | 초록 크로마키 제거, 투명 PNG 변환, Point 필터·PPU 설정 | `Assets/_Project/Art/Enemies/Generated/shadow_goblin.png`, 일반 적 3종 프리팹 | 진미리 |
+| AI-A-004 | 청색 영력 화살 | OpenAI 이미지 생성 | 오른쪽을 향하는 청색 마법 화살, 16비트 픽셀 아트, 금색 중심부 | 2026-08-09 | 자홍색 크로마키 제거, 투명 PNG 변환, Point 필터·PPU 설정 | `Assets/_Project/Art/Combat/Generated/spirit_arrow.png`, 화살·투사체 4종 프리팹 | 진미리 |
+| AI-A-005 | 미래형 한국 도시 메인 배경 | 팀 제공 AI 생성 이미지(도구·원문 프롬프트 확인 필요) | 어두운 미래형 한국 도시와 네온 간판, 산 위 궁궐 | 2026-08-09 제공 | 원본 비율 유지, 어두운 UI 오버레이 적용 | `Assets/Resources/UI/MainMenu/main_menu_city.png`, 메인 메뉴 배경 | 진미리 |
+| AI-A-006 | MUGUNG 로고 시안 | ChatGPT 이미지 생성 | 무궁화와 적·청 원형 문양을 결합한 `MUGUNG` 로고 | 2026-08-09 | 원본 비율 유지, 메인 메뉴 로고 레이어 적용 | `Assets/Resources/UI/MainMenu/mugung_logo.png`, 메인 메뉴 | 진미리 |
+
+### 음악
+
+| ID | 에셋 | 종류 | 제공자·원본 | 이용 조건 | 프로젝트 내 위치·사용 | 담당 |
+|---|---|---|---|---|---|---|
+| A-004 | EmptyCity | 어두운 도시 배경 루프 | yd, OpenGameArt `https://opengameart.org/content/emptycity-background-music` | CC0 | `Assets/Resources/Audio/Music/EmptyCity.ogg`, 메뉴·로비 | 진미리 |
+| A-005 | Friendly Talk On a Robotic Battlefield | 사이버펑크 전투 루프 | illin, OpenGameArt `https://opengameart.org/content/friendly-talk-on-a-robotic-battlefield-looped` | CC0, 상업적 사용 가능 명시 | `Assets/Resources/Audio/Music/CyberBattle.ogg`, Main 전투 | 진미리 |
 
 AI 코딩 도구 사용은 에셋 표가 아니라 `06_AI_USAGE_TECHNICAL_DOCUMENT.md`에서 관리한다.
 
