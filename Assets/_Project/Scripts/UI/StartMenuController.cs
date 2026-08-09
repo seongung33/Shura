@@ -112,9 +112,10 @@ public class StartMenuController : MonoBehaviour
         float subtitleY = compactLayout ? 75f : 82f;
         subtitleText = CreateHeading(menuRoot.transform, "Subtitle", "무궁의 밤, 끝까지 살아남아라", new Vector2(0f, subtitleY), compactLayout ? 23f : 27f, new Color(0.75f, 0.86f, 0.95f, 1f));
         CreateAccentLine(menuRoot.transform, compactLayout ? 48f : 54f);
+        CreateHowToButton(menuRoot.transform);
 
         float firstButtonY = -4f;
-        float buttonGap = 72f;
+        float buttonGap = 64f;
 
         Button[] buttons = menuRoot.GetComponentsInChildren<Button>(true);
         foreach (Button button in buttons)
@@ -139,19 +140,51 @@ public class StartMenuController : MonoBehaviour
             }
             else if (text == "설정")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 2f), ButtonColor, compactLayout);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 3f), ButtonColor, compactLayout);
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(OpenSettings);
             }
+            else if (text == "게임 방법")
+            {
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 2f), ButtonColor, compactLayout);
+            }
             else if (text == "게임 종료")
             {
-                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 3f), new Color(0.42f, 0.12f, 0.16f, 1f), compactLayout);
+                StyleButton(button, tmpLabel, legacyLabel, new Vector2(0f, firstButtonY - buttonGap * 4f), new Color(0.42f, 0.12f, 0.16f, 1f), compactLayout);
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(QuitGame);
             }
 
             button.onClick.AddListener(GameAudioController.PlayButtonClick);
         }
+    }
+
+    private void CreateHowToButton(Transform parent)
+    {
+        if (parent.Find("HowToButtonRuntime") != null)
+        {
+            return;
+        }
+
+        GameObject buttonObject = new(
+            "HowToButtonRuntime",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button)
+        );
+        buttonObject.transform.SetParent(parent, false);
+        Button button = buttonObject.GetComponent<Button>();
+        button.onClick.AddListener(OpenHowTo);
+
+        TMP_Text label = CreateHeading(
+            buttonObject.transform,
+            "Label",
+            "게임 방법",
+            Vector2.zero,
+            28f,
+            PrimaryTextColor
+        );
+        StretchLabel(label.rectTransform);
     }
 
     private static void ConfigureCanvas(Canvas canvas)
@@ -266,6 +299,11 @@ public class StartMenuController : MonoBehaviour
     private void OpenSettings()
     {
         MainMenuSettingsPanel.Show(GetComponentInParent<Canvas>());
+    }
+
+    private void OpenHowTo()
+    {
+        MainMenuHowToPanel.Show(GetComponentInParent<Canvas>());
     }
 
     private static void StyleButton(Button button, TMP_Text tmpLabel, Text legacyLabel, Vector2 position, Color normalColor, bool compactLayout)
