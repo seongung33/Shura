@@ -68,9 +68,11 @@ public static class StageBalanceAssetGenerator
         serialized.FindProperty("stageId").stringValue = "jangsanbeom_forest";
         serialized.FindProperty("duration").floatValue = 900f;
         serialized.FindProperty("cleanupStart").floatValue = 870f;
+        serialized.FindProperty("cleanupTargetAlive").intValue = 230;
+        serialized.FindProperty("cleanupSpawnIntervalMultiplier").floatValue = 1.5f;
         serialized.FindProperty("maxAlive").intValue = 300;
         serialized.FindProperty("spawnRadiusMin").floatValue = 8f;
-        serialized.FindProperty("spawnRadiusMax").floatValue = 12f;
+        serialized.FindProperty("spawnRadiusMax").floatValue = 13f;
         serialized.FindProperty("bossPrefab").objectReferenceValue = boss;
         serialized.FindProperty("bossHealth").floatValue = 2100f;
 
@@ -79,56 +81,54 @@ public static class StageBalanceAssetGenerator
 
         ConfigureSegment(
             segments.GetArrayElementAtIndex(0),
-            0f, 180f, 35, 70, 77f, 63f, 1f, 1f, 3,
+            0f, 180f, 40, 50, 70, 0.45f, 2, 5, 0.5f, 0.5f,
+            77f, 63f, 1f, 1f, 3,
             new[]
             {
-                Entry(EnemyRole.Swarm, normal, 70f, 0.11f, 0.4f, 1f, 1f),
-                Entry(EnemyRole.Basic, normal, 30f, 0.22f, 0.6f, 1f, 1f)
+                Entry(EnemyRole.Basic, normal, 100f, 0.2f, 0.5f, 1f, 1f)
             }
         );
         ConfigureSegment(
             segments.GetArrayElementAtIndex(1),
-            180f, 360f, 70, 130, 135f, 109f, 1.05f, 1.05f, 4,
+            180f, 360f, 75, 90, 120, 0.35f, 3, 6, 0.5f, 0.5f,
+            135f, 109f, 1.05f, 1.05f, 4,
             new[]
             {
-                Entry(EnemyRole.Swarm, normal, 50f, 0.11f, 0.4f, 1f, 1f),
-                Entry(EnemyRole.Basic, normal, 35f, 0.22f, 0.6f, 1f, 1f),
-                Entry(EnemyRole.Fast, fast, 15f, 0.25f, 1.67f, 1f, 1f)
+                Entry(EnemyRole.Basic, normal, 75f, 0.2f, 0.5f, 1f, 1f),
+                Entry(EnemyRole.Fast, fast, 25f, 0.3f, 1.67f, 1f, 1f)
             }
         );
         ConfigureSegment(
             segments.GetArrayElementAtIndex(2),
-            360f, 540f, 130, 190, 220f, 190f, 1.10f, 1.10f, 5,
+            360f, 540f, 125, 150, 180, 0.28f, 4, 6, 0.5f, 0.5f,
+            220f, 190f, 1.15f, 1.10f, 5,
             new[]
             {
-                Entry(EnemyRole.Swarm, normal, 45f, 0.11f, 0.4f, 1f, 1f),
-                Entry(EnemyRole.Basic, normal, 30f, 0.22f, 0.6f, 1f, 1f),
-                Entry(EnemyRole.Fast, fast, 15f, 0.25f, 1.67f, 1f, 1f),
-                Entry(EnemyRole.Medium, tank, 10f, 0.4f, 0.4f, 1f, 3f)
+                Entry(EnemyRole.Basic, normal, 60f, 0.2f, 0.5f, 1f, 1f),
+                Entry(EnemyRole.Fast, fast, 25f, 0.3f, 1.67f, 1f, 1f),
+                Entry(EnemyRole.Medium, tank, 15f, 0.45f, 0.4f, 1f, 3f)
             }
         );
         ConfigureSegment(
             segments.GetArrayElementAtIndex(3),
-            540f, 720f, 190, 250, 250f, 210f, 1.18f, 1.18f, 7,
+            540f, 720f, 180, 210, 240, 0.22f, 5, 6, 0.5f, 0.5f,
+            250f, 210f, 1.25f, 1.20f, 7,
             new[]
             {
-                Entry(EnemyRole.Swarm, normal, 55f, 0.11f, 0.4f, 1f, 1f),
-                Entry(EnemyRole.Basic, normal, 20f, 0.22f, 0.6f, 1f, 1f),
-                Entry(EnemyRole.Fast, fast, 15f, 0.25f, 1.67f, 1f, 1f),
-                Entry(EnemyRole.Medium, tank, 8f, 0.4f, 0.4f, 1f, 3f),
-                Entry(EnemyRole.Elite, tank, 2f, 1.3f, 0.56f, 1f, 8f)
+                Entry(EnemyRole.Basic, normal, 50f, 0.2f, 0.5f, 1f, 1f),
+                Entry(EnemyRole.Fast, fast, 30f, 0.3f, 1.67f, 1f, 1f),
+                Entry(EnemyRole.Medium, tank, 20f, 0.45f, 0.4f, 1f, 3f)
             }
         );
         ConfigureSegment(
             segments.GetArrayElementAtIndex(4),
-            720f, 870f, 250, 300, 360f, 336f, 1.25f, 1.30f, 10,
+            720f, 900f, 240, 260, 300, 0.16f, 6, 6, 0.5f, 0.5f,
+            360f, 336f, 1.40f, 1.30f, 10,
             new[]
             {
-                Entry(EnemyRole.Swarm, normal, 60f, 0.11f, 0.4f, 1f, 1f),
-                Entry(EnemyRole.Basic, normal, 15f, 0.22f, 0.6f, 1f, 1f),
-                Entry(EnemyRole.Fast, fast, 15f, 0.25f, 1.67f, 1f, 1f),
-                Entry(EnemyRole.Medium, tank, 8f, 0.4f, 0.4f, 1f, 3f),
-                Entry(EnemyRole.Elite, tank, 2f, 1.3f, 0.56f, 1f, 8f)
+                Entry(EnemyRole.Basic, normal, 45f, 0.2f, 0.5f, 1f, 1f),
+                Entry(EnemyRole.Fast, fast, 30f, 0.3f, 1.67f, 1f, 1f),
+                Entry(EnemyRole.Medium, tank, 25f, 0.45f, 0.4f, 1f, 3f)
             }
         );
 
@@ -142,6 +142,12 @@ public static class StageBalanceAssetGenerator
         float end,
         int aliveStart,
         int aliveEnd,
+        int maxAlive,
+        float spawnInterval,
+        int spawnBatchSize,
+        int catchUpBatchSize,
+        float catchUpThreshold,
+        float catchUpIntervalMultiplier,
         float spawnBudget,
         float teamExperience,
         float healthMultiplier,
@@ -154,6 +160,13 @@ public static class StageBalanceAssetGenerator
         segment.FindPropertyRelative("endTime").floatValue = end;
         segment.FindPropertyRelative("targetAliveStart").intValue = aliveStart;
         segment.FindPropertyRelative("targetAliveEnd").intValue = aliveEnd;
+        segment.FindPropertyRelative("maxAlive").intValue = maxAlive;
+        segment.FindPropertyRelative("spawnInterval").floatValue = spawnInterval;
+        segment.FindPropertyRelative("spawnBatchSize").intValue = spawnBatchSize;
+        segment.FindPropertyRelative("catchUpBatchSize").intValue = catchUpBatchSize;
+        segment.FindPropertyRelative("catchUpThreshold").floatValue = catchUpThreshold;
+        segment.FindPropertyRelative("catchUpIntervalMultiplier").floatValue =
+            catchUpIntervalMultiplier;
         segment.FindPropertyRelative("spawnBudgetPerMinute").floatValue = spawnBudget;
         segment.FindPropertyRelative("teamExperiencePerMinute").floatValue = teamExperience;
         segment.FindPropertyRelative("healthMultiplier").floatValue = healthMultiplier;
@@ -217,6 +230,7 @@ public static class StageBalanceAssetGenerator
         WaveManager wave = Object.FindFirstObjectByType<WaveManager>();
         SerializedObject waveSerialized = new SerializedObject(wave);
         waveSerialized.FindProperty("stageConfig").objectReferenceValue = stage;
+        waveSerialized.FindProperty("stageTimeScale").floatValue = 18f;
         waveSerialized.ApplyModifiedPropertiesWithoutUndo();
 
         GameObject runtime = GameObject.Find("StageBalanceRuntime");
