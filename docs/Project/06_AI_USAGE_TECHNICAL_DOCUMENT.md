@@ -185,6 +185,7 @@ Console 로그:
 | 2026-08-09 | Codex | 진미리 | 화면 비율에 따라 메인 메뉴가 넘치거나 배경이 찌그러지는 문제 개선 | 씬 YAML 충돌을 피하면서 기존 런타임 테마에 기준 해상도와 화면 높이 기준 스케일을 적용 | 1280×720 반응형 Canvas, 고정 여백 메뉴, 배경 비율 채우기, 시작 로고 영역 기반 크기, 클릭 생략·첫 버튼 선택 | 전체 C# 컴파일·`git diff --check`; Unity Free Aspect·16:9·4:3과 마우스·키보드 수동 회귀 필요 | `Assets/_Project/Scripts/UI/StartMenuController.cs` |
 | 2026-08-09 | Codex·Image-to-Pixel | 진미리 | 메인 로고를 게임의 픽셀 아트 방향과 통일 | 사용자가 변환한 36색 결과의 글자·문양은 보존하고 불투명 단색 배경만 결정적으로 제거 | 이진 투명 알파 PNG, Point 필터·무압축 Unity Sprite, 런타임 로고 경로 교체 | 이미지 크기·색상·알파 픽셀 검사, 전체 C# 컴파일·`git diff --check`; Unity 실제 화면 수동 확인 필요 | `Assets/Resources/UI/MainMenu/mugung_logo_pixel.png`, `StartMenuController.cs` |
 | 2026-08-09 | Codex | 진미리 | 처음 실행한 사용자가 조작과 목표를 찾기 어려운 문제 개선 | 인게임 F1 안내를 대체하지 않고 게임 시작 전 핵심 정보만 짧게 제공 | 메인 메뉴 `게임 방법` 버튼, 목표·조작·성장 카드, ESC·확인 닫기, 키보드 포커스·등장 애니메이션 | 전체 C# 컴파일·`git diff --check`; Unity 작은 화면·클릭·키보드 수동 회귀 필요 | `MainMenuHowToPanel.cs`, `StartMenuController.cs` |
+| 2026-08-09 | Codex | 진미리 | 멀티 입장 화면의 고정 800×600 기준과 임시 화면 인상 개선 | Relay·세션 계약과 씬 직렬화는 유지하고 런타임 시각 계층만 메인 메뉴와 통일 | 1280×720 높이 기준 반응형 Canvas, 도시 배경·명암 오버레이, 패널 여백, 버튼 모션·효과음, 성공·실패 상태색 | 전체 C# 컴파일·`git diff --check`; Unity 16:9·4:3 및 실제 방 생성/참가 수동 회귀 필요 | `MultiplayerEntryUI.cs` |
 
 ## 7. 확인된 검토·수정 사례
 
