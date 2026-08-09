@@ -299,7 +299,13 @@ public sealed class StageHudPresenter : MonoBehaviour
             return;
         }
 
-        GameObject canvasObject = new GameObject("StageHudCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        GameObject canvasObject = new GameObject(
+            "StageHudCanvas",
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(CanvasScaler),
+            typeof(GraphicRaycaster)
+        );
         canvasObject.transform.SetParent(transform, false);
         Canvas canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
