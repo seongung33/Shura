@@ -439,8 +439,8 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
             ? createRoomButton.GetComponentInChildren<TMP_Text>(true)?.font
             : null;
 
-        EnsureBackdrop(canvasRect);
         EnsureArtwork(canvasRect);
+        EnsureBackdrop(canvasRect);
         EnsureHeading(canvasRect, uiFont);
 
         StyleText(statusText, 24f, TextColor, FontStyles.Bold, uiFont);
@@ -479,6 +479,7 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
             : new GameObject("EntryArtworkRuntime", typeof(RectTransform));
         artwork.transform.SetParent(canvasRect, false);
         artwork.transform.SetAsFirstSibling();
+        artwork.SetActive(true);
         RectTransform artworkRect = (RectTransform)artwork.transform;
         Stretch(artworkRect);
 
@@ -530,6 +531,8 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         Stretch(shade.rectTransform);
         shade.color = new Color(0f, 0.015f, 0.04f, 0.58f);
         shade.raycastTarget = false;
+
+        artwork.transform.SetAsFirstSibling();
     }
 
     private static void EnsureBackdrop(RectTransform canvasRect)
@@ -550,7 +553,9 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         Image image = backdrop.GetComponent<Image>();
         image.color = PanelColor;
         image.raycastTarget = false;
-        backdrop.transform.SetAsFirstSibling();
+        backdrop.transform.SetSiblingIndex(
+            Mathf.Min(1, canvasRect.childCount - 1)
+        );
 
         Outline outline = backdrop.GetComponent<Outline>();
         if (outline == null)
@@ -600,7 +605,11 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         TMP_FontAsset uiFont
     )
     {
-        TMP_Text[] texts = canvasRect.GetComponentsInChildren<TMP_Text>(true);
+        TMP_Text directText = canvasRect.Find("MultiplayerPanel/PlayerCountText")
+            ?.GetComponent<TMP_Text>();
+        TMP_Text[] texts = directText != null
+            ? new[] { directText }
+            : canvasRect.GetComponentsInChildren<TMP_Text>(true);
 
         foreach (TMP_Text candidate in texts)
         {
@@ -658,6 +667,9 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         {
             buttonText.text = label;
             buttonText.color = TextColor;
+            buttonText.faceColor = TextColor;
+            buttonText.enableVertexGradient = false;
+            buttonText.colorGradient = new VertexGradient(TextColor);
             buttonText.fontSize = 28f;
             buttonText.fontStyle = FontStyles.Bold;
             buttonText.alignment = TextAlignmentOptions.Center;
@@ -717,6 +729,9 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         }
 
         text.color = color;
+        text.faceColor = color;
+        text.enableVertexGradient = false;
+        text.colorGradient = new VertexGradient(color);
         text.fontSize = fontSize;
         text.fontStyle = style;
         if (uiFont != null)
@@ -883,17 +898,23 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         if (statusText != null)
         {
             statusText.text = message;
-            if (message.Contains("실패") || message.Contains("오류"))
+            if (message.Contains("실패") ||
+                message.Contains("오류") ||
+                message.Contains("초과") ||
+                message.Contains("종료"))
             {
                 statusText.color = new Color32(255, 108, 116, 255);
+                statusText.faceColor = statusText.color;
             }
-            else if (message.Contains("완료") || message.Contains("준비"))
+            else if (message.Contains("완료"))
             {
                 statusText.color = new Color32(118, 235, 184, 255);
+                statusText.faceColor = statusText.color;
             }
             else
             {
                 statusText.color = TextColor;
+                statusText.faceColor = TextColor;
             }
         }
 
