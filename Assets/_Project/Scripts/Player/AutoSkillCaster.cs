@@ -20,6 +20,9 @@ public class AutoSkillCaster : MonoBehaviour
 
         [NonSerialized]
         public float nextCastTime;
+
+        [NonSerialized]
+        public int level = 1;
     }
 
     [SerializeField]
@@ -36,11 +39,13 @@ public class AutoSkillCaster : MonoBehaviour
     private bool requireEnemyInRange = true;
 
     private PlayerAimDirection aim;
+    private PlayerRuntimeGrowth runtimeGrowth;
     private bool hasStarted;
 
     private void Awake()
     {
         aim = GetComponent<PlayerAimDirection>();
+        runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
     }
 
     private void Start()
@@ -65,7 +70,8 @@ public class AutoSkillCaster : MonoBehaviour
                 equippedSkills.Add(new EquippedSkill
                 {
                     data = skill,
-                    element = ElementType.None
+                    element = ElementType.None,
+                    level = 1
                 });
             }
         }
@@ -76,8 +82,58 @@ public class AutoSkillCaster : MonoBehaviour
         }
     }
 
+    public void ConfigureProgressionSkills(
+        IReadOnlyList<RuntimeSkillLoadout> skills
+    )
+    {
+        Dictionary<SkillData, EquippedSkill> existing = new();
+
+        foreach (EquippedSkill equipped in equippedSkills)
+        {
+            if (equipped.data != null)
+            {
+                existing[equipped.data] = equipped;
+            }
+        }
+
+        List<EquippedSkill> synchronized = new();
+
+        if (skills != null)
+        {
+            foreach (RuntimeSkillLoadout loadout in skills)
+            {
+                if (loadout.Data == null || loadout.Level <= 0)
+                {
+                    continue;
+                }
+
+                if (!existing.TryGetValue(
+                        loadout.Data,
+                        out EquippedSkill equipped
+                    ))
+                {
+                    equipped = new EquippedSkill
+                    {
+                        data = loadout.Data
+                    };
+                }
+
+                equipped.element = loadout.Element;
+                equipped.level = loadout.Level;
+                synchronized.Add(equipped);
+            }
+        }
+
+        equippedSkills = synchronized;
+    }
+
     private void Update()
     {
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
+
         foreach (EquippedSkill skill in equippedSkills)
         {
             TryCast(skill);
@@ -89,10 +145,16 @@ public class AutoSkillCaster : MonoBehaviour
     /// </summary>
     public void EquipSkill(SkillData skillData)
     {
+        if (skillData == null)
+        {
+            return;
+        }
+
         EquippedSkill newSkill = new EquippedSkill
         {
             data = skillData,
-            element = ElementUtil.GetRandomElement()
+            element = ElementUtil.GetRandomElement(),
+            level = 1
         };
 
         equippedSkills.Add(newSkill);
@@ -158,6 +220,10 @@ public class AutoSkillCaster : MonoBehaviour
         Vector2 direction =
             aim != null ? aim.AimDirection : Vector2.right;
 
+        SkillCastRuntime runtime = runtimeGrowth != null
+            ? runtimeGrowth.GetCastRuntime(skill.data)
+            : SkillCastRuntime.FromBase(skill.data);
+
         NetworkSkillCastRelay networkRelay =
             GetComponent<NetworkSkillCastRelay>();
 
@@ -172,47 +238,87 @@ public class AutoSkillCaster : MonoBehaviour
 
             if (requestSent)
             {
-                skill.nextCastTime = Time.time + skill.data.Cooldown;
+                skill.nextCastTime = Time.time + runtime.Cooldown;
             }
 
             return;
         }
 
-        GameObject skillObject = Instantiate(
-            skill.data.SkillPrefab,
-            spawnPosition,
-            Quaternion.identity
-        );
-
-        ISkillBehaviour skillBehaviour =
-            skillObject.GetComponent<ISkillBehaviour>();
-
-        if (skillBehaviour == null)
+        if (!CastLocalVolley(
+                skill.data,
+                spawnPosition,
+                direction,
+                skill.element,
+                runtime
+            ))
         {
-            Debug.LogError(
-                $"{skill.data.SkillPrefab.name}에 ISkillBehaviour 컴포넌트가 없습니다."
-            );
-
-            Destroy(skillObject);
             return;
         }
 
-        SkillCastContext context = new SkillCastContext
+        skill.nextCastTime = Time.time + runtime.Cooldown;
+    }
+
+    private bool CastLocalVolley(
+        SkillData skill,
+        Vector2 origin,
+        Vector2 direction,
+        ElementType element,
+        SkillCastRuntime runtime
+    )
+    {
+        int projectileCount = Mathf.Max(1, runtime.ProjectileCount);
+
+        for (int index = 0; index < projectileCount; index++)
         {
-            Owner = gameObject,
-            Origin = spawnPosition,
-            Direction = direction,
-            Damage = skill.data.Damage,
-            ProjectileSpeed = skill.data.ProjectileSpeed,
-            Element = skill.element,
-            EnemyLayer = enemyLayer,
-            VisualOnly = false,
-            SourcePlayerId = ulong.MaxValue
-        };
+            GameObject skillObject = Instantiate(
+                skill.SkillPrefab,
+                origin,
+                Quaternion.identity
+            );
 
-        skillBehaviour.Cast(context);
+            ISkillBehaviour behaviour =
+                skillObject.GetComponent<ISkillBehaviour>();
 
-        skill.nextCastTime = Time.time + skill.data.Cooldown;
+            if (behaviour == null)
+            {
+                Debug.LogError(
+                    $"{skill.SkillPrefab.name}에 ISkillBehaviour 컴포넌트가 없습니다."
+                );
+                Destroy(skillObject);
+                return false;
+            }
+
+            Vector2 volleyDirection = PlayerRuntimeGrowth.GetVolleyDirection(
+                direction,
+                index,
+                projectileCount,
+                runtime.ProjectileSpreadAngle
+            );
+
+            behaviour.Cast(new SkillCastContext
+            {
+                Owner = gameObject,
+                Origin = origin,
+                Direction = volleyDirection,
+                Damage = runtime.Damage,
+                ProjectileSpeed = runtime.ProjectileSpeed,
+                PierceBonus = runtime.PierceBonus,
+                ExplosionRadiusMultiplier = runtime.ExplosionRadiusMultiplier,
+                ActivationIntervalMultiplier = runtime.ActivationIntervalMultiplier,
+                ZoneRadiusMultiplier = runtime.ZoneRadiusMultiplier,
+                ZoneDurationMultiplier = runtime.ZoneDurationMultiplier,
+                MovementSpeedMultiplier = runtime.MovementSpeedMultiplier,
+                ZoneDamageMultiplier = runtime.ZoneDamageMultiplier,
+                BounceCount = runtime.BounceCount,
+                BounceRange = runtime.BounceRange,
+                Element = element,
+                EnemyLayer = enemyLayer,
+                VisualOnly = false,
+                SourcePlayerId = ulong.MaxValue
+            });
+        }
+
+        return true;
     }
 
     [ContextMenu("모든 스킬 속성 랜덤 재부여")]

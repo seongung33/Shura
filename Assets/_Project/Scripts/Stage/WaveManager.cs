@@ -75,7 +75,7 @@ public class WaveManager : MonoBehaviour
 
     private void Update()
     {
-        if (roundFinished)
+        if (roundFinished || GameplayPauseState.IsLevelUpActive)
         {
             return;
         }

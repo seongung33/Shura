@@ -19,10 +19,17 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         new Dictionary<int, float>();
     private readonly Dictionary<int, ElementType> serverSkillElements =
         new Dictionary<int, ElementType>();
+    private PlayerRuntimeGrowth runtimeGrowth;
+
+    private void Awake()
+    {
+        runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
+    }
 
     public void ConfigureAllowedSkills(
         SkillData basicSkill,
-        IReadOnlyList<SkillData> startingSkills
+        IReadOnlyList<SkillData> startingSkills,
+        IReadOnlyList<SkillData> levelUpSkills = null
     )
     {
         allowedSkills.Clear();
@@ -32,6 +39,14 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         if (startingSkills != null)
         {
             foreach (SkillData skill in startingSkills)
+            {
+                AddAllowedSkill(skill);
+            }
+        }
+
+        if (levelUpSkills != null)
+        {
+            foreach (SkillData skill in levelUpSkills)
             {
                 AddAllowedSkill(skill);
             }
@@ -73,7 +88,8 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         ElementType element
     )
     {
-        if (!IsValidElement(element) ||
+        if (GameplayPauseState.IsLevelUpActive ||
+            !IsValidElement(element) ||
             !TryGetValidatedCast(
                 skillIndex,
                 origin,
@@ -86,9 +102,26 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             return;
         }
 
-        nextServerCastTimes[skillIndex] = Time.time + skill.Cooldown;
-        SpawnSkill(skill, origin, normalizedDirection, element, false);
-        SpawnSkillVisualRpc(skillIndex, origin, normalizedDirection, element);
+        SkillCastRuntime runtime = runtimeGrowth != null
+            ? runtimeGrowth.GetCastRuntime(skill)
+            : SkillCastRuntime.FromBase(skill);
+
+        nextServerCastTimes[skillIndex] = Time.time + runtime.Cooldown;
+        SpawnSkillVolley(
+            skill,
+            origin,
+            normalizedDirection,
+            element,
+            runtime,
+            false
+        );
+        SpawnSkillVisualRpc(
+            skillIndex,
+            origin,
+            normalizedDirection,
+            element,
+            runtime
+        );
     }
 
     [Rpc(SendTo.NotServer, InvokePermission = RpcInvokePermission.Server)]
@@ -96,12 +129,20 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         int skillIndex,
         Vector2 origin,
         Vector2 direction,
-        ElementType element
+        ElementType element,
+        SkillCastRuntime runtime
     )
     {
         if (TryGetAllowedSkill(skillIndex, out SkillData skill))
         {
-            SpawnSkill(skill, origin, direction, element, true);
+            SpawnSkillVolley(
+                skill,
+                origin,
+                direction,
+                element,
+                runtime,
+                true
+            );
         }
     }
 
@@ -173,6 +214,18 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             return false;
         }
 
+        if (runtimeGrowth != null &&
+            runtimeGrowth.HasAuthoritativeSkillState)
+        {
+            return runtimeGrowth.TryGetSkillState(
+                    skill,
+                    out int level,
+                    out ElementType assignedElement
+                ) &&
+                level > 0 &&
+                assignedElement == element;
+        }
+
         if (serverSkillElements.TryGetValue(skillIndex, out ElementType assigned))
         {
             return assigned == element;
@@ -182,11 +235,42 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         return true;
     }
 
+    private void SpawnSkillVolley(
+        SkillData skill,
+        Vector2 origin,
+        Vector2 direction,
+        ElementType element,
+        SkillCastRuntime runtime,
+        bool visualOnly
+    )
+    {
+        int projectileCount = Mathf.Max(1, runtime.ProjectileCount);
+
+        for (int index = 0; index < projectileCount; index++)
+        {
+            Vector2 volleyDirection = PlayerRuntimeGrowth.GetVolleyDirection(
+                direction,
+                index,
+                projectileCount,
+                runtime.ProjectileSpreadAngle
+            );
+            SpawnSkill(
+                skill,
+                origin,
+                volleyDirection,
+                element,
+                runtime,
+                visualOnly
+            );
+        }
+    }
+
     private void SpawnSkill(
         SkillData skill,
         Vector2 origin,
         Vector2 direction,
         ElementType element,
+        SkillCastRuntime runtime,
         bool visualOnly
     )
     {
@@ -211,8 +295,17 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             Owner = gameObject,
             Origin = origin,
             Direction = direction,
-            Damage = skill.Damage,
-            ProjectileSpeed = skill.ProjectileSpeed,
+            Damage = runtime.Damage,
+            ProjectileSpeed = runtime.ProjectileSpeed,
+            PierceBonus = runtime.PierceBonus,
+            ExplosionRadiusMultiplier = runtime.ExplosionRadiusMultiplier,
+            ActivationIntervalMultiplier = runtime.ActivationIntervalMultiplier,
+            ZoneRadiusMultiplier = runtime.ZoneRadiusMultiplier,
+            ZoneDurationMultiplier = runtime.ZoneDurationMultiplier,
+            MovementSpeedMultiplier = runtime.MovementSpeedMultiplier,
+            ZoneDamageMultiplier = runtime.ZoneDamageMultiplier,
+            BounceCount = runtime.BounceCount,
+            BounceRange = runtime.BounceRange,
             Element = element,
             EnemyLayer = enemyLayer,
             VisualOnly = visualOnly,

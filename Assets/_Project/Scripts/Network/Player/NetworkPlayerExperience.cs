@@ -91,6 +91,17 @@ public class NetworkPlayerExperience : NetworkBehaviour
         ApplyTeamStateServer(1, 0, 10, 0, true);
     }
 
+    public void CompleteChoiceServer()
+    {
+        if (!IsServer || pendingChoiceCount.Value <= 0)
+        {
+            return;
+        }
+
+        pendingChoiceCount.Value--;
+        ApplyStateToPlayer();
+    }
+
     public void ApplyTeamStateServer(
         int level,
         int experience,

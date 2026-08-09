@@ -22,6 +22,7 @@ public class DirectionalAutoAttack : MonoBehaviour
     private bool requireEnemyInRange = true;
 
     private PlayerAimDirection aim;
+    private PlayerRuntimeGrowth runtimeGrowth;
     private float nextAttackTime;
 
     public void ConfigureBasicSkill(SkillData skill)
@@ -33,10 +34,16 @@ public class DirectionalAutoAttack : MonoBehaviour
     private void Awake()
     {
         aim = GetComponent<PlayerAimDirection>();
+        runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
     }
 
     private void Update()
     {
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            return;
+        }
+
         if (basicSkill == null)
         {
             return;
@@ -68,7 +75,10 @@ public class DirectionalAutoAttack : MonoBehaviour
             return;
         }
 
-        nextAttackTime = Time.time + basicSkill.Cooldown;
+        SkillCastRuntime runtime = runtimeGrowth != null
+            ? runtimeGrowth.GetCastRuntime(basicSkill)
+            : SkillCastRuntime.FromBase(basicSkill);
+        nextAttackTime = Time.time + runtime.Cooldown;
     }
 
     private bool Fire()
@@ -90,6 +100,10 @@ public class DirectionalAutoAttack : MonoBehaviour
         Vector2 direction =
             aim != null ? aim.AimDirection : Vector2.right;
 
+        SkillCastRuntime runtime = runtimeGrowth != null
+            ? runtimeGrowth.GetCastRuntime(basicSkill)
+            : SkillCastRuntime.FromBase(basicSkill);
+
         NetworkSkillCastRelay networkRelay =
             GetComponent<NetworkSkillCastRelay>();
 
@@ -103,40 +117,59 @@ public class DirectionalAutoAttack : MonoBehaviour
             );
         }
 
-        GameObject skillObject = Instantiate(
-            basicSkill.SkillPrefab,
-            spawnPosition,
-            Quaternion.identity
-        );
+        int projectileCount = Mathf.Max(1, runtime.ProjectileCount);
 
-        ISkillBehaviour skillBehaviour =
-            skillObject.GetComponent<ISkillBehaviour>();
-
-        if (skillBehaviour == null)
+        for (int index = 0; index < projectileCount; index++)
         {
-            Debug.LogError(
-                $"{basicSkill.SkillPrefab.name}에 ISkillBehaviour 컴포넌트가 없습니다. " +
-                "StraightProjectile을 붙였는지 확인하세요."
+            GameObject skillObject = Instantiate(
+                basicSkill.SkillPrefab,
+                spawnPosition,
+                Quaternion.identity
             );
 
-            Destroy(skillObject);
-            return false;
+            ISkillBehaviour skillBehaviour =
+                skillObject.GetComponent<ISkillBehaviour>();
+
+            if (skillBehaviour == null)
+            {
+                Debug.LogError(
+                    $"{basicSkill.SkillPrefab.name}에 ISkillBehaviour 컴포넌트가 없습니다. " +
+                    "StraightProjectile을 붙였는지 확인하세요."
+                );
+
+                Destroy(skillObject);
+                return false;
+            }
+
+            Vector2 volleyDirection = PlayerRuntimeGrowth.GetVolleyDirection(
+                direction,
+                index,
+                projectileCount,
+                runtime.ProjectileSpreadAngle
+            );
+
+            skillBehaviour.Cast(new SkillCastContext
+            {
+                Owner = gameObject,
+                Origin = spawnPosition,
+                Direction = volleyDirection,
+                Damage = runtime.Damage,
+                ProjectileSpeed = runtime.ProjectileSpeed,
+                PierceBonus = runtime.PierceBonus,
+                ExplosionRadiusMultiplier = runtime.ExplosionRadiusMultiplier,
+                ActivationIntervalMultiplier = runtime.ActivationIntervalMultiplier,
+                ZoneRadiusMultiplier = runtime.ZoneRadiusMultiplier,
+                ZoneDurationMultiplier = runtime.ZoneDurationMultiplier,
+                MovementSpeedMultiplier = runtime.MovementSpeedMultiplier,
+                ZoneDamageMultiplier = runtime.ZoneDamageMultiplier,
+                BounceCount = runtime.BounceCount,
+                BounceRange = runtime.BounceRange,
+                Element = ElementType.None,
+                EnemyLayer = enemyLayer,
+                VisualOnly = false,
+                SourcePlayerId = ulong.MaxValue
+            });
         }
-
-        SkillCastContext context = new SkillCastContext
-        {
-            Owner = gameObject,
-            Origin = spawnPosition,
-            Direction = direction,
-            Damage = basicSkill.Damage,
-            ProjectileSpeed = basicSkill.ProjectileSpeed,
-            Element = ElementType.None,
-            EnemyLayer = enemyLayer,
-            VisualOnly = false,
-            SourcePlayerId = ulong.MaxValue
-        };
-
-        skillBehaviour.Cast(context);
 
         return true;
     }

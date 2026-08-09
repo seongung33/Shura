@@ -52,6 +52,12 @@ public class EnemyController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (GameplayPauseState.IsLevelUpActive)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (target == null)
         {
             rigidBody.linearVelocity = Vector2.zero;
