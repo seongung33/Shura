@@ -188,7 +188,13 @@ public class AutoSkillCaster : MonoBehaviour
 
         if (manualCastRequested && ultimateSkill != null)
         {
+            float previousCastTime = ultimateSkill.nextCastTime;
             TryCast(ultimateSkill, false);
+
+            if (ultimateSkill.nextCastTime > previousCastTime)
+            {
+                UltimateCutInPresenter.Show(gameObject);
+            }
         }
 
         foreach (EquippedSkill skill in equippedSkills)
