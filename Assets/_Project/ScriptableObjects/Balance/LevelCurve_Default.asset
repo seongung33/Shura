@@ -15,7 +15,7 @@ MonoBehaviour:
   baseConstant: 6
   linearCoefficient: 2
   quadraticCoefficient: 0.32
-  teamExperienceMultiplier: 1.75
+  teamExperienceMultiplier: 2
   skillChoiceLevels:
   - 3
   - 6

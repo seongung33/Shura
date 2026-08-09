@@ -20,6 +20,9 @@ public sealed class RelicData : ScriptableObject
     [SerializeField]
     private string displayName;
 
+    [SerializeField]
+    private Sprite icon;
+
     [SerializeField, TextArea(2, 4)]
     private string description;
 
@@ -44,6 +47,7 @@ public sealed class RelicData : ScriptableObject
     public RelicId Id => id;
     public string DisplayName => displayName;
     public string Description => description;
+    public Sprite Icon => icon;
     public float TriggerChance => Mathf.Clamp01(triggerChance);
     public float DamageMultiplier => Mathf.Max(0f, damageMultiplier);
     public float Radius => Mathf.Max(0f, radius);

@@ -46,6 +46,29 @@ public class AutoSkillCaster : MonoBehaviour
     private readonly HashSet<SkillData> persistentSkills = new();
     private EquippedSkill ultimateSkill;
 
+    public IReadOnlyList<EquippedSkill> EquippedSkills => equippedSkills;
+    public SkillData UltimateSkill => ultimateSkill?.data;
+
+    public float UltimateCooldownRemaining => ultimateSkill == null
+        ? 0f
+        : Mathf.Max(0f, ultimateSkill.nextCastTime - Time.time);
+
+    public float UltimateCooldownDuration
+    {
+        get
+        {
+            if (ultimateSkill?.data == null)
+            {
+                return 0f;
+            }
+
+            SkillCastRuntime runtime = runtimeGrowth != null
+                ? runtimeGrowth.GetCastRuntime(ultimateSkill.data)
+                : SkillCastRuntime.FromBase(ultimateSkill.data);
+            return Mathf.Max(0.01f, runtime.Cooldown);
+        }
+    }
+
     private void Awake()
     {
         aim = GetComponent<PlayerAimDirection>();
