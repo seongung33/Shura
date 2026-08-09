@@ -12,6 +12,8 @@ using UnityEngine.UI;
 public sealed class GameplayPauseMenu : MonoBehaviour
 {
     private static readonly Color PanelColor = new Color(0.025f, 0.04f, 0.09f, 0.97f);
+    private static readonly Color PrimaryTextColor = new Color(0.96f, 0.98f, 1f, 1f);
+    private static readonly Color SecondaryTextColor = new Color(0.72f, 0.82f, 0.9f, 1f);
     private GameObject menuOverlay;
     private TMP_Text guideText;
     private Button menuButton;
@@ -160,9 +162,11 @@ public sealed class GameplayPauseMenu : MonoBehaviour
         outline.effectDistance = new Vector2(3f, -3f);
 
         TMP_Text title = CreateText(panel.transform, "Title", "일시정지", 64f);
+        ApplyTextColor(title, PrimaryTextColor, 0.22f);
         SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -48f), new Vector2(520f, 88f), new Vector2(0.5f, 1f));
 
         guideText = CreateText(panel.transform, "Guide", string.Empty, 25f);
+        ApplyTextColor(guideText, SecondaryTextColor, 0.12f);
         SetRect(guideText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -142f), new Vector2(520f, 58f), new Vector2(0.5f, 1f));
 
         Button resumeButton = CreateButton(panel.transform, "ResumeButton", "계속하기", ToggleFromButton);
@@ -206,8 +210,16 @@ public sealed class GameplayPauseMenu : MonoBehaviour
         text.fontSizeMin = 16f;
         text.fontSizeMax = maxSize;
         text.fontStyle = FontStyles.Bold;
-        text.color = Color.white;
+        ApplyTextColor(text, PrimaryTextColor, 0.16f);
         return text;
+    }
+
+    private static void ApplyTextColor(TMP_Text text, Color color, float outlineWidth)
+    {
+        text.color = color;
+        text.faceColor = color;
+        text.outlineColor = new Color(0f, 0f, 0f, 0.9f);
+        text.outlineWidth = outlineWidth;
     }
 
     private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size, Vector2 pivot)
