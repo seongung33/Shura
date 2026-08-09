@@ -37,6 +37,13 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField, Min(1)]
     private int maxAlive = 300;
 
+    [Header("Distance Culling")]
+    [SerializeField, Min(1f)]
+    private float despawnDistance = 30f;
+
+    [SerializeField, Min(0.1f)]
+    private float despawnCheckInterval = 0.75f;
+
     private readonly List<PlayerTarget> playerTargets = new();
     private readonly List<SpawnedEnemy> spawnedEnemies = new();
 
@@ -45,6 +52,7 @@ public class EnemySpawner : MonoBehaviour
     private ExperienceDropAccumulator dropAccumulator;
     private float spawnTimer;
     private float playerRefreshTimer;
+    private float despawnCheckTimer;
     private int targetAlive;
     private int currentMaxAlive;
     private int nextEliteSpawnIndex;
@@ -115,6 +123,14 @@ public class EnemySpawner : MonoBehaviour
             RefreshPlayers();
         }
 
+        despawnCheckTimer -= Time.deltaTime;
+
+        if (despawnCheckTimer <= 0f)
+        {
+            despawnCheckTimer = despawnCheckInterval;
+            DespawnDistantEnemies();
+        }
+
         if (!spawningEnabled || playerTargets.Count == 0 || targetAlive <= 0)
         {
             return;
@@ -122,9 +138,7 @@ public class EnemySpawner : MonoBehaviour
 
         spawnTimer -= Time.deltaTime;
 
-        if (spawnedEnemies.Count >= targetAlive ||
-            spawnedEnemies.Count >= currentMaxAlive ||
-            spawnTimer > 0f)
+        if (spawnTimer > 0f)
         {
             return;
         }
@@ -148,7 +162,7 @@ public class EnemySpawner : MonoBehaviour
         int configuredTarget = cleanupMode && stageConfig != null
             ? stageConfig.CleanupTargetAlive
             : segment?.GetTargetAlive(stageElapsedTime) ?? 0;
-        targetAlive = Mathf.Min(currentMaxAlive, configuredTarget);
+        targetAlive = Mathf.Max(0, configuredTarget);
 
         if (segmentChanged)
         {
@@ -186,11 +200,7 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnBatch(int requestedBatchSize)
     {
-        int availableSlots = Mathf.Min(
-            targetAlive - spawnedEnemies.Count,
-            currentMaxAlive - spawnedEnemies.Count
-        );
-        int spawnCount = Mathf.Min(Mathf.Max(1, requestedBatchSize), availableSlots);
+        int spawnCount = Mathf.Max(1, requestedBatchSize);
 
         for (int index = 0; index < spawnCount; index++)
         {
@@ -259,16 +269,7 @@ public class EnemySpawner : MonoBehaviour
                 continue;
             }
 
-            NetworkObject networkObject = enemy.GetComponent<NetworkObject>();
-
-            if (networkObject != null && networkObject.IsSpawned)
-            {
-                networkObject.Despawn(true);
-            }
-            else
-            {
-                Destroy(enemy);
-            }
+            DespawnEnemy(enemy);
         }
 
         spawnedEnemies.Clear();
@@ -568,6 +569,86 @@ public class EnemySpawner : MonoBehaviour
         return localHealth == null || !localHealth.IsDead;
     }
 
+    private void DespawnDistantEnemies()
+    {
+        if (spawnedEnemies.Count == 0 || playerTargets.Count == 0)
+        {
+            return;
+        }
+
+        float despawnDistanceSquared = despawnDistance * despawnDistance;
+        bool removedAny = false;
+
+        for (int index = spawnedEnemies.Count - 1; index >= 0; index--)
+        {
+            GameObject enemy = spawnedEnemies[index].GameObject;
+
+            if (enemy == null)
+            {
+                spawnedEnemies.RemoveAt(index);
+                removedAny = true;
+                continue;
+            }
+
+            if (IsNearAnyLivingPlayer(
+                    enemy.transform.position,
+                    despawnDistanceSquared
+                ))
+            {
+                continue;
+            }
+
+            DespawnEnemy(enemy);
+            spawnedEnemies.RemoveAt(index);
+            removedAny = true;
+        }
+
+        if (removedAny)
+        {
+            RecountAssignments();
+        }
+    }
+
+    private bool IsNearAnyLivingPlayer(
+        Vector3 enemyPosition,
+        float despawnDistanceSquared
+    )
+    {
+        bool hasLivingPlayer = false;
+
+        foreach (PlayerTarget target in playerTargets)
+        {
+            if (!IsAlivePlayer(target.Transform))
+            {
+                continue;
+            }
+
+            hasLivingPlayer = true;
+
+            if ((target.Transform.position - enemyPosition).sqrMagnitude <=
+                despawnDistanceSquared)
+            {
+                return true;
+            }
+        }
+
+        return !hasLivingPlayer;
+    }
+
+    private static void DespawnEnemy(GameObject enemy)
+    {
+        NetworkObject networkObject = enemy.GetComponent<NetworkObject>();
+
+        if (networkObject != null && networkObject.IsSpawned)
+        {
+            networkObject.Despawn(true);
+        }
+        else
+        {
+            Destroy(enemy);
+        }
+    }
+
     private void RemoveDestroyedEnemies()
     {
         bool removedAny = spawnedEnemies.RemoveAll(enemy => enemy.GameObject == null) > 0;
@@ -616,5 +697,7 @@ public class EnemySpawner : MonoBehaviour
     private void OnValidate()
     {
         maxSpawnDistance = Mathf.Max(minSpawnDistance, maxSpawnDistance);
+        despawnDistance = Mathf.Max(1f, despawnDistance);
+        despawnCheckInterval = Mathf.Max(0.1f, despawnCheckInterval);
     }
 }
