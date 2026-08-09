@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -18,6 +19,8 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
     private TMP_Text levelText;
     private TMP_Text timerText;
     private TMP_Text statusText;
+    private CanvasGroup panelGroup;
+    private Coroutine revealRoutine;
     private int displayedSessionId = -1;
     private bool requestPending;
 
@@ -48,6 +51,13 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         {
             displayedSessionId = progression.ChoiceSessionId;
             requestPending = false;
+
+            if (revealRoutine != null)
+            {
+                StopCoroutine(revealRoutine);
+            }
+
+            revealRoutine = StartCoroutine(PlayReveal());
         }
 
         levelText.text = $"TEAM LEVEL {progression.ChoiceTeamLevel}";
@@ -120,7 +130,8 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         panelObject = new GameObject(
             "LevelUpPanel",
             typeof(RectTransform),
-            typeof(Image)
+            typeof(Image),
+            typeof(CanvasGroup)
         );
         panelObject.transform.SetParent(canvasObject.transform, false);
 
@@ -132,6 +143,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
 
         panelObject.GetComponent<Image>().color =
             new Color(0.015f, 0.025f, 0.055f, 0.9f);
+        panelGroup = panelObject.GetComponent<CanvasGroup>();
 
         TMP_Text title = CreateText(
             "Title",
@@ -242,6 +254,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         }
 
         requestPending = true;
+        GameAudioController.PlayUpgradeConfirm();
 
         foreach (Button button in cardButtons)
         {
@@ -252,6 +265,55 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         }
 
         progression.RequestChoice(index);
+    }
+
+    private IEnumerator PlayReveal()
+    {
+        GameAudioController.PlayLevelUp();
+        panelGroup.alpha = 0f;
+
+        for (int index = 0; index < CardCount; index++)
+        {
+            if (cardButtons[index] != null)
+            {
+                cardButtons[index].transform.localScale = Vector3.one * 0.9f;
+            }
+        }
+
+        float elapsed = 0f;
+        const float duration = 0.34f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            panelGroup.alpha = Mathf.SmoothStep(0f, 1f, progress * 1.8f);
+
+            for (int index = 0; index < CardCount; index++)
+            {
+                if (cardButtons[index] == null)
+                {
+                    continue;
+                }
+
+                float cardProgress = Mathf.Clamp01(progress * 1.55f - index * 0.18f);
+                float eased = 1f - Mathf.Pow(1f - cardProgress, 3f);
+                cardButtons[index].transform.localScale = Vector3.one *
+                    Mathf.Lerp(0.9f, 1f, eased);
+            }
+
+            yield return null;
+        }
+
+        panelGroup.alpha = 1f;
+        for (int index = 0; index < CardCount; index++)
+        {
+            if (cardButtons[index] != null)
+            {
+                cardButtons[index].transform.localScale = Vector3.one;
+            }
+        }
+
+        revealRoutine = null;
     }
 
     private string FormatCard(LevelUpCandidateState candidate)
