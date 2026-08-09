@@ -103,6 +103,19 @@ public class AutoSkillCaster : MonoBehaviour
             };
     }
 
+    public void ResetSkillCooldowns()
+    {
+        foreach (EquippedSkill skill in equippedSkills)
+        {
+            skill.nextCastTime = 0f;
+        }
+
+        if (ultimateSkill != null)
+        {
+            ultimateSkill.nextCastTime = 0f;
+        }
+    }
+
     public void ConfigureProgressionSkills(
         IReadOnlyList<RuntimeSkillLoadout> skills
     )

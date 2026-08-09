@@ -9,6 +9,18 @@ public class MagnetPickup : MonoBehaviour
             return;
         }
 
+        AttractAllExperienceOrbs(other.transform);
+
+        Destroy(gameObject);
+    }
+
+    public static void AttractAllExperienceOrbs(Transform target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
         ExperienceOrb[] experienceOrbs =
             FindObjectsByType<ExperienceOrb>(
                 FindObjectsSortMode.None
@@ -16,9 +28,7 @@ public class MagnetPickup : MonoBehaviour
 
         foreach (ExperienceOrb orb in experienceOrbs)
         {
-            orb.AttractTo(other.transform);
+            orb.AttractTo(target);
         }
-
-        Destroy(gameObject);
     }
 }

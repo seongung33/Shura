@@ -22,6 +22,11 @@ MonoBehaviour:
   spawnRadiusMax: 13
   bossPrefab: {fileID: 8930158983480263104, guid: 705e6211b456de8448ed5a3231c8c565, type: 3}
   bossHealth: 2100
+  fieldSupplyPrefab: {fileID: 620000000000000005, guid: 9e03b20e098544eeac9df3ac2fa2fecc, type: 3}
+  fieldSupplyCellSize: 24
+  fieldSupplySpawnChance: 0.25
+  fieldSupplyMinimumPlayerDistance: 4
+  maxExistingFieldSupplies: 6
   waveSegments:
   - startTime: 0
     endTime: 180

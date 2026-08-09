@@ -318,6 +318,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkStageBootstrap
   stageConfig: {fileID: 11400000, guid: 2410ca01a0044328a65a4cc84729460b, type: 2}
   levelCurve: {fileID: 11400000, guid: 7a7da2e6892f471783384f114295e845, type: 2}
+  levelUpSettings:
+    choiceDuration: 15
+    skillChoiceLevels: 0300000006000000090000000c0000000f0000001200000015000000180000001b0000001e000000
+    allowedLevelUpElements: 02000000030000000400000005000000
+    minimumAttackInterval: 0.15
+    minimumSkillCooldown: 0.25
+    projectileSpreadAngle: 10
+    ricochetRange: 5
+    generalUpgrades:
+    - type: 0
+      displayName: "\uD53C\uD574 \uC99D\uAC00"
+      description: "\uBAA8\uB4E0 \uD53C\uD574 +15%"
+      amount: 0.15
+    - type: 1
+      displayName: "\uACF5\uACA9 \uC18D\uB3C4 \uC99D\uAC00"
+      description: "\uAE30\uBCF8 \uACF5\uACA9 \uC8FC\uAE30 -10%"
+      amount: 0.1
+    - type: 2
+      displayName: "\uC2A4\uD0AC \uCFE8\uB2E4\uC6B4 \uAC10\uC18C"
+      description: "\uC2A4\uD0AC \uCFE8\uB2E4\uC6B4 -10%"
+      amount: 0.1
+    - type: 3
+      displayName: "\uC774\uB3D9\uC18D\uB3C4 \uC99D\uAC00"
+      description: "\uC774\uB3D9\uC18D\uB3C4 +10%"
+      amount: 0.1
+    - type: 4
+      displayName: "\uD22C\uC0AC\uCCB4 \uC18D\uB3C4 \uC99D\uAC00"
+      description: "\uD22C\uC0AC\uCCB4 \uC18D\uB3C4 +15%"
+      amount: 0.15
+    - type: 5
+      displayName: "\uD22C\uC0AC\uCCB4 \uC99D\uAC00"
+      description: Projectile +1
+      amount: 1
+    - type: 6
+      displayName: "\uD305\uAE30\uAE30"
+      description: "\uAE30\uBCF8 \uD654\uC0B4 Bounce +1"
+      amount: 1
   playerPrefab: {fileID: 3389326965975105325, guid: abd7c3a66d586af489cd3712a359fe2e, type: 3}
   offlinePlayerPrefab: {fileID: 7450941720886569887, guid: e36121d3fdb73274b851a99492026c03, type: 3}
   enemyPrefab: {fileID: 8930158983480263104, guid: b367037038f16024d9fa15e9cc06eb9e, type: 3}
