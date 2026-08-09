@@ -247,6 +247,10 @@ public class NetworkStageBootstrap : MonoBehaviour
             );
         }
 
+        FieldSupplySpawner fieldSupplySpawner =
+            runtimeObject.AddComponent<FieldSupplySpawner>();
+        fieldSupplySpawner.Configure(stageConfig);
+
         GameObject configuredBoss = stageConfig != null && stageConfig.BossPrefab != null
             ? stageConfig.BossPrefab
             : bossPrefab;
