@@ -119,7 +119,7 @@
 | 아이템 | `Item/HealthPickup.cs` | 플레이어 체력을 회복하고 실제 회복 성공 시에만 픽업 제거 |
 | 아이템 | `Item/MagnerPickup.cs` | 씬의 경험치 구체를 플레이어에게 유도. 파일명의 `Magner` 오탈자는 정리 필요 |
 | 카메라 | `Camera/CameraFollow.cs` | `LateUpdate`에서 지정 대상을 보간 추적 |
-| 메뉴 | `UI/StartMenuController.cs` | `MainMenu`에서 `MultiPlayerEntry`로, 입장 화면에서 `MainMenu`로 일반 씬 전환. 싱글플레이 연결은 없음 |
+| 메뉴 | `UI/StartMenuController.cs` | `MainMenu`에서 싱글은 `CharacterSelect`, 멀티는 `MultiPlayerEntry`로 진입 |
 | 캐릭터 데이터·UI | `Data/CharacterData.cs`, `UI/CharacterListUI.cs`, `UI/CharacterSlotUI.cs`, `UI/CharacterInfoUI.cs`, `UI/MyPlayerSlotUI.cs` | 캐릭터 이름·역할·설명·초상화 데이터와 슬롯 생성·선택 표시. 현재 데이터는 주몽 1개 |
 | 레거시 네트워크 로비 | `Network/Lobby/NetworkTestUI.cs` | `Tests/NetworkTest` 전용 UGS·Relay 생성·참가·퇴장·재접속. 정식 메뉴 경로와 별도 유지 |
 | 멀티 입장 | `Network/Player/MultiplayerEntryUI.cs` | `MultiPlayerEntry`의 UGS 초기화, Relay 2인 세션 생성·코드 참가·퇴장과 실패 정리 |
@@ -276,7 +276,7 @@ PlayerHealth.IsDead == true
 | `MultiPlayerEntry.unity` | UGS·Relay 생성/참가, `NetworkManager` 생성 | 비활성 레거시 `NetworkTestUI` 오브젝트가 남아 있음 |
 | `MultiPlayerLobby.unity` | 참가 코드·2슬롯·주몽 선택·호스트 시작·나가기 | 선택은 전투에 미적용, 시작 최소 인원 직렬화값 1 |
 | `Main.unity` | 실제 네트워크 한 판 | 정적 Player를 추가하지 않음 |
-| `CharacterSelect.unity` | 독립 캐릭터 선택 UI 초안 | Build Scene List 제외, 시작·뒤로 버튼 미연결, 싱글 흐름 없음 |
+| `CharacterSelect.unity` | 싱글 캐릭터 선택 | 선택 결과를 보존하고 시작 시 `Main`, 뒤로 시 `MainMenu`로 이동 |
 | `Tests/NetworkTest.unity` | 레거시 Relay 로비와 2인 회귀 | 정식 메뉴 흐름의 완료 판정에 사용하지 않음 |
 | `Tests/StageTest.unity` | 네트워크 없는 스테이지·스킬·아이템 회귀 | 최종 게임 씬이나 Build 진입점이 아님 |
 | `Tests/PlayerTest.unity` | 플레이어 단위 기능 | 통합 흐름 완료 판정에 사용하지 않음 |
@@ -396,13 +396,13 @@ MainMenu
 | `MultiPlayerEntry.unity` | 정식 Relay 방 생성·코드 참가와 `NetworkManager` 소유 |
 | `MultiPlayerLobby.unity` | 네트워크 캐릭터 선택·접속 인원·호스트 시작 |
 | `Main.unity` | 실제 네트워크 게임. 런타임 스테이지·HUD·결과 사용 |
-| `CharacterSelect.unity` | 싱글용으로 보이는 독립 선택 UI 초안. Build Scene List 제외 |
+| `CharacterSelect.unity` | 싱글 캐릭터 선택 화면. 선택한 캐릭터 구성을 오프라인 플레이어에 적용 |
 | `Tests/PlayerTest.unity` | 플레이어 기능 |
 | `Tests/CombatTest.unity` | 과거 전투 테스트. 현재 구성 복구 필요 |
 | `Tests/NetworkTest.unity` | 레거시 Relay 로비와 회귀 비교 |
 | `Tests/StageTest.unity` | 로컬 스폰·웨이브·보스·승패·스킬·픽업 통합 검증 |
 
-Build Scene List에는 `MainMenu`, `MultiPlayerEntry`, `MultiPlayerLobby`, `Main`, 레거시 `NetworkTest`가 활성화되어 있다. `SampleScene`은 비활성이고 `CharacterSelect`, `PlayerTest`, `CombatTest`, `StageTest`는 목록에 없다. 별도 `Boot`, `Result`, `ContentTest` 씬은 없다.
+Build Scene List에는 `MainMenu`, `CharacterSelect`, `MultiPlayerEntry`, `MultiPlayerLobby`, `Main`, 레거시 `NetworkTest`가 활성화되어 있다. `SampleScene`은 비활성이고 `PlayerTest`, `CombatTest`, `StageTest`는 목록에 없다. 별도 `Boot`, `Result`, `ContentTest` 씬은 없다.
 
 ## 10. 성능 원칙
 

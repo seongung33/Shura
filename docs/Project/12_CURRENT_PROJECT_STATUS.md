@@ -22,7 +22,7 @@
 |---|---|---|---|
 | 프로젝트 기반 | 구현·정적 확인 | Unity `6000.3.20f1`, URP `17.3.0`, Input System `1.19.0`, NGO `2.13.1`, Multiplayer Services `2.3.0` | 버전 유지 |
 | 메인 메뉴 | 부분 구현·실행 미검증 | `MainMenu`와 `StartMenuController`; 멀티 버튼은 `MultiPlayerEntry`로 연결 | 싱글·종료 버튼 연결, 실제 UI 회귀 |
-| 싱글플레이 | 미구현 | `CharacterSelect` UI 초안은 있으나 Build Scene List 제외, 시작·뒤로 버튼 이벤트 없음 | 메뉴→선택→로컬 게임→결과 전체 흐름 |
+| 싱글플레이 | Editor 실행 확인 | 메뉴→`CharacterSelect`→`Main`, 뒤로가기 및 선택 캐릭터의 오프라인 전투 구성 적용 | Windows 빌드 회귀와 결과 이후 메뉴 흐름 |
 | 정식 Relay 입장 | 코드상 구현·실행 검증 필요 | `MultiPlayerEntryUI`가 UGS 익명 로그인, 최대 2인 Relay 세션 생성·코드 참가·실패 정리. `NetworkSessionState`가 세션 보관 | 새 씬 경로에서 호스트·게스트 실제 접속, 실패·재시도·나가기 회귀 |
 | 멀티 대기방 | 2인 시작 검증·추가 회귀 필요 | `MultiPlayerLobby`에서 참가 코드, 최대 2슬롯, 접속 인원, 캐릭터 표시, 호스트 2인 시작·나가기. 최신 Editor·Windows 빌드 2인 참가와 양쪽 Main 진입 확인 | 호스트 이탈·새 방·정식 복귀 검증 |
 | 캐릭터 선택 | 전투 적용 구현·2인 검증 완료 | 슬롯 선택 ID를 `NetworkPlayerCharacter`가 플레이어와 함께 보존하고 주몽 외형·체력·이동속도·기본공격·시작 스킬에 적용. Unity 검증기 PASS 및 2인 로비 2/2·Main 동시 진입·주몽 HP/스킬/보스 전투 확인 | 추가 캐릭터 데이터와 장시간 재접속 회귀 |
@@ -72,7 +72,7 @@ Build Scene List 활성 씬은 다음 5개다.
 | 4 | `Main` | `Main Camera/CameraFollow`, `NetworkStageBootstrap` | 기존 전투 기본 검증, 새 입장 경로 미검증 |
 | 5 | `Tests/NetworkTest` | 레거시 `NetworkManager`, `NetworkTestUI`, 시작 UI | 과거 2인 검증 경로 |
 
-- `CharacterSelect`는 주몽 선택 UI 초안이지만 Build Scene List에 없고 싱글 시작·뒤로 버튼이 연결되지 않았다.
+- `CharacterSelect`는 Build Scene List에 포함되며 시작·뒤로 버튼과 선택 캐릭터의 `Main` 오프라인 적용 경로가 연결되어 있다.
 - `StageTest`, `PlayerTest`, `CombatTest`도 Build Scene List에 없다. `StageTest`는 로컬 기능 회귀용, `PlayerTest`는 플레이어 단위용이며 `CombatTest`는 현재 불완전하다.
 - `Main`에는 정적 플레이어·스테이지 오브젝트가 없고 `NetworkStageBootstrap`이 런타임에 구성한다.
 
@@ -130,7 +130,7 @@ Build Scene List 활성 씬은 다음 5개다.
 1. 정식·레거시 로비의 최소 시작 인원을 2명으로 통일했다. 혼자 시작 불가·2인 시작 가능 실행 회귀가 남았다.
 2. 캐릭터 선택의 Main 적용과 2인 주몽 구성은 검증됐다. 추가 캐릭터 도입 시 모든 클라이언트의 데이터 목록 순서와 프리팹 참조를 유지해야 한다.
 3. 결과 후 `NetworkTest` 복귀를 정식 `MultiPlayerEntry`/`MultiPlayerLobby` 흐름과 통합한다.
-4. 싱글·종료 버튼과 독립 `CharacterSelect`의 시작·뒤로 이벤트가 연결되지 않았다.
+4. 싱글 캐릭터 선택 흐름은 연결됐으며 실행 빌드 회귀와 결과 이후 메뉴 복귀를 추가 확인해야 한다.
 5. 장산범은 전용 수치·외형만 있고 전용 행동 패턴은 확인되지 않았다. `Main` 연결은 완료됐지만 승리 실행은 미검증이다.
 6. PR #54의 스테이지 밸런스 데이터를 실제 2인 장시간 실행으로 검증해야 한다.
 8. 클라이언트 적 피해 요청의 피해량·명중 위치 검증은 프로토타입 수준이다.

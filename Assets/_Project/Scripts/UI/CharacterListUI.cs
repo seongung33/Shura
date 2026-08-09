@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CharacterListUI : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class CharacterListUI : MonoBehaviour
 
     private bool lobbyStateSubscribed;
     private int pendingCharacterId = -1;
+
+    public CharacterData SelectedCharacter => GetCharacter(pendingCharacterId);
 
     private void Start()
     {
@@ -119,6 +122,26 @@ public class CharacterListUI : MonoBehaviour
                 characterId
             );
         }
+    }
+
+    public void StartSinglePlayerGame()
+    {
+        CharacterData selectedCharacter = SelectedCharacter;
+
+        if (selectedCharacter == null)
+        {
+            Debug.LogError("선택된 캐릭터가 없어 싱글 플레이를 시작할 수 없습니다.");
+            return;
+        }
+
+        SinglePlayerSelection.SetCharacter(selectedCharacter);
+        SceneManager.LoadScene("Main");
+    }
+
+    public void BackToMainMenu()
+    {
+        SinglePlayerSelection.Clear();
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void RefreshNetworkPlayers()
