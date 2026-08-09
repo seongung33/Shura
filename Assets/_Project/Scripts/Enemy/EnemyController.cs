@@ -13,6 +13,7 @@ public class EnemyController : MonoBehaviour
     private float stopDistance = 0.1f;
 
     private Rigidbody2D rigidBody;
+    private float frozenUntil;
 
     public ulong AssignedTargetClientId { get; private set; }
 
@@ -50,9 +51,27 @@ public class EnemyController : MonoBehaviour
         moveSpeed *= Mathf.Max(0.01f, moveSpeedMultiplier);
     }
 
+    public void FreezeFor(float duration)
+    {
+        if (duration <= 0f ||
+            float.IsNaN(duration) ||
+            float.IsInfinity(duration))
+        {
+            return;
+        }
+
+        frozenUntil = Mathf.Max(frozenUntil, Time.time + duration);
+
+        if (rigidBody != null)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
+        }
+    }
+
     private void FixedUpdate()
     {
-        if (GameplayPauseState.IsLevelUpActive)
+        if (GameplayPauseState.IsLevelUpActive ||
+            Time.time < frozenUntil)
         {
             rigidBody.linearVelocity = Vector2.zero;
             return;

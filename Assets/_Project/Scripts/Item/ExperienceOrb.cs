@@ -16,6 +16,9 @@ public class ExperienceOrb : NetworkBehaviour
     private readonly NetworkVariable<int> networkExperienceAmount =
         new NetworkVariable<int>(1);
 
+    private readonly NetworkVariable<NetworkObjectReference>
+        networkAttractionTarget = new();
+
     private Transform attractionTarget;
     private bool collectionRequested;
 
@@ -45,10 +48,22 @@ public class ExperienceOrb : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        networkAttractionTarget.OnValueChanged +=
+            OnAttractionTargetChanged;
+
         if (IsServer)
         {
             networkExperienceAmount.Value = experienceAmount;
         }
+
+        ApplyNetworkAttractionTarget(networkAttractionTarget.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        networkAttractionTarget.OnValueChanged -=
+            OnAttractionTargetChanged;
+        attractionTarget = null;
     }
 
     public void Initialize(int amount)
@@ -68,7 +83,48 @@ public class ExperienceOrb : NetworkBehaviour
             return;
         }
 
+        if (!IsSpawned)
+        {
+            attractionTarget = target;
+            return;
+        }
+
+        if (!IsServer)
+        {
+            attractionTarget = target;
+            return;
+        }
+
+        NetworkObject targetNetworkObject =
+            target.GetComponent<NetworkObject>();
+
+        if (targetNetworkObject == null ||
+            !targetNetworkObject.IsSpawned)
+        {
+            return;
+        }
+
+        networkAttractionTarget.Value = targetNetworkObject;
         attractionTarget = target;
+    }
+
+    private void OnAttractionTargetChanged(
+        NetworkObjectReference previousValue,
+        NetworkObjectReference newValue
+    )
+    {
+        ApplyNetworkAttractionTarget(newValue);
+    }
+
+    private void ApplyNetworkAttractionTarget(
+        NetworkObjectReference targetReference
+    )
+    {
+        attractionTarget = targetReference.TryGet(
+            out NetworkObject targetNetworkObject
+        )
+            ? targetNetworkObject.transform
+            : null;
     }
 
     public bool TryCollect(PlayerExperience collector)

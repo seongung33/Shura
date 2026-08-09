@@ -175,6 +175,23 @@ public sealed class StageConfig : ScriptableObject
     [SerializeField, Min(1f)]
     private float bossHealth = 2100f;
 
+    [Header("Field Supplies")]
+
+    [SerializeField]
+    private BreakableSupplyObject fieldSupplyPrefab;
+
+    [SerializeField, Min(1f)]
+    private float fieldSupplyCellSize = 24f;
+
+    [SerializeField, Range(0f, 1f)]
+    private float fieldSupplySpawnChance = 0.25f;
+
+    [SerializeField, Min(0f)]
+    private float fieldSupplyMinimumPlayerDistance = 4f;
+
+    [SerializeField, Min(1)]
+    private int maxExistingFieldSupplies = 6;
+
     [SerializeField]
     private WaveSegment[] waveSegments = Array.Empty<WaveSegment>();
 
@@ -191,6 +208,14 @@ public sealed class StageConfig : ScriptableObject
     public float SpawnRadiusMax => Mathf.Max(SpawnRadiusMin, spawnRadiusMax);
     public GameObject BossPrefab => bossPrefab;
     public float BossHealth => Mathf.Max(1f, bossHealth);
+    public BreakableSupplyObject FieldSupplyPrefab => fieldSupplyPrefab;
+    public float FieldSupplyCellSize => Mathf.Max(1f, fieldSupplyCellSize);
+    public float FieldSupplySpawnChance =>
+        Mathf.Clamp01(fieldSupplySpawnChance);
+    public float FieldSupplyMinimumPlayerDistance =>
+        Mathf.Max(0f, fieldSupplyMinimumPlayerDistance);
+    public int MaxExistingFieldSupplies =>
+        Mathf.Max(1, maxExistingFieldSupplies);
     public WaveSegment[] WaveSegments => waveSegments ?? Array.Empty<WaveSegment>();
 
     public WaveSegment GetSegment(float elapsedTime)
@@ -229,5 +254,15 @@ public sealed class StageConfig : ScriptableObject
     {
         cleanupStart = Mathf.Clamp(cleanupStart, 0f, duration);
         spawnRadiusMax = Mathf.Max(spawnRadiusMin, spawnRadiusMax);
+        fieldSupplyCellSize = Mathf.Max(1f, fieldSupplyCellSize);
+        fieldSupplySpawnChance = Mathf.Clamp01(fieldSupplySpawnChance);
+        fieldSupplyMinimumPlayerDistance = Mathf.Max(
+            0f,
+            fieldSupplyMinimumPlayerDistance
+        );
+        maxExistingFieldSupplies = Mathf.Max(
+            1,
+            maxExistingFieldSupplies
+        );
     }
 }
