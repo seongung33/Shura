@@ -11,6 +11,19 @@ public class EnemyController : MonoBehaviour
     [SerializeField]
     private float stopDistance = 0.1f;
 
+    [Header("Walk Animation")]
+    [SerializeField]
+    private Texture2D walkSpriteSheet;
+
+    [SerializeField, Min(1)]
+    private int walkFrameCount = 4;
+
+    [SerializeField, Min(1f)]
+    private float walkFramesPerSecond = 8f;
+
+    [SerializeField, Min(1f)]
+    private float walkPixelsPerUnit = 700f;
+
     private Rigidbody2D rigidBody;
     private SpriteRenderer spriteRenderer;
     private Vector3 restingScale;
@@ -18,6 +31,7 @@ public class EnemyController : MonoBehaviour
     private float movementPhase;
     private bool isMoving;
     private bool usesAuthoredAnimation;
+    private Sprite[] walkFrames;
 
     public ulong AssignedTargetClientId { get; private set; }
 
@@ -28,6 +42,7 @@ public class EnemyController : MonoBehaviour
         restingScale = transform.localScale;
         movementPhase = (Mathf.Abs(GetInstanceID()) % 997) * 0.017f;
         usesAuthoredAnimation = GetComponent<Animator>() != null;
+        CreateWalkFrames();
     }
 
     private void Start()
@@ -84,6 +99,8 @@ public class EnemyController : MonoBehaviour
         {
             return;
         }
+
+        UpdateWalkFrame();
 
         float settleSpeed = 10f * Time.deltaTime;
 
@@ -160,5 +177,83 @@ public class EnemyController : MonoBehaviour
     private void OnDisable()
     {
         transform.localScale = restingScale;
+    }
+
+    private void OnDestroy()
+    {
+        if (walkFrames == null)
+        {
+            return;
+        }
+
+        foreach (Sprite frame in walkFrames)
+        {
+            if (frame != null)
+            {
+                Destroy(frame);
+            }
+        }
+    }
+
+    private void CreateWalkFrames()
+    {
+        if (usesAuthoredAnimation ||
+            spriteRenderer == null ||
+            walkSpriteSheet == null ||
+            walkFrameCount < 1)
+        {
+            return;
+        }
+
+        int frameWidth = walkSpriteSheet.width / walkFrameCount;
+
+        if (frameWidth < 1)
+        {
+            return;
+        }
+
+        walkFrames = new Sprite[walkFrameCount];
+
+        for (int index = 0; index < walkFrameCount; index++)
+        {
+            Rect frameRect = new Rect(
+                index * frameWidth,
+                0,
+                frameWidth,
+                walkSpriteSheet.height
+            );
+
+            walkFrames[index] = Sprite.Create(
+                walkSpriteSheet,
+                frameRect,
+                new Vector2(0.5f, 0.5f),
+                walkPixelsPerUnit,
+                0,
+                SpriteMeshType.FullRect
+            );
+            walkFrames[index].name = $"{walkSpriteSheet.name}_{index}";
+        }
+
+        spriteRenderer.sprite = walkFrames[0];
+    }
+
+    private void UpdateWalkFrame()
+    {
+        if (walkFrames == null || walkFrames.Length == 0)
+        {
+            return;
+        }
+
+        if (!isMoving || GameplayPauseState.IsLevelUpActive)
+        {
+            spriteRenderer.sprite = walkFrames[0];
+            return;
+        }
+
+        int frameIndex = Mathf.FloorToInt(
+            Time.time * walkFramesPerSecond + movementPhase
+        ) % walkFrames.Length;
+
+        spriteRenderer.sprite = walkFrames[frameIndex];
     }
 }
