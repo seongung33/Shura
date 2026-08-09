@@ -125,7 +125,12 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.fontStyle = FontStyles.Bold;
         text.fontSize = defeated ? 42f : boss ? 34f : 28f;
-        text.color = defeated ? new Color(1f, 0.82f, 0.18f) : new Color(1f, 0.94f, 0.9f);
+        Color numberColor = defeated
+            ? new Color(1f, 0.82f, 0.18f)
+            : boss
+                ? new Color(1f, 0.48f, 0.32f)
+                : new Color(1f, 0.94f, 0.9f);
+        ApplyReadableColor(text, numberColor);
         text.outlineWidth = 0.2f;
         text.outlineColor = Color.black;
         StartCoroutine(AnimateNumber(rect, text));
@@ -194,9 +199,20 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         bossWarningText.alignment = TextAlignmentOptions.Center;
         bossWarningText.fontStyle = FontStyles.Bold;
         bossWarningText.fontSize = 52f;
-        bossWarningText.color = new Color(1f, 0.22f, 0.22f);
+        ApplyReadableColor(
+            bossWarningText,
+            new Color(1f, 0.22f, 0.22f)
+        );
         bossWarningText.outlineWidth = 0.2f;
         bossWarning.SetActive(false);
+    }
+
+    private static void ApplyReadableColor(TMP_Text text, Color color)
+    {
+        text.color = color;
+        text.faceColor = color;
+        text.enableVertexGradient = false;
+        text.colorGradient = new VertexGradient(color);
     }
 
     private static void Stretch(RectTransform rect)
