@@ -178,6 +178,7 @@ Console 로그:
 | 2026-08-09 | Codex | 진미리 | 팀 제공 도시 배경·MUGUNG 로고를 메인 메뉴에 충돌 적게 적용 | 팀원이 같은 씬을 수정 중인 상황을 고려해 씬 YAML 대신 기존 `StartMenuController`의 런타임 테마 구조를 확장 | Resources 배경·로고 로드, 전체 화면 배경·명암 오버레이·반투명 메뉴 패널·버튼 재배치, 로고 누락 시 텍스트 폴백 | `git diff --check` 통과. Unity에서 16:9·Free Aspect 화면과 버튼 클릭 회귀 확인 필요 | `Assets/_Project/Scripts/UI/StartMenuController.cs`, `Assets/Resources/UI/MainMenu` |
 | 2026-08-09 | Codex | 진미리 | 현재 전투 구조에 맞는 MVP 타격·위험·보스 연출 추가 | 장문의 상용 게임 연출 제안을 현재 구현·마감 일정과 비교해 일반 피격, 사망, 저체력, 보스 등장만 P0로 선택 | 공통 `CombatFeedbackPresenter`, 데미지 숫자·스프라이트 점멸·강도별 카메라 흔들림·저체력 가장자리·보스 경고를 기존 피해 권한 구조에 연결 | 정적 참조·`git diff --check` 후 Unity 싱글 및 2인에서 중복 피드백 여부 확인 필요 | `Assets/_Project/Scripts/UI/CombatFeedbackPresenter.cs`, `EnemyHealth.cs`, `CameraFollow.cs`, `GameManager.cs` |
 | 2026-08-09 | Codex·웹 검색 | 진미리 | 제출 빌드용 메뉴·전투 BGM과 최소 효과음 구조 추가 | 라이선스가 명확한 CC0 후보를 먼저 조사하고 세계관에 맞는 어두운 도시·사이버 전투 루프를 선택 | OpenGameArt OGG 2종 직접 연결, 씬별 음악 전환, 버튼·피격·보스용 교체 가능한 효과음 채널과 임시 합성음 | 출처·라이선스 페이지 확인, `git diff --check`; Unity 볼륨·루프·씬 전환 수동 확인 필요 | `GameAudioController.cs`, `Assets/Resources/Audio/Music` |
+| 2026-08-09 | Codex·OpenAI 이미지 생성 | 진미리 | 도시 배경을 가리던 로고의 검은 사각 배경 제거와 메인 메뉴 UX 개선 | 기존 로고의 글자·무궁화·적청 문양은 유지하고 단색 크로마키 배경만 생성해 로컬 후처리로 투명화 | 투명 로고 PNG, 첫 실행 로고 페이드 연출, 화면 비율별 메뉴·버튼 축소, 배경이 보이는 반투명 패널 | 투명 픽셀·로고 가장자리 확인, Unity Free Aspect·16:9에서 잘림·가독성 수동 회귀 필요 | `Assets/Resources/UI/MainMenu/mugung_logo_transparent.png`, `StartMenuController.cs` |
 
 ## 7. 확인된 검토·수정 사례
 
