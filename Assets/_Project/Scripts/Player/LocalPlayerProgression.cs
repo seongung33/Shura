@@ -83,6 +83,17 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
 
         if (character != null)
         {
+            if (character.BasicSkill != null)
+            {
+                skillPool.Add(character.BasicSkill);
+                skillStates.Add(new SkillProgressNetworkState
+                {
+                    SkillPoolIndex = 0,
+                    Level = 1,
+                    Element = ElementType.None
+                });
+            }
+
             foreach (SkillData skill in character.LevelUpSkills)
             {
                 if (skill != null && !skillPool.Contains(skill))
@@ -175,6 +186,8 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
             return false;
         }
 
+        growthState.TeamLevel = Mathf.Max(growthState.TeamLevel, teamLevel);
+
         GenerateCandidates(settings.IsSkillChoiceLevel(teamLevel));
 
         if (candidates.Count == 0)
@@ -220,13 +233,19 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
                 int currentLevel = GetCurrentSkillLevel(index);
 
                 if (skill != null && currentLevel < skill.MaxLevel &&
-                    (currentLevel > 0 || skillStates.Count < MaximumOwnedSkills))
+                    (currentLevel > 0 ||
+                        GetOwnedActiveSkillCount() < MaximumOwnedSkills))
                 {
                     eligible.Add(index);
                 }
             }
 
             Shuffle(eligible);
+            eligible.Sort((left, right) =>
+                GetCurrentSkillLevel(left).CompareTo(
+                    GetCurrentSkillLevel(right)
+                )
+            );
 
             foreach (int skillIndex in eligible)
             {
@@ -250,6 +269,10 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
                         : settings.GetRandomAllowedElement()
                 });
             }
+        }
+        else
+        {
+            AddOwnedSkillCandidates(2);
         }
 
         List<GeneralUpgradeType> generalPool = new();
@@ -355,7 +378,7 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
             return true;
         }
 
-        if (skillStates.Count >= MaximumOwnedSkills ||
+        if (GetOwnedActiveSkillCount() >= MaximumOwnedSkills ||
             candidate.TargetSkillLevel != 1 ||
             !settings.IsAllowedElement(candidate.Element))
         {
@@ -369,6 +392,64 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
             Element = candidate.Element
         });
         return true;
+    }
+
+    private void AddOwnedSkillCandidates(int maximumCount)
+    {
+        List<int> owned = new();
+
+        for (int index = 0; index < skillPool.Count; index++)
+        {
+            int level = GetCurrentSkillLevel(index);
+            SkillData skill = skillPool[index];
+
+            if (skill != null && level > 0 && level < skill.MaxLevel)
+            {
+                owned.Add(index);
+            }
+        }
+
+        Shuffle(owned);
+        owned.Sort((left, right) =>
+            GetCurrentSkillLevel(left).CompareTo(GetCurrentSkillLevel(right))
+        );
+
+        foreach (int skillIndex in owned)
+        {
+            if (candidates.Count >= maximumCount ||
+                candidates.Count >= MaximumCards)
+            {
+                break;
+            }
+
+            SkillProgressNetworkState state = skillStates[
+                FindSkillStateIndex(skillIndex)
+            ];
+            candidates.Add(new LevelUpCandidateState
+            {
+                Kind = LevelUpCandidateKind.Skill,
+                SkillPoolIndex = skillIndex,
+                TargetSkillLevel = state.Level + 1,
+                Element = state.Element
+            });
+        }
+    }
+
+    private int GetOwnedActiveSkillCount()
+    {
+        int count = 0;
+
+        foreach (SkillProgressNetworkState state in skillStates)
+        {
+            SkillData skill = GetSkillData(state.SkillPoolIndex);
+
+            if (skill != null && skill != character?.BasicSkill)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private bool IsGeneralUpgradeApplicable(GeneralUpgradeType type)
@@ -410,6 +491,11 @@ public sealed class LocalPlayerProgression : MonoBehaviour,
 
             if (skill != null)
             {
+                if (skill == character?.BasicSkill)
+                {
+                    continue;
+                }
+
                 loadout.Add(new RuntimeSkillLoadout(
                     skill,
                     state.Element,

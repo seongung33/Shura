@@ -16,8 +16,8 @@ MonoBehaviour:
   characterName: 척준경
   role: 근접 돌파형
   description: 대형 장검으로 적진을 돌파하고 광역 참격으로 적 무리를 쓸어버리는 영웅
-  portrait: {fileID: 0}
-  gameplayVisualPrefab: {fileID: 0}
+  portrait: {fileID: 21300000, guid: c4cd6c403efa4af391e9f9cc415d3a0d, type: 3}
+  gameplayVisualPrefab: {fileID: 8511967789212467204, guid: 0640113dcd9b42e8875a29bd2b32a4a6, type: 3}
   maxHealth: 115
   moveSpeed: 5.2
   basicSkill: {fileID: 11400000, guid: 41c900834e5f4d0bbbcfe5634f1bdda3, type: 2}

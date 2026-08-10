@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Relic_ThunderFragment
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   id: 1
-  displayName: 뇌공의 파편
-  description: 공격 적중 시 10% 확률로 주변 적 최대 3명에게 연쇄 번개 피해
-  triggerChance: 0.1
-  damageMultiplier: 0.4
+  displayName: "뇌공의 파편"
+  icon: {fileID: 0}
+  description: "투사체 직격 시 22% 확률로 3m 안의 다른 적 최대 3명에게 원래 피해의 35%가 연쇄됩니다. 연쇄 피해는 투사체 속성을 이어받습니다. (재사용 0.55초)"
+  triggerChance: 0.22
+  damageMultiplier: 0.35
   radius: 3
   maxTargets: 3
   duration: 0
   tickInterval: 0.5
+  internalCooldown: 0.55

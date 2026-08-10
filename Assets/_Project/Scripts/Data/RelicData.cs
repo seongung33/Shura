@@ -46,6 +46,9 @@ public sealed class RelicData : ScriptableObject
     [SerializeField, Min(0.05f)]
     private float tickInterval = 0.5f;
 
+    [SerializeField, Min(0f)]
+    private float internalCooldown;
+
     public RelicId Id => id;
     public string DisplayName => displayName;
     public string Description => description;
@@ -56,6 +59,7 @@ public sealed class RelicData : ScriptableObject
     public int MaxTargets => Mathf.Max(1, maxTargets);
     public float Duration => Mathf.Max(0f, duration);
     public float TickInterval => Mathf.Max(0.05f, tickInterval);
+    public float InternalCooldown => Mathf.Max(0f, internalCooldown);
 
     private Sprite ResolveFallbackIcon()
     {

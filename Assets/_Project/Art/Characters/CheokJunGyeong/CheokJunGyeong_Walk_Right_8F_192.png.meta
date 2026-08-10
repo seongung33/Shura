@@ -1,0 +1,240 @@
+fileFormatVersion: 2
+guid: 97aff720318246019069ccc1ac96972c
+TextureImporter:
+  internalIDToNameTable:
+  - first: {213: -1255758729587867565}
+    second: CheokJunGyeong_Walk_Right_8F_192_0
+  - first: {213: -3331805925132025523}
+    second: CheokJunGyeong_Walk_Right_8F_192_1
+  - first: {213: -7134680602284609704}
+    second: CheokJunGyeong_Walk_Right_8F_192_2
+  - first: {213: 1461175692384369684}
+    second: CheokJunGyeong_Walk_Right_8F_192_3
+  - first: {213: -2173020006056698115}
+    second: CheokJunGyeong_Walk_Right_8F_192_4
+  - first: {213: 1290533097890060266}
+    second: CheokJunGyeong_Walk_Right_8F_192_5
+  - first: {213: -7271568329746161132}
+    second: CheokJunGyeong_Walk_Right_8F_192_6
+  - first: {213: -3328942867047292373}
+    second: CheokJunGyeong_Walk_Right_8F_192_7
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    enableMipMap: 0
+    sRGBTexture: 1
+  isReadable: 0
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 7
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 96
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 0
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  textureType: 8
+  textureShape: 1
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 100
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 100
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 100
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_0
+      rect: {serializedVersion: 2, x: 0, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee92a616b751c0530800000000000000
+      internalID: -1255758729587867565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_1
+      rect: {serializedVersion: 2, x: 192, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1c30c29ebf6c14d0800000000000000
+      internalID: -3331805925132025523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_2
+      rect: {serializedVersion: 2, x: 384, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cfc85cb1af4af580800000000000000
+      internalID: -7134680602284609704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_3
+      rect: {serializedVersion: 2, x: 576, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1447238cf3017c140800000000000000
+      internalID: 1461175692384369684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_4
+      rect: {serializedVersion: 2, x: 768, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1d7e1d1512c5efd0800000000000000
+      internalID: -2173020006056698115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_5
+      rect: {serializedVersion: 2, x: 960, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11e8e503d69f17ea0800000000000000
+      internalID: 1290533097890060266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_6
+      rect: {serializedVersion: 2, x: 1152, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b163321697fe2140800000000000000
+      internalID: -7271568329746161132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CheokJunGyeong_Walk_Right_8F_192_7
+      rect: {serializedVersion: 2, x: 1344, y: 0, width: 192, height: 192}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1cd38199413622b0800000000000000
+      internalID: -3328942867047292373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      CheokJunGyeong_Walk_Right_8F_192_0: -1255758729587867565
+      CheokJunGyeong_Walk_Right_8F_192_1: -3331805925132025523
+      CheokJunGyeong_Walk_Right_8F_192_2: -7134680602284609704
+      CheokJunGyeong_Walk_Right_8F_192_3: 1461175692384369684
+      CheokJunGyeong_Walk_Right_8F_192_4: -2173020006056698115
+      CheokJunGyeong_Walk_Right_8F_192_5: 1290533097890060266
+      CheokJunGyeong_Walk_Right_8F_192_6: -7271568329746161132
+      CheokJunGyeong_Walk_Right_8F_192_7: -3328942867047292373
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

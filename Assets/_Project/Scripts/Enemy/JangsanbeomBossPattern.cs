@@ -76,6 +76,14 @@ public sealed class JangsanbeomBossPattern : NetworkBehaviour
         StartCoroutine(PatternLoop());
     }
 
+    public void RestartAfterReposition()
+    {
+        StopAllCoroutines();
+        patternStarted = false;
+        FreezeMovement(0.15f);
+        BeginPatterns();
+    }
+
     private IEnumerator PatternLoop()
     {
         yield return WaitForGameplaySeconds(openingDelay);

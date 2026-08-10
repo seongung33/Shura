@@ -72,7 +72,8 @@ public sealed class PajinDash : MonoBehaviour, ISkillBehaviour
                 context.Damage,
                 context.Element,
                 context.SourcePlayerId,
-                context.EnemyLayer
+                context.EnemyLayer,
+                RelicAttackType.Dash
             );
         }
 
@@ -235,7 +236,8 @@ public sealed class PajinDash : MonoBehaviour, ISkillBehaviour
                     castContext.Damage * shockwaveDamageMultiplier,
                     castContext.Element,
                     castContext.SourcePlayerId,
-                    castContext.EnemyLayer
+                    castContext.EnemyLayer,
+                    RelicAttackType.Area
                 );
             }
         }
