@@ -120,6 +120,17 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (IsNetworkSessionRunning())
+        {
+            NetworkGameResultState resultState =
+                FindFirstObjectByType<NetworkGameResultState>();
+
+            if (resultState != null && resultState.HasFinished)
+            {
+                return;
+            }
+        }
+
         if (waveManager == null ||
             !waveManager.RoundFinished)
         {
@@ -131,8 +142,6 @@ public class GameManager : MonoBehaviour
 
     private void SpawnBoss()
     {
-        bossSpawnAttempted = true;
-
         if (IsNetworkSessionRunning() &&
             !NetworkManager.Singleton.IsServer)
         {
@@ -147,21 +156,20 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (player == null)
-        {
-            FindReferences();
-        }
+        Transform spawnTarget = FindLivingPlayer();
 
-        if (player == null)
+        if (spawnTarget == null)
         {
             Debug.LogError(
-                "GameManager가 Player를 찾지 못했습니다."
+                "GameManager가 살아 있는 Player를 찾지 못했습니다."
             );
             return;
         }
 
+        bossSpawnAttempted = true;
+
         Vector3 spawnPosition =
-            player.position + bossSpawnOffset;
+            spawnTarget.position + bossSpawnOffset;
 
         spawnPosition.z = 0f;
 
@@ -202,6 +210,54 @@ public class GameManager : MonoBehaviour
         CombatFeedbackPresenter.ShowBossWarning("장산범");
 
         Debug.Log("보스 등장");
+    }
+
+    private Transform FindLivingPlayer()
+    {
+        if (IsNetworkSessionRunning())
+        {
+            foreach (NetworkClient client in
+                     NetworkManager.Singleton.ConnectedClientsList)
+            {
+                if (client.PlayerObject == null)
+                {
+                    continue;
+                }
+
+                NetworkPlayerHealth health =
+                    client.PlayerObject.GetComponent<NetworkPlayerHealth>();
+
+                if (health == null || !health.IsDead)
+                {
+                    player = client.PlayerObject.transform;
+                    playerHealth = player.GetComponent<PlayerHealth>();
+                    return player;
+                }
+            }
+
+            return null;
+        }
+
+        if (playerHealth != null && !playerHealth.IsDead)
+        {
+            player = playerHealth.transform;
+            return player;
+        }
+
+        PlayerHealth[] candidates =
+            FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+
+        foreach (PlayerHealth candidate in candidates)
+        {
+            if (candidate != null && !candidate.IsDead)
+            {
+                playerHealth = candidate;
+                player = candidate.transform;
+                return player;
+            }
+        }
+
+        return null;
     }
 
     private void CheckBossDeath()
