@@ -59,6 +59,7 @@ namespace Shura.Player
                 0f,
                 currentHealth - amount
             );
+            GameAudioController.PlayPlayerHurt(currentHealth <= 0f);
             Debug.Log($"Player 체력: {currentHealth}/ {maxHealth}");
 
             if (currentHealth <= 0f)
@@ -94,9 +95,18 @@ namespace Shura.Player
         public void ApplyNetworkState(float health, bool dead)
         {
             bool wasDead = isDead;
+            float previousHealth = currentHealth;
 
             currentHealth = Mathf.Clamp(health, 0f, maxHealth);
             isDead = dead;
+
+            bool isLocalPlayer = networkPlayerHealth == null ||
+                                 !networkPlayerHealth.IsSpawned ||
+                                 networkPlayerHealth.IsOwner;
+            if (isLocalPlayer && currentHealth < previousHealth)
+            {
+                GameAudioController.PlayPlayerHurt(isDead);
+            }
 
             if (!wasDead && isDead)
             {

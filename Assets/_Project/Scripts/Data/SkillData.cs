@@ -7,6 +7,8 @@ using UnityEngine;
 )]
 public class SkillData : ScriptableObject
 {
+    private static Sprite jumongFallbackIcon;
+    private static Sprite cheokFallbackIcon;
     [Header("Information")]
 
     [SerializeField]
@@ -65,7 +67,7 @@ public class SkillData : ScriptableObject
     public string SkillId => skillId;
     public string DisplayName => displayName;
     public string Description => description;
-    public Sprite Icon => icon;
+    public Sprite Icon => icon != null ? icon : ResolveFallbackIcon();
 
     public float Cooldown => cooldown;
     public float Damage => damage;
@@ -77,6 +79,27 @@ public class SkillData : ScriptableObject
     public bool IgnoreCooldownModifiers => ignoreCooldownModifiers;
 
     public int MaxLevel => Mathf.Max(1, maxLevel);
+
+    private Sprite ResolveFallbackIcon()
+    {
+        bool jumongSkill = skillId == "homing_shot" ||
+                           skillId == "arrow_rain" ||
+                           skillId == "pyeonjeon" ||
+                           skillId == "explosive_arrow" ||
+                           skillId == "basic_arrow" ||
+                           skillId == "jeoktoma";
+
+        if (jumongSkill)
+        {
+            jumongFallbackIcon ??=
+                Resources.Load<Sprite>("UI/HudIcons/jumong_bow");
+            return jumongFallbackIcon;
+        }
+
+        cheokFallbackIcon ??=
+            Resources.Load<Sprite>("UI/HudIcons/cheok_greatsword");
+        return cheokFallbackIcon;
+    }
 
     public SkillRuntimeModifiers GetRuntimeModifiers(int level)
     {

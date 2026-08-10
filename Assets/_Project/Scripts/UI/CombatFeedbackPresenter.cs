@@ -60,6 +60,10 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         Shura.Camera.CameraFollow cameraFollow = FindFirstObjectByType<Shura.Camera.CameraFollow>();
         cameraFollow?.Shake(defeated || target.IsBoss ? 0.12f : 0.05f, defeated ? 0.18f : 0.08f);
         GameAudioController.PlayHit(defeated || target.IsBoss);
+        if (defeated && !target.IsBoss)
+        {
+            GameAudioController.PlayEnemyDefeated();
+        }
     }
 
     public static void ShowBossWarning(string bossName)

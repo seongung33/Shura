@@ -26,7 +26,13 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip upgradeConfirmSound;
     private AudioClip experiencePickupSound;
     private AudioClip itemPickupSound;
+    private AudioClip navigationSound;
+    private AudioClip playerHurtSound;
+    private AudioClip enemyDefeatedSound;
+    private AudioClip victorySound;
+    private AudioClip defeatSound;
     private float nextExperienceSoundTime;
+    private float nextEnemyDefeatedSoundTime;
     private Coroutine musicFadeRoutine;
     private bool initialized;
 
@@ -129,6 +135,50 @@ public sealed class GameAudioController : MonoBehaviour
         instance.effectsSource.PlayOneShot(instance.bossSound, 0.55f);
     }
 
+    public static void PlayCardNavigation()
+    {
+        EnsureExists();
+        instance.effectsSource.PlayOneShot(instance.navigationSound, 0.34f);
+    }
+
+    public static void PlayPlayerHurt(bool defeated = false)
+    {
+        EnsureExists();
+        instance.effectsSource.pitch = defeated ? 0.72f : Random.Range(0.94f, 1.03f);
+        instance.effectsSource.PlayOneShot(instance.playerHurtSound, defeated ? 0.72f : 0.46f);
+        instance.effectsSource.pitch = 1f;
+    }
+
+    public static void PlayEnemyDefeated()
+    {
+        EnsureExists();
+        if (Time.unscaledTime < instance.nextEnemyDefeatedSoundTime)
+        {
+            return;
+        }
+
+        instance.nextEnemyDefeatedSoundTime = Time.unscaledTime + 0.045f;
+        instance.effectsSource.pitch = Random.Range(0.92f, 1.08f);
+        instance.effectsSource.PlayOneShot(instance.enemyDefeatedSound, 0.38f);
+        instance.effectsSource.pitch = 1f;
+    }
+
+    public static void PlayGameResult(bool victory)
+    {
+        EnsureExists();
+        AudioClip clip = victory ? instance.victorySound : instance.defeatSound;
+        instance.effectsSource.PlayOneShot(clip, victory ? 0.78f : 0.7f);
+
+        if (instance.musicFadeRoutine != null)
+        {
+            instance.StopCoroutine(instance.musicFadeRoutine);
+        }
+
+        instance.musicFadeRoutine = instance.StartCoroutine(
+            instance.FadeMusic(MusicVolume * 0.38f, 0.35f)
+        );
+    }
+
     public static void SetMusicVolume(float value)
     {
         EnsureExists();
@@ -197,6 +247,11 @@ public sealed class GameAudioController : MonoBehaviour
         upgradeConfirmSound = CreateUpgradeConfirmCue();
         experiencePickupSound = CreateExperiencePickupCue();
         itemPickupSound = CreateItemPickupCue();
+        navigationSound = CreateNavigationCue();
+        playerHurtSound = CreatePlayerHurtCue();
+        enemyDefeatedSound = CreateEnemyDefeatedCue();
+        victorySound = CreateResultCue("Victory", true);
+        defeatSound = CreateResultCue("Defeat", false);
 
         if (Application.isPlaying)
         {
@@ -423,6 +478,73 @@ public sealed class GameAudioController : MonoBehaviour
                 float sparkle = Mathf.Sin(2f * Mathf.PI * 1320f * time) *
                     Mathf.Pow(1f - progress, 3f);
                 return (low * 0.16f + high * 0.2f + sparkle * 0.1f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateNavigationCue()
+    {
+        return CreateLayeredClip(
+            "CardNavigation",
+            0.075f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 3f);
+                float tone = Mathf.Sin(2f * Mathf.PI * 560f * time);
+                float shimmer = Mathf.Sin(2f * Mathf.PI * 1120f * time);
+                return (tone * 0.16f + shimmer * 0.07f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreatePlayerHurtCue()
+    {
+        return CreateLayeredClip(
+            "PlayerHurt",
+            0.24f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 2.4f);
+                float frequency = Mathf.Lerp(145f, 62f, progress);
+                float body = Mathf.Sin(2f * Mathf.PI * frequency * time);
+                float scrape = Random.Range(-1f, 1f) * Mathf.Pow(1f - progress, 6f);
+                return (body * 0.32f + scrape * 0.16f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateEnemyDefeatedCue()
+    {
+        return CreateLayeredClip(
+            "EnemyDefeated",
+            0.16f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 2f);
+                float fall = Mathf.Lerp(220f, 72f, progress);
+                float tone = Mathf.Sin(2f * Mathf.PI * fall * time);
+                float dust = Random.Range(-0.5f, 0.5f) * Mathf.Pow(1f - progress, 5f);
+                return (tone * 0.22f + dust * 0.12f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateResultCue(string name, bool victory)
+    {
+        return CreateLayeredClip(
+            name,
+            victory ? 1.25f : 1.05f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Sin(Mathf.PI * Mathf.Clamp01(progress * 1.1f));
+                float[] victoryNotes = { 196f, 246.94f, 293.66f, 392f };
+                float[] defeatNotes = { 196f, 164.81f, 146.83f, 98f };
+                float[] notes = victory ? victoryNotes : defeatNotes;
+                int step = Mathf.Min(notes.Length - 1, Mathf.FloorToInt(progress * notes.Length));
+                float core = Mathf.Sin(2f * Mathf.PI * notes[step] * time);
+                float overtone = Mathf.Sin(2f * Mathf.PI * notes[step] * 2f * time);
+                float pulse = victory ? 1f : 0.78f + Mathf.Sin(2f * Mathf.PI * 4f * time) * 0.22f;
+                return (core * 0.3f + overtone * 0.1f) * envelope * pulse;
             }
         );
     }
