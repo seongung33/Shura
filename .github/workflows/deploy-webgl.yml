@@ -65,8 +65,3 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-"""
-
-out = Path("/mnt/data/deploy-webgl.yml")
-out.write_text(content, encoding="utf-8")
-print(f"Created: {out}")
