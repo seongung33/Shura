@@ -30,10 +30,23 @@ public class GameManager : MonoBehaviour
     private Vector3 bossSpawnOffset =
         new Vector3(6f, 0f, 0f);
 
+    [SerializeField, Min(1f)]
+    private float bossReturnDistance = 30f;
+
+    [SerializeField, Min(0f)]
+    private float bossReturnRadiusMin = 8f;
+
+    [SerializeField, Min(0f)]
+    private float bossReturnRadiusMax = 13f;
+
+    [SerializeField, Min(0.1f)]
+    private float bossDistanceCheckInterval = 0.75f;
+
     private GameObject spawnedBoss;
 
     private bool bossSpawnAttempted;
     private bool bossSpawned;
+    private float bossDistanceCheckTimer;
     [SerializeField, Min(1f)]
     private float bossHealth = 500f;
 
@@ -71,6 +84,7 @@ public class GameManager : MonoBehaviour
         CheckPlayerDeath();
         CheckBossStart();
         CheckBossDeath();
+        CheckBossDistance();
     }
 
     public void StartGame()
@@ -279,6 +293,105 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void CheckBossDistance()
+    {
+        if (!bossSpawned || spawnedBoss == null ||
+            (IsNetworkSessionRunning() && !NetworkManager.Singleton.IsServer))
+        {
+            return;
+        }
+
+        bossDistanceCheckTimer -= Time.deltaTime;
+
+        if (bossDistanceCheckTimer > 0f)
+        {
+            return;
+        }
+
+        bossDistanceCheckTimer = bossDistanceCheckInterval;
+        Transform nearestPlayer = FindNearestLivingPlayer(
+            spawnedBoss.transform.position
+        );
+
+        if (nearestPlayer == null ||
+            (nearestPlayer.position - spawnedBoss.transform.position)
+                .sqrMagnitude <= bossReturnDistance * bossReturnDistance)
+        {
+            return;
+        }
+
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        float distance = Random.Range(
+            bossReturnRadiusMin,
+            bossReturnRadiusMax
+        );
+        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) *
+            distance;
+        Vector3 position = nearestPlayer.position + (Vector3)offset;
+        position.z = 0f;
+
+        Rigidbody2D rigidBody = spawnedBoss.GetComponent<Rigidbody2D>();
+
+        if (rigidBody != null)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
+            rigidBody.position = position;
+        }
+
+        spawnedBoss.transform.position = position;
+        spawnedBoss.GetComponent<EnemyController>()?.Retarget(
+            nearestPlayer,
+            GetClientId(nearestPlayer)
+        );
+        spawnedBoss.GetComponent<JangsanbeomBossPattern>()?
+            .RestartAfterReposition();
+    }
+
+    private Transform FindNearestLivingPlayer(Vector3 origin)
+    {
+        Transform nearest = null;
+        float nearestDistance = float.MaxValue;
+        GameObject[] candidates = GameObject.FindGameObjectsWithTag("Player");
+
+        foreach (GameObject candidate in candidates)
+        {
+            if (candidate == null || !IsLivingPlayer(candidate.transform))
+            {
+                continue;
+            }
+
+            float distance = (candidate.transform.position - origin).sqrMagnitude;
+
+            if (distance < nearestDistance)
+            {
+                nearest = candidate.transform;
+                nearestDistance = distance;
+            }
+        }
+
+        return nearest;
+    }
+
+    private static bool IsLivingPlayer(Transform candidate)
+    {
+        NetworkPlayerHealth networkHealth =
+            candidate.GetComponent<NetworkPlayerHealth>();
+
+        if (networkHealth != null && networkHealth.IsDead)
+        {
+            return false;
+        }
+
+        PlayerHealth localHealth = candidate.GetComponent<PlayerHealth>();
+        return localHealth == null || !localHealth.IsDead;
+    }
+
+    private static ulong GetClientId(Transform target)
+    {
+        NetworkObject networkObject = target.GetComponent<NetworkObject>();
+        return networkObject != null ? networkObject.OwnerClientId : 0;
+    }
+
     private void FinishGame(bool victory)
     {
         if (CurrentState == GameState.Result)
@@ -358,5 +471,19 @@ public class GameManager : MonoBehaviour
                 "GameManager가 PlayerHealth를 찾지 못했습니다."
             );
         }
+    }
+
+    private void OnValidate()
+    {
+        bossReturnDistance = Mathf.Max(1f, bossReturnDistance);
+        bossReturnRadiusMin = Mathf.Max(0f, bossReturnRadiusMin);
+        bossReturnRadiusMax = Mathf.Max(
+            bossReturnRadiusMin,
+            bossReturnRadiusMax
+        );
+        bossDistanceCheckInterval = Mathf.Max(
+            0.1f,
+            bossDistanceCheckInterval
+        );
     }
 }

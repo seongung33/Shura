@@ -107,7 +107,9 @@ public class Projectile : MonoBehaviour
             damage,
             RelicTriggerContext.PlayerDirect(
                 ulong.MaxValue,
-                hitRoot.position
+                hitRoot.position,
+                ElementType.None,
+                RelicAttackType.Projectile
             )
         );
 

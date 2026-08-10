@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Relic_DivineArrowhead
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   id: 4
-  displayName: 신궁의 깃촉
-  description: 직선 투사체 공격 발동 시 15% 확률로 추가 관통 1회
-  triggerChance: 0.15
+  displayName: "신궁의 깃촉"
+  icon: {fileID: 0}
+  description: "직선 투사체가 항상 적 1명을 추가로 관통합니다. 편전과 검풍의 기존 관통 횟수에도 더해집니다."
+  triggerChance: 1
   damageMultiplier: 0
   radius: 0
   maxTargets: 1
   duration: 0
   tickInterval: 0.5
+  internalCooldown: 0

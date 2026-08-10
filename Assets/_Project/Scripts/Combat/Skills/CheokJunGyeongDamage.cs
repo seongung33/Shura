@@ -9,14 +9,16 @@ public static class CheokJunGyeongDamage
         float damage,
         ElementType element,
         ulong sourcePlayerId,
-        LayerMask enemyLayer
+        LayerMask enemyLayer,
+        RelicAttackType attackType = RelicAttackType.Melee
     )
     {
         DamageColliders(
             Physics2D.OverlapCircleAll(center, radius, enemyLayer),
             damage,
             element,
-            sourcePlayerId
+            sourcePlayerId,
+            attackType
         );
     }
 
@@ -27,14 +29,16 @@ public static class CheokJunGyeongDamage
         float damage,
         ElementType element,
         ulong sourcePlayerId,
-        LayerMask enemyLayer
+        LayerMask enemyLayer,
+        RelicAttackType attackType = RelicAttackType.Melee
     )
     {
         DamageColliders(
             Physics2D.OverlapBoxAll(center, size, angle, enemyLayer),
             damage,
             element,
-            sourcePlayerId
+            sourcePlayerId,
+            attackType
         );
     }
 
@@ -46,7 +50,8 @@ public static class CheokJunGyeongDamage
         float damage,
         ElementType element,
         ulong sourcePlayerId,
-        LayerMask enemyLayer
+        LayerMask enemyLayer,
+        RelicAttackType attackType = RelicAttackType.Melee
     )
     {
         Collider2D[] candidates = Physics2D.OverlapCircleAll(
@@ -78,7 +83,8 @@ public static class CheokJunGyeongDamage
                 damagedIds,
                 damage,
                 element,
-                sourcePlayerId
+                sourcePlayerId,
+                attackType
             );
         }
     }
@@ -87,7 +93,8 @@ public static class CheokJunGyeongDamage
         Collider2D[] candidates,
         float damage,
         ElementType element,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        RelicAttackType attackType
     )
     {
         HashSet<int> damagedIds = new();
@@ -100,7 +107,8 @@ public static class CheokJunGyeongDamage
                 damagedIds,
                 damage,
                 element,
-                sourcePlayerId
+                sourcePlayerId,
+                attackType
             );
         }
     }
@@ -111,7 +119,8 @@ public static class CheokJunGyeongDamage
         HashSet<int> damagedIds,
         float damage,
         ElementType element,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        RelicAttackType attackType
     )
     {
         IDamageable damageable = candidate.GetComponentInParent<IDamageable>();
@@ -128,7 +137,12 @@ public static class CheokJunGyeongDamage
             damageable,
             candidate,
             Mathf.Max(0f, damage),
-            RelicTriggerContext.PlayerDirect(sourcePlayerId, root.position)
+            RelicTriggerContext.PlayerDirect(
+                sourcePlayerId,
+                root.position,
+                element,
+                attackType
+            )
         );
     }
 

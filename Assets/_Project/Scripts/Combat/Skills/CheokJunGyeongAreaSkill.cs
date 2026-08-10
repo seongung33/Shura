@@ -110,7 +110,8 @@ public sealed class CheokJunGyeongAreaSkill : MonoBehaviour, ISkillBehaviour
                 damage,
                 context.Element,
                 context.SourcePlayerId,
-                context.EnemyLayer
+                context.EnemyLayer,
+                RelicAttackType.Area
             );
         }
     }

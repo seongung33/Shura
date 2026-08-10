@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Relic_GeneralJade
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   id: 6
-  displayName: 장군의 패옥
-  description: 직접 공격 적중 시 8% 확률로 재귀 발동 없는 추가 타격
-  triggerChance: 0.08
-  damageMultiplier: 0.35
+  displayName: "장군의 옥패"
+  icon: {fileID: 0}
+  description: "근접 공격과 돌진 적중 시 24% 확률로 0.12초 뒤 같은 적을 원래 피해의 50%로 다시 벱니다. 잔상 공격은 원래 속성을 이어받습니다. (재사용 0.5초)"
+  triggerChance: 0.24
+  damageMultiplier: 0.5
   radius: 0
   maxTargets: 1
-  duration: 0
+  duration: 0.12
   tickInterval: 0.5
+  internalCooldown: 0.5

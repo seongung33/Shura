@@ -24,7 +24,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         Transform primaryTarget,
         Vector2 hitPosition,
         float directDamage,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        ElementType element
     )
     {
         if (relic == null)
@@ -40,7 +41,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                     primaryTarget,
                     hitPosition,
                     directDamage,
-                    sourcePlayerId
+                    sourcePlayerId,
+                    element
                 );
                 break;
             case RelicId.WindTalisman:
@@ -48,7 +50,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                     relic,
                     hitPosition,
                     directDamage,
-                    sourcePlayerId
+                    sourcePlayerId,
+                    element
                 ));
                 break;
             case RelicId.BrokenCannon:
@@ -57,24 +60,27 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                     hitPosition,
                     directDamage,
                     sourcePlayerId,
-                    0
+                    0,
+                    element
                 );
                 inventory.ShowEffect(
                     relic.Id,
                     hitPosition,
                     hitPosition,
                     relic.Radius,
-                    0.35f
+                    0.35f,
+                    element
                 );
                 break;
             case RelicId.GeneralJade:
-                ExecuteAdditionalHit(
+                StartCoroutine(ExecuteAdditionalHit(
                     relic,
                     primaryTarget,
                     hitPosition,
                     directDamage,
-                    sourcePlayerId
-                );
+                    sourcePlayerId,
+                    element
+                ));
                 break;
         }
     }
@@ -83,7 +89,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         RelicData relic,
         Vector2 killPosition,
         float directDamage,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        ElementType element
     )
     {
         if (relic != null && relic.Id == RelicId.GoblinFire)
@@ -92,7 +99,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                 relic,
                 killPosition,
                 directDamage,
-                sourcePlayerId
+                sourcePlayerId,
+                element
             ));
         }
     }
@@ -102,7 +110,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         Transform primaryTarget,
         Vector2 hitPosition,
         float directDamage,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        ElementType element
     )
     {
         int excludedId = primaryTarget != null
@@ -119,14 +128,16 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                 target,
                 directDamage * relic.DamageMultiplier,
                 sourcePlayerId,
-                targetPosition
+                targetPosition,
+                element
             );
             inventory.ShowEffect(
                 relic.Id,
                 hitPosition,
                 targetPosition,
                 0f,
-                0.25f
+                0.25f,
+                element
             );
         }
     }
@@ -135,7 +146,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         RelicData relic,
         Vector2 position,
         float directDamage,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        ElementType element
     )
     {
         inventory.ShowEffect(
@@ -143,7 +155,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
             position,
             position,
             relic.Radius,
-            relic.Duration
+            relic.Duration,
+            element
         );
 
         float elapsed = 0f;
@@ -163,7 +176,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                         position,
                         directDamage,
                         sourcePlayerId,
-                        0
+                        0,
+                        element
                     );
                 }
             }
@@ -172,14 +186,18 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         }
     }
 
-    private void ExecuteAdditionalHit(
+    private IEnumerator ExecuteAdditionalHit(
         RelicData relic,
         Transform primaryTarget,
         Vector2 hitPosition,
         float directDamage,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        ElementType element
     )
     {
+        float delay = Mathf.Max(0.12f, relic.Duration);
+        yield return WaitForGameplaySeconds(delay);
+
         IDamageable damageable = primaryTarget != null
             ? primaryTarget.GetComponentInParent<IDamageable>()
             : null;
@@ -187,21 +205,23 @@ public sealed class RelicEffectExecutor : MonoBehaviour
 
         if (target == null)
         {
-            return;
+            yield break;
         }
 
         RelicCombat.ApplyRelicDamage(
             target,
             directDamage * relic.DamageMultiplier,
             sourcePlayerId,
-            hitPosition
+            hitPosition,
+            element
         );
         inventory.ShowEffect(
             relic.Id,
             hitPosition,
             hitPosition,
             0.45f,
-            0.2f
+            0.2f,
+            element
         );
     }
 
@@ -209,7 +229,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         RelicData relic,
         Vector2 origin,
         float directDamage,
-        ulong sourcePlayerId
+        ulong sourcePlayerId,
+        ElementType element
     )
     {
         Transform target = EnemyTargetFinder.FindNearestEnemy(
@@ -229,7 +250,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
             origin,
             initialTargetPosition,
             0f,
-            relic.Duration
+            relic.Duration,
+            element
         );
 
         float elapsed = 0f;
@@ -258,7 +280,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                 targetComponent,
                 directDamage * relic.DamageMultiplier,
                 sourcePlayerId,
-                target.position
+                target.position,
+                element
             );
         }
     }
@@ -268,7 +291,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
         Vector2 position,
         float directDamage,
         ulong sourcePlayerId,
-        int excludedId
+        int excludedId,
+        ElementType element
     )
     {
         CollectTargets(position, relic.Radius, excludedId);
@@ -281,7 +305,8 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                 target,
                 directDamage * relic.DamageMultiplier,
                 sourcePlayerId,
-                target.transform.position
+                target.transform.position,
+                element
             );
         }
     }
@@ -329,6 +354,21 @@ public sealed class RelicEffectExecutor : MonoBehaviour
                 )
         );
     }
+
+    private static IEnumerator WaitForGameplaySeconds(float duration)
+    {
+        float remaining = duration;
+
+        while (remaining > 0f)
+        {
+            if (!GameplayPauseState.IsLevelUpActive)
+            {
+                remaining -= Time.deltaTime;
+            }
+
+            yield return null;
+        }
+    }
 }
 
 public static class RelicEffectVisuals
@@ -341,10 +381,13 @@ public static class RelicEffectVisuals
         Vector2 origin,
         Vector2 target,
         float radius,
-        float duration
+        float duration,
+        ElementType element
     )
     {
-        Color color = GetColor(id);
+        Color color = element == ElementType.None
+            ? GetColor(id)
+            : ElementUtil.GetColor(element);
         float lifetime = Mathf.Max(0.15f, duration);
 
         if (id == RelicId.ThunderFragment || id == RelicId.GoblinFire)
