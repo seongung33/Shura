@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a7c6e219f554ea5b2d80c81287f2c31, type: 3}
+  m_Name: Relic_GoblinFire
+  m_EditorClassIdentifier: Assembly-CSharp::RelicData
+  id: 5
+  displayName: 도깨비불
+  description: 적 처치 시 10% 확률로 가까운 적 하나를 공격하는 도깨비불 생성
+  triggerChance: 0.1
+  damageMultiplier: 0.6
+  radius: 8
+  maxTargets: 1
+  duration: 0.25
+  tickInterval: 0.5

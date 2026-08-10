@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af5032cf0ccc87e44a9917ae09cba3ea, type: 3}
+  m_Name: SD_Ilgidangcheon
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  skillId: ilgidangcheon
+  displayName: 일기당천
+  description: 6초간 철혈참과 이동을 강화하고 종료 시 크게 베어낸다
+  cooldown: 60
+  damage: 30
+  range: 8
+  projectileSpeed: 0
+  skillPrefab: {fileID: 110000000000000007, guid: 8336d2d062f142eb9fa83830b829a6be, type: 3}
+  ignoreCooldownModifiers: 1
+  maxLevel: 1
+  levelUpgrades: []

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af5032cf0ccc87e44a9917ae09cba3ea, type: 3}
+  m_Name: SD_Hyeollo
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  skillId: hyeollo
+  displayName: 혈로
+  description: 이동속도를 높이고 이동 중 주변을 계속 베어낸다
+  cooldown: 12
+  damage: 7
+  range: 4
+  projectileSpeed: 0
+  skillPrefab: {fileID: 110000000000000006, guid: e436a97fbdf54fb1af960d82df11b812, type: 3}
+  maxLevel: 5
+  levelUpgrades:
+  - level: 2
+    summary: 지속시간 +1초
+    effects: []
+  - level: 3
+    summary: 이동속도 +35%, 참격 범위 +15%
+    effects: []
+  - level: 4
+    summary: 참격 간격 0.4초
+    effects: []
+  - level: 5
+    summary: 종료 시 큰 360도 마무리 참격
+    effects: []

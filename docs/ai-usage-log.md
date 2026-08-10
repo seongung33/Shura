@@ -1,7 +1,5 @@
-# AI 사용 기록
+# AI 활용 기록 안내
 
-프로젝트에서 AI 도구를 사용한 내역과 사람의 검토·수정 내용을 기록합니다.
+AI 도구 사용 내역과 사람의 검토·수정·Unity 통합 기록은 [`Project/06_AI_USAGE_TECHNICAL_DOCUMENT.md`](Project/06_AI_USAGE_TECHNICAL_DOCUMENT.md)에서 통합 관리한다.
 
-| 날짜 | AI 도구 | 사용 목적 | 주요 프롬프트 | 생성 결과 | 사람이 수정한 내용 | 관련 커밋 |
-| --- | --- | --- | --- | --- | --- | --- |
-| TODO | TODO | TODO | TODO | TODO | TODO | TODO |
+기존 이 파일에 있던 2026-07-26 플레이어 이동 기록도 정본 문서에 보존했다.

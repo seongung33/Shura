@@ -1,0 +1,299 @@
+fileFormatVersion: 2
+guid: 7227cc84481ae3a4cb860c89b0220eca
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 825389714913176508
+    second: jangsanbeom_hit_fx_4x64_0
+  - first:
+      213: -952863353732475557
+    second: jangsanbeom_hit_fx_4x64_1
+  - first:
+      213: 7216725130330254554
+    second: jangsanbeom_hit_fx_4x64_2
+  - first:
+      213: -4638867755873321715
+    second: jangsanbeom_hit_fx_4x64_3
+  - first:
+      213: -3934736909899176488
+    second: jangsanbeom_hit_fx_4x64_4
+  - first:
+      213: 8032474517448713217
+    second: jangsanbeom_hit_fx_4x64_5
+  - first:
+      213: 6430681705189728359
+    second: jangsanbeom_hit_fx_4x64_6
+  - first:
+      213: 8627166852006959318
+    second: jangsanbeom_hit_fx_4x64_7
+  - first:
+      213: -7461489032778587591
+    second: jangsanbeom_hit_fx_4x64_8
+  - first:
+      213: 5240236490552564694
+    second: jangsanbeom_hit_fx_4x64_9
+  - first:
+      213: -3938599869671669060
+    second: jangsanbeom_hit_fx_4x64_10
+  - first:
+      213: -1701904053977057530
+    second: jangsanbeom_hit_fx_4x64_11
+  - first:
+      213: 2124612420898277868
+    second: jangsanbeom_hit_fx_4x64_12
+  - first:
+      213: -7013746505104521472
+    second: jangsanbeom_hit_fx_4x64_13
+  - first:
+      213: -4136247144902929956
+    second: jangsanbeom_hit_fx_4x64_14
+  - first:
+      213: 8063085941647833243
+    second: jangsanbeom_hit_fx_4x64_15
+  - first:
+      213: 8268082134389160968
+    second: jangsanbeom_hit_fx_4x64_16
+  - first:
+      213: -805556517299072186
+    second: jangsanbeom_hit_fx_4x64_17
+  - first:
+      213: -5422556149322872684
+    second: jangsanbeom_hit_fx_4x64_18
+  - first:
+      213: 2343500630400234748
+    second: jangsanbeom_hit_fx_4x64_19
+  - first:
+      213: 3061146270330597964
+    second: jangsanbeom_hit_fx_4x64_20
+  - first:
+      213: 4822750339646911423
+    second: jangsanbeom_hit_fx_4x64_21
+  - first:
+      213: -3643469521591061977
+    second: jangsanbeom_hit_fx_4x64_22
+  - first:
+      213: 5515451325288601963
+    second: jangsanbeom_hit_fx_4x64_23
+  - first:
+      213: 5890880391842708249
+    second: jangsanbeom_hit_fx_4x64_24
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: jangsanbeom_hit_fx_4x64_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbb29a6929f547b00800000000000000
+      internalID: 825389714913176508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: jangsanbeom_hit_fx_4x64_1
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b55d94904dfb6c2f0800000000000000
+      internalID: -952863353732475557
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: jangsanbeom_hit_fx_4x64_2
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: adc28fa2545f62460800000000000000
+      internalID: 7216725130330254554
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: jangsanbeom_hit_fx_4x64_3
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0d38239a5e6f9fb0800000000000000
+      internalID: -4638867755873321715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 1c7f7a98e4865a14f96acdf59b100041
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      jangsanbeom_hit_fx_4x64_0: 825389714913176508
+      jangsanbeom_hit_fx_4x64_1: -952863353732475557
+      jangsanbeom_hit_fx_4x64_2: 7216725130330254554
+      jangsanbeom_hit_fx_4x64_3: -4638867755873321715
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
