@@ -22,7 +22,6 @@ public class StartMenuController : MonoBehaviour
     [Header("Readability")]
     [SerializeField, Range(0f, 0.7f)] private float backgroundOverlayAlpha = 0.3f;
     [SerializeField, Range(0f, 0.6f)] private float centerShadeAlpha = 0.24f;
-    private TMP_Text subtitleText;
     private CanvasGroup menuCanvasGroup;
     private bool skipIntroRequested;
 
@@ -110,11 +109,14 @@ public class StartMenuController : MonoBehaviour
         }
 
         CreateLogo(menuRoot.transform, compactLayout);
-        float subtitleY = -5f;
-        subtitleText = CreateHeading(menuRoot.transform, "Subtitle", "무궁의 밤, 끝까지 살아남아라", new Vector2(0f, subtitleY), compactLayout ? 23f : 27f, PrimaryTextColor);
+        Transform oldSubtitle = menuRoot.transform.Find("Subtitle");
+        if (oldSubtitle != null)
+        {
+            oldSubtitle.gameObject.SetActive(false);
+        }
         CreateHowToButton(menuRoot.transform);
 
-        float firstButtonY = -58f;
+        float firstButtonY = -40f;
         float buttonGap = 52f;
 
         Button[] buttons = menuRoot.GetComponentsInChildren<Button>(true);
