@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -473,8 +472,6 @@ public class StartMenuController : MonoBehaviour
         skipButton.transition = Selectable.Transition.None;
         skipButton.onClick.AddListener(() => skipIntroRequested = true);
 
-        BuildLogoBloom(overlay.transform, out List<RectTransform> petals, out CanvasGroup halo);
-
         GameObject logoObject = new GameObject(
             "IntroLogo",
             typeof(RectTransform),
@@ -512,82 +509,8 @@ public class StartMenuController : MonoBehaviour
             overlayRect,
             logo,
             logoRect,
-            targetLogoRect,
-            petals,
-            halo
+            targetLogoRect
         ));
-    }
-
-    private static void BuildLogoBloom(
-        Transform parent,
-        out List<RectTransform> petals,
-        out CanvasGroup halo
-    )
-    {
-        GameObject bloomRoot = new GameObject("LogoBloom", typeof(RectTransform));
-        bloomRoot.transform.SetParent(parent, false);
-        RectTransform bloomRect = bloomRoot.GetComponent<RectTransform>();
-        bloomRect.anchorMin = new Vector2(0.5f, 0.5f);
-        bloomRect.anchorMax = new Vector2(0.5f, 0.5f);
-        bloomRect.pivot = new Vector2(0.5f, 0.5f);
-        bloomRect.anchoredPosition = new Vector2(0f, 92f);
-        bloomRect.sizeDelta = new Vector2(360f, 360f);
-
-        GameObject haloObject = new GameObject(
-            "BloomHalo",
-            typeof(RectTransform),
-            typeof(CanvasGroup),
-            typeof(LogoBloomHaloGraphic)
-        );
-        haloObject.transform.SetParent(bloomRoot.transform, false);
-        RectTransform haloRect = haloObject.GetComponent<RectTransform>();
-        haloRect.anchorMin = new Vector2(0.5f, 0.5f);
-        haloRect.anchorMax = new Vector2(0.5f, 0.5f);
-        haloRect.sizeDelta = new Vector2(330f, 330f);
-        LogoBloomHaloGraphic haloGraphic = haloObject.GetComponent<LogoBloomHaloGraphic>();
-        haloGraphic.color = new Color(0.25f, 0.84f, 1f, 0.42f);
-        haloGraphic.raycastTarget = false;
-        halo = haloObject.GetComponent<CanvasGroup>();
-        halo.alpha = 0f;
-        haloRect.localScale = Vector3.one * 0.45f;
-
-        petals = new List<RectTransform>(10);
-        Color red = new(0.9f, 0.12f, 0.24f, 0.94f);
-        Color blue = new(0.16f, 0.65f, 0.96f, 0.94f);
-        for (int index = 0; index < 10; index++)
-        {
-            GameObject petalObject = new GameObject(
-                $"Petal_{index:00}",
-                typeof(RectTransform),
-                typeof(LogoBloomPetalGraphic)
-            );
-            petalObject.transform.SetParent(bloomRoot.transform, false);
-            RectTransform petal = petalObject.GetComponent<RectTransform>();
-            petal.anchorMin = new Vector2(0.5f, 0.5f);
-            petal.anchorMax = new Vector2(0.5f, 0.5f);
-            petal.pivot = new Vector2(0.5f, 0.08f);
-            petal.sizeDelta = new Vector2(index % 2 == 0 ? 72f : 56f, index % 2 == 0 ? 142f : 112f);
-            petal.anchoredPosition = Vector2.zero;
-            petal.localEulerAngles = new Vector3(0f, 0f, index * 36f - 90f);
-            petal.localScale = new Vector3(0.08f, 0.02f, 1f);
-            LogoBloomPetalGraphic graphic = petalObject.GetComponent<LogoBloomPetalGraphic>();
-            graphic.color = index < 5 ? red : blue;
-            graphic.raycastTarget = false;
-            petals.Add(petal);
-        }
-
-        GameObject coreObject = new GameObject(
-            "BloomCore",
-            typeof(RectTransform),
-            typeof(Image)
-        );
-        coreObject.transform.SetParent(bloomRoot.transform, false);
-        RectTransform coreRect = coreObject.GetComponent<RectTransform>();
-        coreRect.anchorMin = new Vector2(0.5f, 0.5f);
-        coreRect.anchorMax = new Vector2(0.5f, 0.5f);
-        coreRect.sizeDelta = new Vector2(22f, 22f);
-        coreRect.localEulerAngles = new Vector3(0f, 0f, 45f);
-        coreObject.GetComponent<Image>().color = new Color(0.95f, 0.9f, 0.72f, 0.9f);
     }
 
     private IEnumerator PlayLaunchIntro(
@@ -596,45 +519,12 @@ public class StartMenuController : MonoBehaviour
         RectTransform overlayRect,
         Image logo,
         RectTransform logoRect,
-        RectTransform targetLogoRect,
-        List<RectTransform> petals,
-        CanvasGroup halo
+        RectTransform targetLogoRect
     )
     {
         yield return Fade(group, 0f, 1f, 0.45f);
 
         GameAudioController.PlayLogoReveal();
-        float bloomElapsed = 0f;
-        const float bloomDuration = 0.76f;
-        while (bloomElapsed < bloomDuration && !skipIntroRequested)
-        {
-            bloomElapsed += Time.unscaledDeltaTime;
-            float linearProgress = Mathf.Clamp01(bloomElapsed / bloomDuration);
-            halo.alpha = Mathf.SmoothStep(0f, 1f, linearProgress);
-            halo.transform.localScale = Vector3.one * Mathf.Lerp(0.45f, 1f, Mathf.SmoothStep(0f, 1f, linearProgress));
-
-            for (int index = 0; index < petals.Count; index++)
-            {
-                float delay = index * 0.035f;
-                float petalProgress = Mathf.Clamp01((bloomElapsed - delay) / 0.42f);
-                float eased = 1f - Mathf.Pow(1f - petalProgress, 3f);
-                float settle = Mathf.Sin(petalProgress * Mathf.PI) * 0.08f;
-                petals[index].localScale = new Vector3(
-                    Mathf.Lerp(0.08f, 1f + settle, eased),
-                    Mathf.Lerp(0.02f, 1f + settle, eased),
-                    1f
-                );
-            }
-            yield return null;
-        }
-
-        foreach (RectTransform petal in petals)
-        {
-            petal.localScale = Vector3.one;
-        }
-        halo.alpha = 1f;
-        halo.transform.localScale = Vector3.one;
-
         float logoElapsed = 0f;
         const float logoDuration = 0.42f;
         while (logoElapsed < logoDuration && !skipIntroRequested)
@@ -775,68 +665,5 @@ public class StartMenuController : MonoBehaviour
         rect.anchorMax = Vector2.one;
         rect.offsetMin = new Vector2(16f, 8f);
         rect.offsetMax = new Vector2(-16f, -8f);
-    }
-}
-
-/// <summary>Sprite-free petal used only during the main-menu logo reveal.</summary>
-public sealed class LogoBloomPetalGraphic : MaskableGraphic
-{
-    protected override void OnPopulateMesh(VertexHelper vertexHelper)
-    {
-        vertexHelper.Clear();
-        Rect rect = GetPixelAdjustedRect();
-        Vector2 bottom = new(rect.center.x, rect.yMin);
-        Vector2 left = new(rect.xMin, Mathf.Lerp(rect.yMin, rect.yMax, 0.46f));
-        Vector2 top = new(rect.center.x, rect.yMax);
-        Vector2 right = new(rect.xMax, Mathf.Lerp(rect.yMin, rect.yMax, 0.46f));
-        Vector2 center = new(rect.center.x, Mathf.Lerp(rect.yMin, rect.yMax, 0.48f));
-        Color edge = new(color.r * 0.58f, color.g * 0.58f, color.b * 0.7f, color.a);
-        Color highlight = Color.Lerp(color, Color.white, 0.28f);
-
-        AddVertex(vertexHelper, bottom, edge);
-        AddVertex(vertexHelper, left, color);
-        AddVertex(vertexHelper, top, highlight);
-        AddVertex(vertexHelper, right, color);
-        AddVertex(vertexHelper, center, color);
-        vertexHelper.AddTriangle(0, 1, 4);
-        vertexHelper.AddTriangle(1, 2, 4);
-        vertexHelper.AddTriangle(2, 3, 4);
-        vertexHelper.AddTriangle(3, 0, 4);
-    }
-
-    private static void AddVertex(VertexHelper helper, Vector2 position, Color tint)
-    {
-        helper.AddVert(position, tint, Vector2.zero);
-    }
-}
-
-/// <summary>Soft halo that expands behind the blooming flower.</summary>
-public sealed class LogoBloomHaloGraphic : MaskableGraphic
-{
-    private const int Segments = 48;
-
-    protected override void OnPopulateMesh(VertexHelper vertexHelper)
-    {
-        vertexHelper.Clear();
-        Rect rect = GetPixelAdjustedRect();
-        Vector2 center = rect.center;
-        float outerRadius = Mathf.Min(rect.width, rect.height) * 0.5f;
-        float innerRadius = outerRadius * 0.8f;
-        Color transparent = new(color.r, color.g, color.b, 0f);
-
-        for (int index = 0; index <= Segments; index++)
-        {
-            float angle = index / (float)Segments * Mathf.PI * 2f;
-            Vector2 direction = new(Mathf.Cos(angle), Mathf.Sin(angle));
-            vertexHelper.AddVert(center + direction * innerRadius, color, Vector2.zero);
-            vertexHelper.AddVert(center + direction * outerRadius, transparent, Vector2.zero);
-        }
-
-        for (int index = 0; index < Segments; index++)
-        {
-            int start = index * 2;
-            vertexHelper.AddTriangle(start, start + 1, start + 2);
-            vertexHelper.AddTriangle(start + 1, start + 3, start + 2);
-        }
     }
 }
