@@ -59,6 +59,16 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
         autoSkillCaster = GetComponent<AutoSkillCaster>();
     }
 
+    private void Update()
+    {
+        // 씬 전환이나 네트워크 변수 초기 동기화 순서 때문에 콜백을 놓쳐도
+        // 소유자의 활성 레벨업 UI는 다음 프레임에 반드시 복구한다.
+        if (IsOwner && choiceActive.Value && panelPresenter == null)
+        {
+            RefreshOwnerPanel();
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         choiceActive.OnValueChanged += HandleChoiceActiveChanged;
