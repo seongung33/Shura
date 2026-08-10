@@ -26,6 +26,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         public PlayerHealth Target;
         public CharacterData Character;
         public AutoSkillCaster SkillCaster;
+        public NetworkSkillCastRelay SkillRelay;
         public PlayerRelicInventory Relics;
         public LoadoutSlot BasicWeapon;
         public LoadoutSlot[] Skills;
@@ -175,7 +176,7 @@ public sealed class StageHudPresenter : MonoBehaviour
     {
         GameObject root = CreatePanel(playerList, $"PlayerStatus_{index + 1}", new Color(0.04f, 0.07f, 0.14f, 0.94f));
         RectTransform rect = root.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(820f, 104f);
+        rect.sizeDelta = new Vector2(760f, 104f);
 
         Image portrait = CreateImage(root.transform, "Portrait");
         RectTransform portraitRect = portrait.rectTransform;
@@ -202,7 +203,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         TMP_Text health = CreateText(root.transform, "HealthText", TextAlignmentOptions.Center, 21f);
         SetRect(health.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(100f, 16f), new Vector2(276f, 25f), Vector2.zero);
 
-        LoadoutSlot basicWeapon = CreateLoadoutSlot(root.transform, "BasicWeapon", 390f, 1);
+        LoadoutSlot basicWeapon = CreateLoadoutSlot(root.transform, "BasicWeapon", 360f, 1);
         LoadoutSlot[] skills = new LoadoutSlot[3];
         LoadoutSlot[] relics = new LoadoutSlot[3];
 
@@ -211,7 +212,7 @@ public sealed class StageHudPresenter : MonoBehaviour
             skills[slot] = CreateLoadoutSlot(
                 root.transform,
                 $"Skill_{slot + 1}",
-                444f + slot * 50f,
+                410f + slot * 46f,
                 5
             );
         }
@@ -221,7 +222,7 @@ public sealed class StageHudPresenter : MonoBehaviour
             relics[slot] = CreateLoadoutSlot(
                 root.transform,
                 $"Relic_{slot + 1}",
-                600f + slot * 50f,
+                548f + slot * 46f,
                 1
             );
         }
@@ -229,7 +230,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         LoadoutSlot ultimate = CreateLoadoutSlot(
             root.transform,
             "Ultimate",
-            756f,
+            700f,
             0
         );
 
@@ -243,6 +244,7 @@ public sealed class StageHudPresenter : MonoBehaviour
             Target = player.GetComponent<PlayerHealth>(),
             Character = character,
             SkillCaster = player.GetComponent<AutoSkillCaster>(),
+            SkillRelay = player.GetComponent<NetworkSkillCastRelay>(),
             Relics = player.GetComponent<PlayerRelicInventory>(),
             BasicWeapon = basicWeapon,
             Skills = skills,
@@ -303,7 +305,11 @@ public sealed class StageHudPresenter : MonoBehaviour
             SetSlot(view.RelicSlots[index], relic?.Icon, relic != null ? 1 : 0);
         }
 
-        UpdateUltimateSlot(view.Ultimate, view.SkillCaster);
+        UpdateUltimateSlot(
+            view.Ultimate,
+            view.SkillCaster,
+            view.SkillRelay
+        );
     }
 
     private static void SetSlot(LoadoutSlot slot, Sprite sprite, int level)
@@ -321,29 +327,37 @@ public sealed class StageHudPresenter : MonoBehaviour
 
     private static void UpdateUltimateSlot(
         LoadoutSlot slot,
-        AutoSkillCaster caster
+        AutoSkillCaster caster,
+        NetworkSkillCastRelay relay
     )
     {
         SkillData ultimate = caster?.UltimateSkill;
         slot.Icon.sprite = ultimate?.Icon;
         slot.Icon.enabled = slot.Icon.sprite != null;
 
-        float remaining = caster != null
-            ? caster.UltimateCooldownRemaining
-            : 0f;
-        float duration = caster != null
-            ? caster.UltimateCooldownDuration
-            : 0f;
+        bool useNetworkState = relay != null && relay.IsSpawned;
+        float remaining = useNetworkState
+            ? relay.UltimateCooldownRemaining
+            : caster != null ? caster.UltimateCooldownRemaining : 0f;
+        float duration = useNetworkState
+            ? relay.UltimateCooldownDuration
+            : caster != null ? caster.UltimateCooldownDuration : 0f;
         bool coolingDown = ultimate != null && remaining > 0f;
 
         slot.CooldownFill.gameObject.SetActive(coolingDown);
-        slot.Cooldown.gameObject.SetActive(coolingDown);
+        slot.Cooldown.gameObject.SetActive(ultimate != null);
         slot.CooldownFill.fillAmount = duration > 0f
             ? Mathf.Clamp01(remaining / duration)
             : 0f;
         slot.Cooldown.text = coolingDown
-            ? Mathf.CeilToInt(remaining).ToString()
-            : string.Empty;
+            ? $"{Mathf.CeilToInt(remaining)}초"
+            : "준비";
+        ApplyTextColor(
+            slot.Cooldown,
+            coolingDown
+                ? PrimaryTextColor
+                : new Color(0.35f, 1f, 0.62f, 1f)
+        );
     }
 
     private void UpdateExperience()
@@ -458,7 +472,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         GameObject playerPanel = new GameObject("PlayerStatusList", typeof(RectTransform), typeof(VerticalLayoutGroup));
         playerPanel.transform.SetParent(canvasObject.transform, false);
         playerList = playerPanel.GetComponent<RectTransform>();
-        SetRect(playerList, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -28f), new Vector2(820f, 226f), new Vector2(0f, 1f));
+        SetRect(playerList, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -28f), new Vector2(760f, 226f), new Vector2(0f, 1f));
         VerticalLayoutGroup layout = playerPanel.GetComponent<VerticalLayoutGroup>();
         layout.spacing = 12f;
         layout.childControlHeight = false;

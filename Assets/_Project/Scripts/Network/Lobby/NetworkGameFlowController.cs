@@ -225,8 +225,9 @@ public class NetworkGameFlowController : MonoBehaviour
 
         if (playerCountText != null)
         {
-            playerCountText.text =
-                $"접속 인원: {playerCount}/{maximumPlayers}";
+            playerCountText.text = playerCount >= maximumPlayers
+                ? $"파티 {playerCount}/{maximumPlayers} · 전원 접속"
+                : $"파티 {playerCount}/{maximumPlayers} · 동료 기다리는 중";
         }
 
         onPlayerCountChanged?.Invoke(playerCount);

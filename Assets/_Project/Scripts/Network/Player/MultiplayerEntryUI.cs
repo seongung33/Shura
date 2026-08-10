@@ -658,7 +658,8 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         foreach (TMP_Text candidate in texts)
         {
             if (candidate == null ||
-                !candidate.text.TrimStart().StartsWith("접속 인원"))
+                (!candidate.text.TrimStart().StartsWith("접속 인원") &&
+                 !candidate.text.TrimStart().StartsWith("파티")))
             {
                 continue;
             }
