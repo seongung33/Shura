@@ -1,6 +1,6 @@
 # Shura 외부 에셋 및 오픈소스 출처
 
-> 마지막 저장소 정리: **2026-08-09 KST**
+> 마지막 저장소 정리: **2026-08-10 KST**
 > 버전의 정본은 `Packages/manifest.json`, 실제 배포 전 최종 이용 조건은 각 공식 링크와 저장소 내 라이선스 파일을 다시 확인한다.
 
 ## 1. 기록 규칙
@@ -36,6 +36,9 @@
 | AI-A-006 | MUGUNG 로고 시안 | ChatGPT 이미지 생성 | 무궁화와 적·청 원형 문양을 결합한 `MUGUNG` 로고 | 2026-08-09 | 원본 비율 유지, 메인 메뉴 로고 레이어 적용 | `Assets/Resources/UI/MainMenu/mugung_logo.png`, 메인 메뉴 | 진미리 |
 | AI-A-007 | MUGUNG 투명 로고 | OpenAI 이미지 생성·로컬 후처리 | AI-A-006의 글자·무궁화·적청 문양을 보존한 크로마키 배경 편집 | 2026-08-09 | 초록 크로마키 제거, 투명 PNG 변환, UI Sprite 설정 | `Assets/Resources/UI/MainMenu/mugung_logo_transparent.png`, 시작 연출·메인 메뉴 | 진미리 |
 | AI-A-008 | MUGUNG 픽셀 로고 | 팀 제공 로고·Image-to-Pixel 변환·로컬 후처리 | 기존 MUGUNG 로고를 36색 픽셀 스타일로 변환한 결과 | 2026-08-09 | `#090A14` 단색 배경 제거, 이진 알파, Point 필터·무압축 Sprite 설정 | `Assets/Resources/UI/MainMenu/mugung_logo_pixel.png`, 시작 연출·메인 메뉴 | 진미리 |
+| AI-A-009 | 한글 `무궁` 픽셀 로고 | 팀 제공 AI 로고·Image-to-Pixel 변환 | 적청 무궁화 문양과 한글 `무궁` 금속 글자 | 2026-08-10 제공 | 픽셀 변환본 제공, 투명 배경 후처리본은 별도 변경 브랜치에서 관리 | 최신 `develop` 적용 여부 확인 필요 | 진미리 |
+| AI-A-010 | 장산 숲 픽셀 배경 | 팀 제공 AI 이미지·Image-to-Pixel 변환 | 한국 설화풍 장산 숲 전투 바닥 | 2026-08-10 | 픽셀 변환·색감 조정, Point 임포트 | `Assets/Resources/Backgrounds/jangsan_forest_floor.png`, 전투 배경 | 진미리 |
+| AI-A-011 | 일반 적·엘리트·장산범 최종 시안과 워크 시트 | OpenAI ImageGen·팀 Pixel 변환 | 한국 설화·사이버펑크 적 역할별 실루엣과 4프레임 이동 | 2026-08-10 | 4프레임 가로 시트·Point 임포트, 적 3종 런타임 연결. 엘리트/보스 원본은 일부 콘셉트 보존 | `docs/Project/ConceptArt/Jinmiri_FinalPolish/PixelConversions/`, `Assets/_Project/Art/Enemies/Generated/*_walk.png` | 진미리 |
 
 ### 음악
 
@@ -74,6 +77,7 @@ AI 코딩 도구 사용은 에셋 표가 아니라 `06_AI_USAGE_TECHNICAL_DOCUME
 - [ ] Steam 출시에서도 같은 조건이 적용되는지 재확인
 - [ ] 주몽 프로필·애니메이션 원본의 생성 도구·프롬프트·편집·담당자 기록 보완
 - [ ] 장산범 AI 생성·후처리 담당자 기록 보완
+- [ ] 한글 `무궁` 로고의 생성 도구·원문 프롬프트와 최종 런타임 적용 커밋 기록
 - [ ] 최종 빌드에 포함된 패키지와 실제 사용하지 않는 패키지 정리
 
 ## 6. 금지 대상
