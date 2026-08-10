@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-internal static class CheokJunGyeongDamage
+public static class CheokJunGyeongDamage
 {
     public static void Circle(
         Vector2 center,

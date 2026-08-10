@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 5895634244134648444}
   - component: {fileID: 880000000000000102}
   - component: {fileID: 880000000000000103}
+  - component: {fileID: 880000000000000104}
   m_Layer: 8
   m_Name: Enemy_tank
   m_TagString: Untagged
@@ -314,3 +315,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkEnemyAuthoritySetup
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &880000000000000104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8930158983480263104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e79796f2b4a446f94bedb76efdb0a18, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::EliteEnemyVisual
+  auraColor: {r: 0.2, g: 0.9, b: 0.92, a: 0.88}
+  auraRadius: 0.95
+  scalePulse: 0.045
