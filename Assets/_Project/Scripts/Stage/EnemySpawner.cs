@@ -346,6 +346,9 @@ public class EnemySpawner : MonoBehaviour
         EnemyAttack attack = enemy.GetComponent<EnemyAttack>();
         attack?.ConfigureRuntime(damageScale, maxAttackers);
 
+        EliteEnemyVisual eliteVisual = enemy.GetComponent<EliteEnemyVisual>();
+        eliteVisual?.Configure(entry != null && entry.Role == EnemyRole.Elite);
+
         EnemyHealth health = enemy.GetComponent<EnemyHealth>();
 
         if (health != null)
