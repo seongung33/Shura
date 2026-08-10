@@ -1,6 +1,6 @@
 # Shura 팀 역할 및 협업 방식
 
-> 마지막 역할·계약 정리: **2026-08-09 KST**. 진행 상태는 `12_CURRENT_PROJECT_STATUS.md`에서 관리한다.
+> 마지막 역할·계약 정리: **2026-08-10 KST**. 진행 상태는 `12_CURRENT_PROJECT_STATUS.md`에서 관리한다.
 
 ## 1. 운영 원칙
 
