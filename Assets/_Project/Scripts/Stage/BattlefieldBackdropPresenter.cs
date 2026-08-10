@@ -4,11 +4,15 @@ using UnityEngine.SceneManagement;
 public sealed class BattlefieldBackdropPresenter : MonoBehaviour
 {
     private const string SceneName = "Main";
+    private const string ResourcePath = "Backgrounds/jangsan_forest_floor";
     private const string BackgroundResourcePath =
         "Backgrounds/battlefield_courtyard_pixel";
     private const int GridRadius = 2;
-    private const int TilePixels = 96;
-    private const float TilePixelsPerUnit = 6f;
+
+    // Keep the authored forest floor, but push it slightly darker and cooler so
+    // the full-colour enemy sprites remain the visual focus during combat.
+    private static readonly Color BackgroundTint =
+        new Color(0.64f, 0.69f, 0.76f, 1f);
 
     private readonly SpriteRenderer[] tiles =
         new SpriteRenderer[(GridRadius * 2 + 1) * (GridRadius * 2 + 1)];
@@ -37,8 +41,13 @@ public sealed class BattlefieldBackdropPresenter : MonoBehaviour
 
     private void Awake()
     {
-        Sprite sprite = Resources.Load<Sprite>(BackgroundResourcePath) ??
-                        CreateBattlefieldFloor();
+        Sprite sprite = Resources.Load<Sprite>(ResourcePath);
+        if (sprite == null)
+        {
+            Debug.LogWarning($"전투 배경을 찾을 수 없습니다: {ResourcePath}");
+            enabled = false;
+            return;
+        }
 
         targetCamera = Camera.main;
         tileSize = sprite.bounds.size;
@@ -48,75 +57,17 @@ public sealed class BattlefieldBackdropPresenter : MonoBehaviour
         {
             for (int x = -GridRadius; x <= GridRadius; x++)
             {
-                GameObject tile = new GameObject($"BattlefieldFloor_{x}_{y}");
+                GameObject tile = new GameObject($"ForestFloor_{x}_{y}");
                 tile.transform.SetParent(transform, false);
                 SpriteRenderer renderer = tile.AddComponent<SpriteRenderer>();
                 renderer.sprite = sprite;
-                renderer.color = Color.white;
+                renderer.color = BackgroundTint;
                 renderer.sortingOrder = -1000;
                 tiles[index++] = renderer;
             }
         }
 
         RepositionTiles();
-    }
-
-    private static Sprite CreateBattlefieldFloor()
-    {
-        Texture2D texture = new Texture2D(
-            TilePixels,
-            TilePixels,
-            TextureFormat.RGBA32,
-            false
-        )
-        {
-            name = "BattlefieldFloor_LowContrast",
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Repeat
-        };
-
-        Color32 baseStone = new Color32(43, 49, 49, 255);
-        Color32 secondStone = new Color32(47, 53, 51, 255);
-        Color32 seam = new Color32(34, 39, 41, 255);
-        Color32 softDetail = new Color32(52, 57, 53, 255);
-        Color32[] pixels = new Color32[TilePixels * TilePixels];
-
-        for (int y = 0; y < TilePixels; y++)
-        {
-            for (int x = 0; x < TilePixels; x++)
-            {
-                int stoneX = x / 24;
-                int stoneY = y / 24;
-                bool isSeam = x % 24 == 0 || y % 24 == 0;
-                int hash = x * 73856093 ^ y * 19349663;
-                Color32 color = (stoneX + stoneY) % 2 == 0
-                    ? baseStone
-                    : secondStone;
-
-                if (isSeam)
-                {
-                    color = seam;
-                }
-                else if ((hash & 255) < 5)
-                {
-                    color = softDetail;
-                }
-
-                pixels[y * TilePixels + x] = color;
-            }
-        }
-
-        texture.SetPixels32(pixels);
-        texture.Apply(false, true);
-
-        return Sprite.Create(
-            texture,
-            new Rect(0f, 0f, TilePixels, TilePixels),
-            new Vector2(0.5f, 0.5f),
-            TilePixelsPerUnit,
-            0,
-            SpriteMeshType.FullRect
-        );
     }
 
     private void LateUpdate()

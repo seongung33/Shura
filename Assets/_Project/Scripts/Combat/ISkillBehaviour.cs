@@ -47,3 +47,29 @@ public interface ISkillCastOriginResolver
         LayerMask enemyLayer
     );
 }
+
+public static class SkillSpawnSafety
+{
+    public static void DisableUnexpectedSceneComponents(GameObject skillObject)
+    {
+        if (skillObject == null)
+        {
+            return;
+        }
+
+        foreach (Camera camera in skillObject.GetComponentsInChildren<Camera>(true))
+        {
+            camera.enabled = false;
+            Debug.LogError(
+                $"Skill prefab '{skillObject.name}' contained a Camera. " +
+                "The Camera was disabled to protect the gameplay view."
+            );
+        }
+
+        foreach (AudioListener listener in
+                 skillObject.GetComponentsInChildren<AudioListener>(true))
+        {
+            listener.enabled = false;
+        }
+    }
+}

@@ -396,6 +396,8 @@ public class AutoSkillCaster : MonoBehaviour
                 Quaternion.identity
             );
 
+            SkillSpawnSafety.DisableUnexpectedSceneComponents(skillObject);
+
             ISkillBehaviour behaviour =
                 skillObject.GetComponent<ISkillBehaviour>();
 
