@@ -179,7 +179,9 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
                 damage,
                 RelicTriggerContext.PlayerDirect(
                     sourcePlayerId,
-                    hitRoot.position
+                    hitRoot.position,
+                    element,
+                    RelicAttackType.Projectile
                 )
             );
         }
@@ -258,7 +260,9 @@ public class StraightProjectile : MonoBehaviour, ISkillBehaviour
                     explosionDamage,
                     RelicTriggerContext.PlayerDirect(
                         sourcePlayerId,
-                        enemyRoot.position
+                        enemyRoot.position,
+                        element,
+                        RelicAttackType.Area
                     )
                 );
             }

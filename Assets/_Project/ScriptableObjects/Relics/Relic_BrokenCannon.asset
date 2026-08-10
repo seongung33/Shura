@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Relic_BrokenCannon
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   id: 3
-  displayName: 깨진 화포
-  description: 공격 적중 시 12% 확률로 적중 지점에 소형 폭발 피해
-  triggerChance: 0.12
-  damageMultiplier: 0.5
-  radius: 1.8
+  displayName: "깨진 대포"
+  icon: {fileID: 0}
+  description: "광역 공격 적중 시 20% 확률로 여진이 발생해 반경 내 최대 6명에게 원래 피해의 45%를 줍니다. 추가 피해는 공격 속성을 이어받습니다. (재사용 1.25초)"
+  triggerChance: 0.2
+  damageMultiplier: 0.45
+  radius: 2.2
   maxTargets: 6
   duration: 0
   tickInterval: 0.5
+  internalCooldown: 1.25

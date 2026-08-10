@@ -95,7 +95,8 @@ public sealed class HyeolloBuff : MonoBehaviour, ISkillBehaviour
                     castContext.Damage,
                     castContext.Element,
                     castContext.SourcePlayerId,
-                    castContext.EnemyLayer
+                    castContext.EnemyLayer,
+                    RelicAttackType.DamageOverTime
                 );
             }
         }
@@ -127,7 +128,8 @@ public sealed class HyeolloBuff : MonoBehaviour, ISkillBehaviour
                     castContext.Damage * finalSlashDamageMultiplier,
                     castContext.Element,
                     castContext.SourcePlayerId,
-                    castContext.EnemyLayer
+                    castContext.EnemyLayer,
+                    RelicAttackType.Area
                 );
             }
         }

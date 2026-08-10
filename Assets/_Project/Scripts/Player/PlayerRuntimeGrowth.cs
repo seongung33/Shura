@@ -3,6 +3,11 @@ using UnityEngine;
 
 public sealed class PlayerRuntimeGrowth : MonoBehaviour
 {
+    private const float DamageBonusPerTeamLevel = 0.07f;
+    private const float CooldownReductionPerTeamLevel = 0.005f;
+    private const float ProjectileSpeedBonusPerTeamLevel = 0.01f;
+    private const float RangeBonusPerTeamLevel = 0.005f;
+
     private sealed class OwnedSkill
     {
         public int Level;
@@ -103,33 +108,47 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
         SkillRuntimeModifiers skillModifiers = SkillRuntimeModifiers.Default;
         int skillLevel = 1;
 
-        if (!isBasicAttack &&
-            ownedSkills.TryGetValue(skill, out OwnedSkill ownedSkill))
+        if (ownedSkills.TryGetValue(skill, out OwnedSkill ownedSkill))
         {
             skillLevel = ownedSkill.Level;
             skillModifiers = skill.GetRuntimeModifiers(ownedSkill.Level);
         }
 
+        int gainedTeamLevels = Mathf.Max(0, commonGrowth.TeamLevel - 1);
+        float progressionDamageMultiplier =
+            1f + gainedTeamLevels * DamageBonusPerTeamLevel;
+        float progressionCooldownMultiplier = Mathf.Max(
+            0.65f,
+            1f - gainedTeamLevels * CooldownReductionPerTeamLevel
+        );
+        float progressionProjectileSpeedMultiplier =
+            1f + gainedTeamLevels * ProjectileSpeedBonusPerTeamLevel;
+        float progressionRangeMultiplier =
+            1f + gainedTeamLevels * RangeBonusPerTeamLevel;
+
         runtime.Damage = Mathf.Max(
             0f,
             skill.Damage * commonGrowth.DamageMultiplier *
-            skillModifiers.DamageMultiplier
+            progressionDamageMultiplier * skillModifiers.DamageMultiplier
         );
         runtime.ProjectileSpeed = Mathf.Max(
             0f,
             skill.ProjectileSpeed * commonGrowth.ProjectileSpeedMultiplier *
+            progressionProjectileSpeedMultiplier *
             skillModifiers.ProjectileSpeedMultiplier
         );
         runtime.Range = Mathf.Max(
             0f,
-            skill.Range * skillModifiers.ZoneRadiusMultiplier
+            skill.Range * progressionRangeMultiplier *
+            skillModifiers.ZoneRadiusMultiplier
         );
         runtime.SkillLevel = skillLevel;
 
         float cooldownMultiplier = skill.IgnoreCooldownModifiers
             ? 1f
             : isBasicAttack
-                ? commonGrowth.AttackIntervalMultiplier
+                ? commonGrowth.AttackIntervalMultiplier *
+                    skillModifiers.CooldownMultiplier
                 : commonGrowth.SkillCooldownMultiplier *
                     skillModifiers.CooldownMultiplier;
         float minimumCooldown = isBasicAttack
@@ -137,7 +156,8 @@ public sealed class PlayerRuntimeGrowth : MonoBehaviour
             : settings.MinimumSkillCooldown;
         runtime.Cooldown = Mathf.Max(
             minimumCooldown,
-            skill.Cooldown * cooldownMultiplier
+            skill.Cooldown * cooldownMultiplier *
+            progressionCooldownMultiplier
         );
 
         bool isProjectile = IsProjectileSkill(skill);
