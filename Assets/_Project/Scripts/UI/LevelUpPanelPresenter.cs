@@ -357,6 +357,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         }
 
         selectedCardIndex = (selectedCardIndex + direction + count) % count;
+        GameAudioController.PlayCardNavigation();
     }
 
     private void RefreshKeyboardSelection()

@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 public sealed class BattlefieldBackdropPresenter : MonoBehaviour
 {
     private const string SceneName = "Main";
+    private const string BackgroundResourcePath =
+        "Backgrounds/battlefield_courtyard_pixel";
     private const int GridRadius = 2;
     private const int TilePixels = 96;
     private const float TilePixelsPerUnit = 6f;
@@ -35,7 +37,8 @@ public sealed class BattlefieldBackdropPresenter : MonoBehaviour
 
     private void Awake()
     {
-        Sprite sprite = CreateBattlefieldFloor();
+        Sprite sprite = Resources.Load<Sprite>(BackgroundResourcePath) ??
+                        CreateBattlefieldFloor();
 
         targetCamera = Camera.main;
         tileSize = sprite.bounds.size;

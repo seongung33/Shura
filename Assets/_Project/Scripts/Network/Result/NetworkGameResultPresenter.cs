@@ -258,6 +258,7 @@ public class NetworkGameResultPresenter : NetworkBehaviour
         }
 
         bool victory = result == NetworkGameResult.Victory;
+        GameAudioController.PlayGameResult(victory);
         resultText.text = victory ? "승리" : "패배";
         resultText.color = victory ? VictoryColor : DefeatColor;
 
