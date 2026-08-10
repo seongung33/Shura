@@ -18,6 +18,7 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip clickSound;
     private AudioClip hitSound;
     private AudioClip strongHitSound;
+    private AudioClip playerHurtSound;
     private AudioClip bossSound;
     private AudioClip logoRevealSound;
     private AudioClip archerUltimateSound;
@@ -27,6 +28,7 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip experiencePickupSound;
     private AudioClip itemPickupSound;
     private float nextExperienceSoundTime;
+    private float nextPlayerHurtSoundTime;
     private Coroutine musicFadeRoutine;
     private bool initialized;
 
@@ -64,6 +66,26 @@ public sealed class GameAudioController : MonoBehaviour
         instance.effectsSource.pitch = strong ? 0.82f : Random.Range(0.96f, 1.05f);
         AudioClip clip = strong ? instance.strongHitSound : instance.hitSound;
         instance.effectsSource.PlayOneShot(clip, strong ? 0.7f : 0.32f);
+        instance.effectsSource.pitch = 1f;
+    }
+
+    public static void PlayPlayerHurt(bool defeated)
+    {
+        EnsureExists();
+
+        if (Time.unscaledTime < instance.nextPlayerHurtSoundTime)
+        {
+            return;
+        }
+
+        instance.nextPlayerHurtSoundTime = Time.unscaledTime + 0.14f;
+        instance.effectsSource.pitch = defeated
+            ? 0.82f
+            : Random.Range(0.94f, 1.02f);
+        instance.effectsSource.PlayOneShot(
+            instance.playerHurtSound,
+            defeated ? 0.46f : 0.32f
+        );
         instance.effectsSource.pitch = 1f;
     }
 
@@ -189,6 +211,7 @@ public sealed class GameAudioController : MonoBehaviour
         clickSound = CreateUiClick();
         hitSound = CreateImpact("Hit", false);
         strongHitSound = CreateImpact("StrongHit", true);
+        playerHurtSound = CreatePlayerHurtCue();
         bossSound = CreateBossWarning();
         logoRevealSound = CreateLogoStinger();
         archerUltimateSound = CreateUltimateCue("ArcherUltimate", false);
@@ -304,6 +327,29 @@ public sealed class GameAudioController : MonoBehaviour
                 float thump = Mathf.Sin(2f * Mathf.PI * frequency * time);
                 float crack = Random.Range(-1f, 1f) * Mathf.Pow(1f - progress, 7f);
                 return (thump * (strong ? 0.42f : 0.27f) + crack * 0.22f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreatePlayerHurtCue()
+    {
+        return CreateLayeredClip(
+            "PlayerHurt",
+            0.16f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 2.4f);
+                float bodyFrequency = Mathf.Lerp(145f, 92f, progress);
+                float body = Mathf.Sin(
+                    2f * Mathf.PI * bodyFrequency * time
+                );
+                float breath = Random.Range(-1f, 1f) *
+                    Mathf.Pow(1f - progress, 5f);
+                float cloth = Mathf.Sin(
+                    2f * Mathf.PI * 310f * time
+                ) * Mathf.Pow(1f - progress, 4f);
+                return (body * 0.28f + breath * 0.12f + cloth * 0.06f) *
+                    envelope;
             }
         );
     }

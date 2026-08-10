@@ -196,7 +196,9 @@ public class JeoktomaDash : MonoBehaviour, ISkillBehaviour
                 damage,
                 RelicTriggerContext.PlayerDirect(
                     sourcePlayerId,
-                    enemyRoot.position
+                    enemyRoot.position,
+                    element,
+                    RelicAttackType.Dash
                 )
             );
         }

@@ -258,7 +258,9 @@ public sealed class JumongArrowRain : MonoBehaviour,
                 Mathf.Max(0f, castContext.Damage),
                 RelicTriggerContext.PlayerDirect(
                     castContext.SourcePlayerId,
-                    damageableComponent.transform.position
+                    damageableComponent.transform.position,
+                    castContext.Element,
+                    RelicAttackType.DamageOverTime
                 )
             );
         }

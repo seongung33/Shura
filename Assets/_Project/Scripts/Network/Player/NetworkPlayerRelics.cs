@@ -180,12 +180,20 @@ public sealed class NetworkPlayerRelics : NetworkBehaviour
         Vector2 origin,
         Vector2 target,
         float radius,
-        float duration
+        float duration,
+        ElementType element
     )
     {
         if (IsServer)
         {
-            PlayEffectRpc((int)id, origin, target, radius, duration);
+            PlayEffectRpc(
+                (int)id,
+                origin,
+                target,
+                radius,
+                duration,
+                (int)element
+            );
         }
     }
 
@@ -195,7 +203,8 @@ public sealed class NetworkPlayerRelics : NetworkBehaviour
         Vector2 origin,
         Vector2 target,
         float radius,
-        float duration
+        float duration,
+        int elementValue
     )
     {
         RelicEffectVisuals.Play(
@@ -203,7 +212,8 @@ public sealed class NetworkPlayerRelics : NetworkBehaviour
             origin,
             target,
             radius,
-            duration
+            duration,
+            (ElementType)elementValue
         );
     }
 

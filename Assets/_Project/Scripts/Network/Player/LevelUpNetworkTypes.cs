@@ -60,6 +60,7 @@ public struct PlayerGrowthNetworkState :
     INetworkSerializable,
     IEquatable<PlayerGrowthNetworkState>
 {
+    public int TeamLevel;
     public float DamageMultiplier;
     public float AttackIntervalMultiplier;
     public float SkillCooldownMultiplier;
@@ -74,6 +75,7 @@ public struct PlayerGrowthNetworkState :
         {
             return new PlayerGrowthNetworkState
             {
+                TeamLevel = 1,
                 DamageMultiplier = 1f,
                 AttackIntervalMultiplier = 1f,
                 SkillCooldownMultiplier = 1f,
@@ -86,6 +88,7 @@ public struct PlayerGrowthNetworkState :
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
         where T : IReaderWriter
     {
+        serializer.SerializeValue(ref TeamLevel);
         serializer.SerializeValue(ref DamageMultiplier);
         serializer.SerializeValue(ref AttackIntervalMultiplier);
         serializer.SerializeValue(ref SkillCooldownMultiplier);
@@ -97,7 +100,8 @@ public struct PlayerGrowthNetworkState :
 
     public bool Equals(PlayerGrowthNetworkState other)
     {
-        return DamageMultiplier.Equals(other.DamageMultiplier) &&
+        return TeamLevel == other.TeamLevel &&
+            DamageMultiplier.Equals(other.DamageMultiplier) &&
             AttackIntervalMultiplier.Equals(other.AttackIntervalMultiplier) &&
             SkillCooldownMultiplier.Equals(other.SkillCooldownMultiplier) &&
             MoveSpeedMultiplier.Equals(other.MoveSpeedMultiplier) &&

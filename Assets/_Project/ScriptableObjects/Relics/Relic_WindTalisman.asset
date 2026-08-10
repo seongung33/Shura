@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Relic_WindTalisman
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   id: 2
-  displayName: 풍백의 부적
-  description: 공격 적중 시 10% 확률로 짧게 유지되는 회오리 범위 피해
-  triggerChance: 0.1
-  damageMultiplier: 0.22
+  displayName: "바람의 부적"
+  icon: {fileID: 0}
+  description: "장판·지속 공격 적중 시 18% 확률로 1.2초간 원소 소용돌이를 남깁니다. 0.4초마다 최대 5명에게 원래 틱 피해의 14%를 주며 공격 속성을 이어받습니다. (재사용 1.8초)"
+  triggerChance: 0.18
+  damageMultiplier: 0.14
   radius: 2
   maxTargets: 5
-  duration: 1.5
-  tickInterval: 0.5
+  duration: 1.2
+  tickInterval: 0.4
+  internalCooldown: 1.8

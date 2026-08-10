@@ -1,29 +1,52 @@
 using Unity.Netcode;
 using UnityEngine;
 
+public enum RelicAttackType
+{
+    Projectile,
+    Melee,
+    Area,
+    DamageOverTime,
+    Dash
+}
+
 public readonly struct RelicTriggerContext
 {
     public ulong SourcePlayerId { get; }
     public Vector2 HitPosition { get; }
     public bool CanTriggerRelics { get; }
+    public ElementType Element { get; }
+    public RelicAttackType AttackType { get; }
 
     private RelicTriggerContext(
         ulong sourcePlayerId,
         Vector2 hitPosition,
-        bool canTriggerRelics
+        bool canTriggerRelics,
+        ElementType element,
+        RelicAttackType attackType
     )
     {
         SourcePlayerId = sourcePlayerId;
         HitPosition = hitPosition;
         CanTriggerRelics = canTriggerRelics;
+        Element = element;
+        AttackType = attackType;
     }
 
     public static RelicTriggerContext PlayerDirect(
         ulong sourcePlayerId,
-        Vector2 hitPosition
+        Vector2 hitPosition,
+        ElementType element,
+        RelicAttackType attackType
     )
     {
-        return new RelicTriggerContext(sourcePlayerId, hitPosition, true);
+        return new RelicTriggerContext(
+            sourcePlayerId,
+            hitPosition,
+            true,
+            element,
+            attackType
+        );
     }
 
     public static RelicTriggerContext RelicEffect(
@@ -31,7 +54,13 @@ public readonly struct RelicTriggerContext
         Vector2 hitPosition
     )
     {
-        return new RelicTriggerContext(sourcePlayerId, hitPosition, false);
+        return new RelicTriggerContext(
+            sourcePlayerId,
+            hitPosition,
+            false,
+            ElementType.None,
+            RelicAttackType.Area
+        );
     }
 }
 
@@ -78,12 +107,18 @@ public static class RelicCombat
         inventory.HandleDirectHit(
             primaryTarget,
             context.HitPosition,
-            damage
+            damage,
+            context.Element,
+            context.AttackType
         );
 
         if (directKill)
         {
-            inventory.HandleDirectKill(context.HitPosition, damage);
+            inventory.HandleDirectKill(
+                context.HitPosition,
+                damage,
+                context.Element
+            );
         }
     }
 
@@ -91,12 +126,18 @@ public static class RelicCombat
         Component hitComponent,
         float damage,
         ulong sourcePlayerId,
-        Vector2 hitPosition
+        Vector2 hitPosition,
+        ElementType element
     )
     {
         IDamageable damageable = hitComponent != null
             ? hitComponent.GetComponentInParent<IDamageable>()
             : null;
+
+        IElementReceiver receiver = hitComponent != null
+            ? hitComponent.GetComponentInParent<IElementReceiver>()
+            : null;
+        receiver?.RecordElement(element, sourcePlayerId);
 
         ApplyDamage(
             damageable,

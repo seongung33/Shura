@@ -137,7 +137,9 @@ public class ElementalZone : MonoBehaviour
                 damagePerTick,
                 RelicTriggerContext.PlayerDirect(
                     sourcePlayerId,
-                    enemyRoot.position
+                    enemyRoot.position,
+                    element,
+                    RelicAttackType.DamageOverTime
                 )
             );
         }

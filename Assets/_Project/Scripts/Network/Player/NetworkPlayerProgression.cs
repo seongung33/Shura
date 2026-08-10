@@ -152,6 +152,12 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
 
         IReadOnlyList<SkillData> availableSkills = character.LevelUpSkills;
 
+        if (character.BasicSkill != null)
+        {
+            skillPool.Add(character.BasicSkill);
+            initialOwnedSkillIndices.Add(0);
+        }
+
         if (availableSkills != null)
         {
             foreach (SkillData skill in availableSkills)
@@ -198,6 +204,10 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
         {
             return false;
         }
+
+        PlayerGrowthNetworkState state = growthState.Value;
+        state.TeamLevel = Mathf.Max(state.TeamLevel, teamLevel);
+        growthState.Value = state;
 
         List<LevelUpCandidateState> generated = GenerateCandidates(
             isSkillChoiceLevel
@@ -277,7 +287,9 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
             {
                 SkillPoolIndex = skillIndex,
                 Level = 1,
-                Element = settings.GetRandomAllowedElement()
+                Element = GetSkillData(skillIndex) == configuredCharacter.BasicSkill
+                    ? ElementType.None
+                    : settings.GetRandomAllowedElement()
             });
         }
 
@@ -381,7 +393,7 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
         if (isSkillChoiceLevel)
         {
             List<int> eligibleSkills = new();
-            int ownedSkillCount = skillStates.Count;
+            int ownedSkillCount = GetOwnedActiveSkillCount();
 
             for (int index = 0; index < skillPool.Count; index++)
             {
@@ -397,6 +409,11 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
             }
 
             Shuffle(eligibleSkills);
+            eligibleSkills.Sort((left, right) =>
+                GetCurrentSkillLevel(left).CompareTo(
+                    GetCurrentSkillLevel(right)
+                )
+            );
 
             foreach (int skillIndex in eligibleSkills)
             {
@@ -420,6 +437,11 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
                         : settings.GetRandomAllowedElement()
                 });
             }
+        }
+
+        else
+        {
+            AddOwnedSkillCandidates(generated, 2);
         }
 
         FillWithGeneralCandidates(generated);
@@ -561,7 +583,7 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
             return true;
         }
 
-        if (skillStates.Count >= MaximumOwnedSkills ||
+        if (GetOwnedActiveSkillCount() >= MaximumOwnedSkills ||
             candidate.TargetSkillLevel != 1 ||
             !settings.IsAllowedElement(candidate.Element))
         {
@@ -575,6 +597,67 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
             Element = candidate.Element
         });
         return true;
+    }
+
+    private void AddOwnedSkillCandidates(
+        List<LevelUpCandidateState> generated,
+        int maximumCount
+    )
+    {
+        List<int> owned = new();
+
+        for (int index = 0; index < skillPool.Count; index++)
+        {
+            int level = GetCurrentSkillLevel(index);
+            SkillData skill = skillPool[index];
+
+            if (skill != null && level > 0 && level < skill.MaxLevel)
+            {
+                owned.Add(index);
+            }
+        }
+
+        Shuffle(owned);
+        owned.Sort((left, right) =>
+            GetCurrentSkillLevel(left).CompareTo(GetCurrentSkillLevel(right))
+        );
+
+        foreach (int skillIndex in owned)
+        {
+            if (generated.Count >= maximumCount ||
+                generated.Count >= MaximumCards)
+            {
+                break;
+            }
+
+            SkillProgressNetworkState state = skillStates[
+                FindSkillStateIndex(skillIndex)
+            ];
+            generated.Add(new LevelUpCandidateState
+            {
+                Kind = LevelUpCandidateKind.Skill,
+                SkillPoolIndex = skillIndex,
+                TargetSkillLevel = state.Level + 1,
+                Element = state.Element
+            });
+        }
+    }
+
+    private int GetOwnedActiveSkillCount()
+    {
+        int count = 0;
+
+        foreach (SkillProgressNetworkState state in skillStates)
+        {
+            SkillData skill = GetSkillData(state.SkillPoolIndex);
+
+            if (skill != null && skill != configuredCharacter?.BasicSkill)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private bool IsGeneralUpgradeApplicable(GeneralUpgradeType type)
@@ -644,6 +727,11 @@ public sealed class NetworkPlayerProgression : NetworkBehaviour,
 
             if (skill != null)
             {
+                if (skill == configuredCharacter?.BasicSkill)
+                {
+                    continue;
+                }
+
                 loadout.Add(new RuntimeSkillLoadout(
                     skill,
                     state.Element,

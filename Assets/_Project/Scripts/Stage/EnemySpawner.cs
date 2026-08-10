@@ -16,6 +16,7 @@ public class EnemySpawner : MonoBehaviour
     {
         public GameObject GameObject;
         public ulong AssignedClientId;
+        public bool RepositionWhenDistant;
     }
 
     [Header("Legacy Fallback")]
@@ -314,7 +315,10 @@ public class EnemySpawner : MonoBehaviour
         spawnedEnemies.Add(new SpawnedEnemy
         {
             GameObject = enemy,
-            AssignedClientId = assignedTarget.ClientId
+            AssignedClientId = assignedTarget.ClientId,
+            RepositionWhenDistant =
+                (entry != null && entry.Role == EnemyRole.Elite) ||
+                (enemy.TryGetComponent(out EnemyHealth health) && health.IsBoss)
         });
         return true;
     }
@@ -601,6 +605,14 @@ public class EnemySpawner : MonoBehaviour
                 continue;
             }
 
+            SpawnedEnemy spawnedEnemy = spawnedEnemies[index];
+
+            if (spawnedEnemy.RepositionWhenDistant &&
+                TryRepositionNearPlayer(spawnedEnemy))
+            {
+                continue;
+            }
+
             DespawnEnemy(enemy);
             spawnedEnemies.RemoveAt(index);
             removedAny = true;
@@ -610,6 +622,45 @@ public class EnemySpawner : MonoBehaviour
         {
             RecountAssignments();
         }
+    }
+
+    private bool TryRepositionNearPlayer(SpawnedEnemy spawnedEnemy)
+    {
+        PlayerTarget target = playerTargets.Find(candidate =>
+            candidate.ClientId == spawnedEnemy.AssignedClientId &&
+            IsAlivePlayer(candidate.Transform)
+        );
+
+        target ??= SelectTarget();
+
+        if (target == null || target.Transform == null)
+        {
+            return false;
+        }
+
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        float distance = Random.Range(minSpawnDistance, maxSpawnDistance);
+        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) *
+            distance;
+        Vector3 position = target.Transform.position + (Vector3)offset;
+        position.z = 0f;
+
+        Rigidbody2D rigidBody =
+            spawnedEnemy.GameObject.GetComponent<Rigidbody2D>();
+
+        if (rigidBody != null)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
+            rigidBody.position = position;
+        }
+
+        spawnedEnemy.GameObject.transform.position = position;
+        spawnedEnemy.AssignedClientId = target.ClientId;
+        spawnedEnemy.GameObject.GetComponent<EnemyController>()?.Retarget(
+            target.Transform,
+            target.ClientId
+        );
+        return true;
     }
 
     private bool IsNearAnyLivingPlayer(

@@ -20,6 +20,7 @@ public sealed class PlayerRelicInventory : MonoBehaviour
 
     private readonly List<RelicId> ownedRelics = new();
     private readonly List<RelicId> localCandidates = new();
+    private readonly Dictionary<RelicId, float> nextRelicTriggerTimes = new();
 
     private NetworkPlayerRelics networkRelics;
     private RelicEffectExecutor effectExecutor;
@@ -315,13 +316,15 @@ public sealed class PlayerRelicInventory : MonoBehaviour
     public bool TryGrantAdditionalPierce()
     {
         return CanRunAuthoritativeEffects &&
-            TryRoll(GetRelicData(RelicId.DivineArrowhead));
+            HasRelic(RelicId.DivineArrowhead);
     }
 
     public void HandleDirectHit(
         Transform primaryTarget,
         Vector2 hitPosition,
-        float directDamage
+        float directDamage,
+        ElementType element,
+        RelicAttackType attackType
     )
     {
         if (!CanRunAuthoritativeEffects)
@@ -329,33 +332,30 @@ public sealed class PlayerRelicInventory : MonoBehaviour
             return;
         }
 
+        RelicId relicId = attackType switch
+        {
+            RelicAttackType.Projectile => RelicId.ThunderFragment,
+            RelicAttackType.DamageOverTime => RelicId.WindTalisman,
+            RelicAttackType.Area => RelicId.BrokenCannon,
+            RelicAttackType.Melee => RelicId.GeneralJade,
+            RelicAttackType.Dash => RelicId.GeneralJade,
+            _ => RelicId.None
+        };
+
         TryExecuteHitRelic(
-            RelicId.ThunderFragment,
+            relicId,
             primaryTarget,
             hitPosition,
-            directDamage
-        );
-        TryExecuteHitRelic(
-            RelicId.WindTalisman,
-            primaryTarget,
-            hitPosition,
-            directDamage
-        );
-        TryExecuteHitRelic(
-            RelicId.BrokenCannon,
-            primaryTarget,
-            hitPosition,
-            directDamage
-        );
-        TryExecuteHitRelic(
-            RelicId.GeneralJade,
-            primaryTarget,
-            hitPosition,
-            directDamage
+            directDamage,
+            element
         );
     }
 
-    public void HandleDirectKill(Vector2 killPosition, float directDamage)
+    public void HandleDirectKill(
+        Vector2 killPosition,
+        float directDamage,
+        ElementType element
+    )
     {
         RelicData relic = GetRelicData(RelicId.GoblinFire);
 
@@ -365,7 +365,8 @@ public sealed class PlayerRelicInventory : MonoBehaviour
                 relic,
                 killPosition,
                 directDamage,
-                registeredSourceId
+                registeredSourceId,
+                element
             );
         }
     }
@@ -375,16 +376,24 @@ public sealed class PlayerRelicInventory : MonoBehaviour
         Vector2 origin,
         Vector2 target,
         float radius,
-        float duration
+        float duration,
+        ElementType element
     )
     {
         if (IsNetworkControlled)
         {
-            networkRelics.ShowEffectServer(id, origin, target, radius, duration);
+            networkRelics.ShowEffectServer(
+                id,
+                origin,
+                target,
+                radius,
+                duration,
+                element
+            );
             return;
         }
 
-        RelicEffectVisuals.Play(id, origin, target, radius, duration);
+        RelicEffectVisuals.Play(id, origin, target, radius, duration, element);
     }
 
     public void NotifyNetworkStateChanged()
@@ -420,7 +429,8 @@ public sealed class PlayerRelicInventory : MonoBehaviour
         RelicId id,
         Transform primaryTarget,
         Vector2 hitPosition,
-        float directDamage
+        float directDamage,
+        ElementType element
     )
     {
         RelicData relic = GetRelicData(id);
@@ -432,16 +442,26 @@ public sealed class PlayerRelicInventory : MonoBehaviour
                 primaryTarget,
                 hitPosition,
                 directDamage,
-                registeredSourceId
+                registeredSourceId,
+                element
             );
         }
     }
 
     private bool TryRoll(RelicData relic)
     {
-        return relic != null &&
-            HasRelic(relic.Id) &&
-            UnityEngine.Random.value < relic.TriggerChance;
+        if (relic == null ||
+            !HasRelic(relic.Id) ||
+            (nextRelicTriggerTimes.TryGetValue(relic.Id, out float readyTime) &&
+                Time.time < readyTime) ||
+            UnityEngine.Random.value >= relic.TriggerChance)
+        {
+            return false;
+        }
+
+        nextRelicTriggerTimes[relic.Id] =
+            Time.time + relic.InternalCooldown;
+        return true;
     }
 
     private void NotifyStateChanged()

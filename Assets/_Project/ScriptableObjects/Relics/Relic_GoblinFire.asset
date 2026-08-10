@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Relic_GoblinFire
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   id: 5
-  displayName: 도깨비불
-  description: 적 처치 시 10% 확률로 가까운 적 하나를 공격하는 도깨비불 생성
-  triggerChance: 0.1
-  damageMultiplier: 0.6
+  displayName: "도깨비불"
+  icon: {fileID: 0}
+  description: "직접 처치 시 30% 확률로 8m 안의 다음 적을 추적해 마무리 피해의 70%를 줍니다. 처치한 공격의 속성을 전달합니다. (재사용 0.75초)"
+  triggerChance: 0.3
+  damageMultiplier: 0.7
   radius: 8
   maxTargets: 1
-  duration: 0.25
+  duration: 0.22
   tickInterval: 0.5
+  internalCooldown: 0.75

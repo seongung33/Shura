@@ -77,6 +77,12 @@ public class EnemyController : MonoBehaviour
         moveSpeed *= Mathf.Max(0.01f, moveSpeedMultiplier);
     }
 
+    public void Retarget(Transform assignedTarget, ulong assignedClientId)
+    {
+        target = assignedTarget;
+        AssignedTargetClientId = assignedClientId;
+    }
+
     public void FreezeFor(float duration)
     {
         if (duration <= 0f ||
