@@ -10,7 +10,7 @@ public class StartMenuController : MonoBehaviour
 {
     private const string GameTitle = "무궁";
     private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
-    private const string LogoResourcePath = "UI/MainMenu/mugung_logo_transparent";
+    private const string LogoResourcePath = "UI/MainMenu/mugung_logo_pixel_transparent";
 
     private static readonly Color PrimaryTextColor = new Color(0.96f, 0.98f, 1f, 1f);
     private static readonly Color FocusTextColor = new Color(0.2f, 0.95f, 0.92f, 1f);
@@ -24,6 +24,12 @@ public class StartMenuController : MonoBehaviour
     [SerializeField, Range(0f, 0.6f)] private float centerShadeAlpha = 0.24f;
     private CanvasGroup menuCanvasGroup;
     private bool skipIntroRequested;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetIntroSession()
+    {
+        introShownThisSession = false;
+    }
 
     private void Awake()
     {
