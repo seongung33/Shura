@@ -20,11 +20,32 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         new Dictionary<int, float>();
     private readonly Dictionary<int, ElementType> serverSkillElements =
         new Dictionary<int, ElementType>();
+    private readonly NetworkVariable<double> ultimateCooldownEnd = new();
+    private readonly NetworkVariable<float> ultimateCooldownDuration = new();
     private readonly List<SkillData> configuredStartingSkills = new();
     private PlayerRuntimeGrowth runtimeGrowth;
     private PlayerHealth playerHealth;
     private SkillData configuredBasicSkill;
     private SkillData configuredUltimateSkill;
+
+    public float UltimateCooldownRemaining
+    {
+        get
+        {
+            if (!IsSpawned || configuredUltimateSkill == null)
+            {
+                return 0f;
+            }
+
+            double now = NetworkManager != null && NetworkManager.IsListening
+                ? NetworkManager.ServerTime.Time
+                : Time.timeAsDouble;
+            return Mathf.Max(0f, (float)(ultimateCooldownEnd.Value - now));
+        }
+    }
+
+    public float UltimateCooldownDuration =>
+        Mathf.Max(0f, ultimateCooldownDuration.Value);
 
     private void Awake()
     {
@@ -70,6 +91,12 @@ public class NetworkSkillCastRelay : NetworkBehaviour
 
         nextServerCastTimes.Clear();
         serverSkillElements.Clear();
+
+        if (IsServer && IsSpawned)
+        {
+            ultimateCooldownEnd.Value = 0d;
+            ultimateCooldownDuration.Value = 0f;
+        }
     }
 
     public bool TryCast(
@@ -115,6 +142,8 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         }
 
         ResetSkillCooldownsRpc();
+        ultimateCooldownEnd.Value = 0d;
+        ultimateCooldownDuration.Value = 0f;
     }
 
     [Rpc(SendTo.Owner, InvokePermission = RpcInvokePermission.Server)]
@@ -169,6 +198,13 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         }
 
         nextServerCastTimes[skillIndex] = Time.time + runtime.Cooldown;
+
+        if (skill == configuredUltimateSkill)
+        {
+            ultimateCooldownDuration.Value = runtime.Cooldown;
+            ultimateCooldownEnd.Value =
+                NetworkManager.ServerTime.Time + runtime.Cooldown;
+        }
         SpawnSkillVolley(
             skill,
             resolvedOrigin,

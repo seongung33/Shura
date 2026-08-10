@@ -143,8 +143,9 @@ public class MultiplayerLobbyUI : MonoBehaviour
             return;
         }
 
-        playerCountText.text =
-            $"접속 인원: {networkLobbyState.ConnectedPlayerCount}/" +
-            NetworkLobbyState.MaximumPlayerSlots;
+        int connected = networkLobbyState.ConnectedPlayerCount;
+        playerCountText.text = connected >= NetworkLobbyState.MaximumPlayerSlots
+            ? $"파티 {connected}/{NetworkLobbyState.MaximumPlayerSlots} · 전원 접속"
+            : $"파티 {connected}/{NetworkLobbyState.MaximumPlayerSlots} · 동료 기다리는 중";
     }
 }
