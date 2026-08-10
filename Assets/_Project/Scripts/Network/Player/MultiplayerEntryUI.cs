@@ -16,16 +16,16 @@ using UnityEngine.UI;
 public sealed class MultiplayerEntryUI : MonoBehaviour
 {
     private const string JoinCodeFontName = "LiberationSans SDF";
-    private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
+    private const string BackgroundResourcePath = "Backgrounds/jangsan_forest_floor";
 
     private static readonly Color ScreenColor =
-        new Color32(5, 12, 25, 255);
+        new Color32(6, 8, 18, 255);
     private static readonly Color PanelColor =
-        new Color32(7, 39, 52, 244);
+        new Color32(20, 18, 35, 244);
     private static readonly Color PrimaryColor =
-        new Color32(20, 177, 216, 255);
+        new Color32(220, 86, 115, 255);
     private static readonly Color ButtonColor =
-        new Color32(7, 31, 67, 255);
+        new Color32(28, 25, 52, 255);
     private static readonly Color TextColor =
         new Color32(224, 242, 255, 255);
     [Header("Relay UI")]
@@ -483,12 +483,12 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         RectTransform artworkRect = (RectTransform)artwork.transform;
         Stretch(artworkRect);
 
-        Transform backgroundTransform = artwork.transform.Find("CityBackground");
+        Transform backgroundTransform = artwork.transform.Find("JangsanForestBackground");
         Image background;
         if (backgroundTransform == null)
         {
             background = new GameObject(
-                "CityBackground",
+                "JangsanForestBackground",
                 typeof(RectTransform),
                 typeof(Image),
                 typeof(AspectRatioFitter),

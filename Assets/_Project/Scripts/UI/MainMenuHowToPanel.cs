@@ -7,10 +7,10 @@ using UnityEngine.UI;
 
 public sealed class MainMenuHowToPanel : MonoBehaviour
 {
-    private static readonly Color PanelColor = new(0.025f, 0.045f, 0.085f, 0.98f);
-    private static readonly Color AccentColor = new(0.08f, 0.72f, 0.88f, 1f);
-    private static readonly Color TextColor = new(0.92f, 0.97f, 1f, 1f);
-    private static readonly Color MutedTextColor = new(0.66f, 0.78f, 0.88f, 1f);
+    private static readonly Color PanelColor = new(0.04f, 0.04f, 0.085f, 0.98f);
+    private static readonly Color AccentColor = new(0.86f, 0.34f, 0.45f, 1f);
+    private static readonly Color TextColor = new(0.95f, 0.92f, 0.84f, 1f);
+    private static readonly Color MutedTextColor = new(0.68f, 0.70f, 0.78f, 1f);
 
     private static MainMenuHowToPanel instance;
     private CanvasGroup canvasGroup;
