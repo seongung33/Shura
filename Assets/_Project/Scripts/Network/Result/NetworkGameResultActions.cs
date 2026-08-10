@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 public class NetworkGameResultActions : NetworkBehaviour
 {
     [SerializeField]
-    private string gameplaySceneName = "Main";
+    private string multiplayerLobbySceneName = "MultiPlayerLobby";
 
     [SerializeField]
     private string multiplayerEntrySceneName = "MultiPlayerEntry";
@@ -34,19 +34,19 @@ public class NetworkGameResultActions : NetworkBehaviour
             return;
         }
 
-        if (!CanLoadScene(gameplaySceneName))
+        if (!CanLoadScene(multiplayerLobbySceneName))
         {
             return;
         }
 
         SceneEventProgressStatus status = NetworkManager.SceneManager.LoadScene(
-            gameplaySceneName,
+            multiplayerLobbySceneName,
             LoadSceneMode.Single
         );
 
         if (status != SceneEventProgressStatus.Started)
         {
-            Debug.LogError($"네트워크 게임 재시작 실패: {status}");
+            Debug.LogError($"네트워크 캐릭터 선택 복귀 실패: {status}");
             return;
         }
 
