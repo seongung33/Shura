@@ -55,12 +55,35 @@ public class NetworkGameResultState : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsServer || HasFinished || !playerHealth.IsDead)
+        if (!IsServer || HasFinished || !playerHealth.IsDead ||
+            !AreAllSpawnedPlayersDead())
         {
             return;
         }
 
         SetResultForAllPlayers(NetworkGameResult.Defeat);
+    }
+
+    private static bool AreAllSpawnedPlayersDead()
+    {
+        bool foundPlayer = false;
+
+        foreach (NetworkGameResultState state in SpawnedStates)
+        {
+            if (state == null || !state.IsSpawned || !state.IsServer)
+            {
+                continue;
+            }
+
+            foundPlayer = true;
+
+            if (state.playerHealth == null || !state.playerHealth.IsDead)
+            {
+                return false;
+            }
+        }
+
+        return foundPlayer;
     }
 
     public void SetVictoryServer()
