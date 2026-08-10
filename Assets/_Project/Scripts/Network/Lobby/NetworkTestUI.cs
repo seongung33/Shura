@@ -4,6 +4,8 @@ using TMPro;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -138,13 +140,21 @@ public class NetworkTestUI : MonoBehaviour
         {
             SetStatus("방 생성 중...");
 
+            RelayProtocol relayProtocol = ConfigureRelayTransport();
+
             SessionOptions options =
                 new SessionOptions
                 {
                     // 호스트를 포함한 최대 인원
                     MaxPlayers = 2
                 }
-                .WithRelayNetwork();
+                .WithRelayNetwork()
+                .WithNetworkOptions(
+                    new NetworkOptions
+                    {
+                        RelayProtocol = relayProtocol
+                    }
+                );
 
             ISession createdSession =
                 await MultiplayerService.Instance
@@ -230,9 +240,19 @@ public class NetworkTestUI : MonoBehaviour
         {
             SetStatus("방 참가 중...");
 
+            RelayProtocol relayProtocol = ConfigureRelayTransport();
+            JoinSessionOptions joinOptions =
+                new JoinSessionOptions()
+                    .WithNetworkOptions(
+                        new NetworkOptions
+                        {
+                            RelayProtocol = relayProtocol
+                        }
+                    );
+
             ISession joinedSession =
                 await MultiplayerService.Instance
-                    .JoinSessionByCodeAsync(joinCode);
+                    .JoinSessionByCodeAsync(joinCode, joinOptions);
             AttachSession(joinedSession);
 
             SetStatus("방 참가 완료");
@@ -294,6 +314,32 @@ public class NetworkTestUI : MonoBehaviour
         }
 
         return true;
+    }
+
+    private static RelayProtocol ConfigureRelayTransport()
+    {
+#if UNITY_WEBGL
+        const RelayProtocol relayProtocol = RelayProtocol.WSS;
+#else
+        const RelayProtocol relayProtocol = RelayProtocol.DTLS;
+#endif
+
+        NetworkManager manager = NetworkManager.Singleton;
+        UnityTransport transport = manager != null
+            ? manager.GetComponent<UnityTransport>()
+            : null;
+
+        if (transport == null)
+        {
+            throw new InvalidOperationException(
+                "NetworkManager에 UnityTransport가 연결되지 않았습니다."
+            );
+        }
+
+        transport.UseWebSockets =
+            relayProtocol == RelayProtocol.WSS;
+
+        return relayProtocol;
     }
 
     private void SetStatus(string message)

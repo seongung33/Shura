@@ -5,6 +5,7 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -113,12 +114,20 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         {
             SetStatus("방 생성 중...");
 
+            RelayProtocol relayProtocol = ConfigureRelayTransport();
+
             SessionOptions options =
                 new SessionOptions
                 {
                     MaxPlayers = 2
                 }
-                .WithRelayNetwork();
+                .WithRelayNetwork()
+                .WithNetworkOptions(
+                    new NetworkOptions
+                    {
+                        RelayProtocol = relayProtocol
+                    }
+                );
 
             createdSession =
                 await MultiplayerService.Instance
@@ -196,9 +205,19 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         {
             SetStatus("방 참가 중...");
 
+            RelayProtocol relayProtocol = ConfigureRelayTransport();
+            JoinSessionOptions joinOptions =
+                new JoinSessionOptions()
+                    .WithNetworkOptions(
+                        new NetworkOptions
+                        {
+                            RelayProtocol = relayProtocol
+                        }
+                    );
+
             joinedSession =
                 await MultiplayerService.Instance
-                    .JoinSessionByCodeAsync(joinCode);
+                    .JoinSessionByCodeAsync(joinCode, joinOptions);
 
             sessionState.AttachSession(joinedSession);
             ShowJoinCode(joinCode);
@@ -341,6 +360,31 @@ public sealed class MultiplayerEntryUI : MonoBehaviour
         }
 
         return true;
+    }
+
+    private RelayProtocol ConfigureRelayTransport()
+    {
+#if UNITY_WEBGL
+        const RelayProtocol relayProtocol = RelayProtocol.WSS;
+#else
+        const RelayProtocol relayProtocol = RelayProtocol.DTLS;
+#endif
+
+        UnityTransport transport = sessionState != null
+            ? sessionState.GetComponent<UnityTransport>()
+            : null;
+
+        if (transport == null)
+        {
+            throw new InvalidOperationException(
+                "NetworkManager에 UnityTransport가 연결되지 않았습니다."
+            );
+        }
+
+        transport.UseWebSockets =
+            relayProtocol == RelayProtocol.WSS;
+
+        return relayProtocol;
     }
 
     private async Task CleanupFailedSessionAsync(ISession failedSession)
