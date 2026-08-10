@@ -36,6 +36,7 @@ public sealed class EliteEnemyReward : MonoBehaviour
         }
 
         rewardGranted = true;
+        NetworkPlayerHealth.ApplyEliteReviveBonusServer();
         RelicRewardCoordinator.Active?.BeginEliteReward();
     }
 }

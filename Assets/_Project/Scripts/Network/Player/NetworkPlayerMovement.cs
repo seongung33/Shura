@@ -1,3 +1,4 @@
+using Shura.Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,6 +11,8 @@ public class NetworkPlayerMovement : NetworkBehaviour
 
     private Rigidbody2D rigidBody;
     private SpriteRenderer spriteRenderer;
+    private PlayerHealth playerHealth;
+    private RigidbodyType2D originalBodyType;
 
     private Vector2 moveInput;
 
@@ -29,6 +32,8 @@ public class NetworkPlayerMovement : NetworkBehaviour
     {
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        playerHealth = GetComponent<PlayerHealth>();
+        originalBodyType = rigidBody.bodyType;
     }
 
     public override void OnNetworkSpawn()
@@ -37,6 +42,9 @@ public class NetworkPlayerMovement : NetworkBehaviour
         // OwnerClientId에 따라 시작 위치를 조금 다르게 설정한다.
         if (IsOwner)
         {
+            rigidBody.bodyType = originalBodyType;
+            rigidBody.simulated = true;
+
             transform.position = new Vector3(
                 (float)OwnerClientId * 2f,
                 0f,
@@ -51,9 +59,10 @@ public class NetworkPlayerMovement : NetworkBehaviour
             return;
         }
 
-        // 상대방 플레이어는 내 컴퓨터의 물리 엔진으로 움직이지 않는다.
-        // NetworkTransform이 전달한 위치만 표시한다.
-        rigidBody.simulated = false;
+        // NetworkTransform moves remote players. Keep their kinematic bodies
+        // simulated so the server can still query their colliders for damage.
+        rigidBody.bodyType = RigidbodyType2D.Kinematic;
+        rigidBody.simulated = true;
 
         if (spriteRenderer != null)
         {
@@ -78,6 +87,12 @@ public class NetworkPlayerMovement : NetworkBehaviour
     {
         if (!IsOwner)
         {
+            return;
+        }
+
+        if (playerHealth != null && playerHealth.IsDead)
+        {
+            rigidBody.linearVelocity = Vector2.zero;
             return;
         }
 

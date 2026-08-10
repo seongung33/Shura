@@ -124,7 +124,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fdc0d4c8d1e400bbf090fa89f5edfed, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::BreakableSupplyObject
-  maxHealth: 60
+  maxHealth: 1
   pickupPrefab: {fileID: 710000000000000005, guid: 51190c53612d4d858b35c2bcf8f244fa, type: 3}
 --- !u!114 &620000000000000006
 MonoBehaviour:

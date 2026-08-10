@@ -3,6 +3,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -12,16 +13,19 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
 
     private readonly TMP_Text[] cardTexts = new TMP_Text[CardCount];
     private readonly Button[] cardButtons = new Button[CardCount];
+    private readonly Outline[] cardOutlines = new Outline[CardCount];
 
     private ILevelUpChoiceSource progression;
     private GameObject canvasObject;
     private GameObject panelObject;
     private TMP_Text levelText;
     private TMP_Text timerText;
+    private TMP_Text navigationText;
     private TMP_Text statusText;
     private CanvasGroup panelGroup;
     private Coroutine revealRoutine;
     private int displayedSessionId = -1;
+    private int selectedCardIndex;
     private bool requestPending;
 
     public void Bind(ILevelUpChoiceSource configuredProgression)
@@ -79,6 +83,12 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
                 !progression.HasSelected && !requestPending;
         }
 
+        selectedCardIndex = Mathf.Clamp(
+            selectedCardIndex,
+            0,
+            Mathf.Max(0, progression.CandidateCount - 1)
+        );
+        RefreshKeyboardSelection();
         RefreshTimerAndStatus();
     }
 
@@ -89,7 +99,9 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
             return;
         }
 
-        RefreshTimerAndStatus();
+        Refresh();
+        HandleKeyboardInput();
+        RefreshKeyboardSelection();
     }
 
     private void OnDestroy()
@@ -183,6 +195,16 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         );
         timerText.fontStyle = FontStyles.Bold;
 
+        navigationText = CreateText(
+            "KeyboardGuide",
+            panelObject.transform,
+            new Vector2(0.16f, 0.145f),
+            new Vector2(0.84f, 0.21f),
+            24f,
+            TextAlignmentOptions.Center,
+            new Color(0.82f, 0.92f, 1f)
+        );
+
         statusText = CreateText(
             "SelectionStatus",
             panelObject.transform,
@@ -207,7 +229,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
 
         RectTransform rect = card.GetComponent<RectTransform>();
         float centerX = 0.26f + index * 0.24f;
-        rect.anchorMin = new Vector2(centerX - 0.105f, 0.19f);
+        rect.anchorMin = new Vector2(centerX - 0.105f, 0.22f);
         rect.anchorMax = new Vector2(centerX + 0.105f, 0.76f);
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
@@ -218,6 +240,7 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         Outline outline = card.GetComponent<Outline>();
         outline.effectColor = new Color(0.45f, 0.65f, 0.95f, 0.9f);
         outline.effectDistance = new Vector2(3f, -3f);
+        cardOutlines[index] = outline;
 
         Button button = card.GetComponent<Button>();
         ColorBlock colors = button.colors;
@@ -265,6 +288,113 @@ public sealed class LevelUpPanelPresenter : MonoBehaviour
         }
 
         progression.RequestChoice(index);
+    }
+
+    private void HandleKeyboardInput()
+    {
+        if (progression == null || progression.HasSelected ||
+            requestPending || progression.CandidateCount <= 0)
+        {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+
+        if (keyboard == null)
+        {
+            return;
+        }
+
+        if (keyboard.leftArrowKey.wasPressedThisFrame ||
+            keyboard.aKey.wasPressedThisFrame)
+        {
+            MoveSelection(-1);
+        }
+        else if (keyboard.rightArrowKey.wasPressedThisFrame ||
+                 keyboard.dKey.wasPressedThisFrame)
+        {
+            MoveSelection(1);
+        }
+
+        for (int index = 0;
+             index < Mathf.Min(CardCount, progression.CandidateCount);
+             index++)
+        {
+            bool numberPressed = index switch
+            {
+                0 => keyboard.digit1Key.wasPressedThisFrame ||
+                     keyboard.numpad1Key.wasPressedThisFrame,
+                1 => keyboard.digit2Key.wasPressedThisFrame ||
+                     keyboard.numpad2Key.wasPressedThisFrame,
+                2 => keyboard.digit3Key.wasPressedThisFrame ||
+                     keyboard.numpad3Key.wasPressedThisFrame,
+                _ => false
+            };
+
+            if (numberPressed)
+            {
+                selectedCardIndex = index;
+                HandleCardClicked(index);
+                return;
+            }
+        }
+
+        if (keyboard.enterKey.wasPressedThisFrame ||
+            keyboard.numpadEnterKey.wasPressedThisFrame ||
+            keyboard.spaceKey.wasPressedThisFrame)
+        {
+            HandleCardClicked(selectedCardIndex);
+        }
+    }
+
+    private void MoveSelection(int direction)
+    {
+        int count = Mathf.Min(CardCount, progression.CandidateCount);
+
+        if (count <= 0)
+        {
+            return;
+        }
+
+        selectedCardIndex = (selectedCardIndex + direction + count) % count;
+    }
+
+    private void RefreshKeyboardSelection()
+    {
+        if (progression == null)
+        {
+            return;
+        }
+
+        for (int index = 0; index < CardCount; index++)
+        {
+            Outline outline = cardOutlines[index];
+
+            if (outline == null)
+            {
+                continue;
+            }
+
+            bool selected = index == selectedCardIndex &&
+                            index < progression.CandidateCount &&
+                            !progression.HasSelected;
+            outline.effectColor = selected
+                ? new Color(1f, 0.82f, 0.2f, 1f)
+                : new Color(0.45f, 0.65f, 0.95f, 0.9f);
+            outline.effectDistance = selected
+                ? new Vector2(6f, -6f)
+                : new Vector2(3f, -3f);
+        }
+
+        if (navigationText == null)
+        {
+            return;
+        }
+
+        navigationText.text = progression.HasSelected
+            ? "선택 완료 · 다른 플레이어를 기다리는 중"
+            : $"◀ A/D 또는 방향키 ▶   Enter/Space 선택   숫자 1~3 바로 선택\n" +
+              $"현재 선택: {selectedCardIndex + 1}번 카드";
     }
 
     private IEnumerator PlayReveal()
