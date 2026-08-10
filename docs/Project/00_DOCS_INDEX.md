@@ -1,6 +1,6 @@
 # Shura 프로젝트 문서 안내
 
-> 마지막 저장소 대조: **2026-08-09 KST**
+> 마지막 저장소 대조: **2026-08-10 KST** (`origin/develop` `e20c03c`)
 
 ## 프로젝트 개요
 
@@ -30,6 +30,7 @@
 | `10_TEST_PLAN.md` | 테스트 절차와 현재 검증 증거 |
 | `11_CONCEPT_AND_HERO_DESIGN.md` | 7속성, 성장 규칙, 주몽과 영웅 설계 |
 | `12_CURRENT_PROJECT_STATUS.md` | **현재 브랜치·작업트리·구현·위험·다음 순서의 단일 정본** |
+| `13_GAME_BALANCE_AND_STAGE_DESIGN.md` | 15분 런·팀 성장·웨이브·성능 기준 |
 
 보조 문서:
 
@@ -39,6 +40,9 @@
 | `IMPL_2026-07-31_JUMONG_SKILLS.md` | 7월 31일 주몽 스킬 구현·테스트 기록 |
 | `HANDOFF_2026-07-30.md` | 7월 30일 시점의 보관용 인수인계 기록 |
 | `11_CHARACTER_SKILL_SYSTEM_CONCEPT.md` | 폐기된 중복 문서의 안내 파일. 내용 정본은 `11_CONCEPT_AND_HERO_DESIGN.md` |
+| `Playable_character/cheok_jungyeong/13_CHEOK_JUNGYEONG_CHARACTER_SKILLS(1).md` | 척준경 상세 설계 복원 기록 |
+| `Boss/README_JANGSANBEOM_ASSETS.md` | 장산범 에셋 제작·임포트 기록 |
+| `ConceptArt/Jinmiri_FinalPolish/README.md` | 픽셀 콘셉트·변환 원본과 적용 기록 |
 
 `docs` 루트의 `game-design.md`, `decisions.md`, `asset-sources.md`, `ai-usage-log.md`는 정본 위치만 안내하는 호환용 파일이다.
 

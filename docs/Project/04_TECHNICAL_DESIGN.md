@@ -1,6 +1,6 @@
 # Shura 기술 설계서
 
-> 최종 구조 정리: **2026-08-09 KST**
+> 최종 구조 정리: **2026-08-10 KST**
 > 이 문서는 코드 계약과 런타임 구조의 정본이다. 현재 구현·브랜치 상태는 `12_CURRENT_PROJECT_STATUS.md`, 검증 결과는 `10_TEST_PLAN.md`를 따른다.
 
 ## 1. 기술 목표
@@ -73,8 +73,8 @@
 ### UI
 
 - `HudController`: 체력, 시간, 처치 수, 보유 공격·아이템·속성
-- `LevelUpPanel`: 특수공격·아이템·기본공격 강화·능력치 선택
-- `LevelUpChoiceGenerator`: 현재 레벨 구간과 슬롯 상태에 맞는 선택지 생성
+- `LevelUpPanelPresenter`: 팀 레벨업 시 스킬·능력치 선택 UI 생성 — 구현됨
+- `LocalPlayerProgression` / `TeamLevelUpCoordinator`: 개인 선택과 팀 레벨업 조정 — 구현됨
 - `ResultPanel`: 결과와 재시작
 - `SynergyPopup`: 속성 시너지 발동 표시
 
@@ -140,7 +140,7 @@
 | 네트워크 결과 전환 | `Network/Result/NetworkGameResultActions.cs` | 호스트 재시작과 모든 참가자의 로비 복귀 |
 | 로컬 UI | `UI/HUDController.cs` | `StageTest` 등 로컬 씬의 HP·레벨·EXP와 결과 표시 |
 
-`SynergyResolver`는 `Combat/Element/SynergyResolver.cs`로 구현되어 있다. `StatusEffectController`, `LevelUpChoiceGenerator` 등 실제 파일이 없는 이름은 계획이다.
+`SynergyResolver`는 `Combat/Element/SynergyResolver.cs`로 구현되어 있다. 성장 선택은 `LocalPlayerProgression`, `PlayerRuntimeGrowth`, `TeamLevelUpCoordinator`, `LevelUpPanelPresenter`로 구현됐다. `StatusEffectController` 등 실제 파일이 없는 이름은 계획이다.
 
 ### 4.3 스킬 생성·실행 규칙
 
