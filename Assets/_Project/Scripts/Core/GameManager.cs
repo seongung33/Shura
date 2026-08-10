@@ -425,6 +425,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        GameAudioController.PlayGameResult(victory);
         Time.timeScale = 0f;
 
         Debug.Log(

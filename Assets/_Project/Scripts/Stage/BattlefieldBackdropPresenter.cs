@@ -5,6 +5,8 @@ public sealed class BattlefieldBackdropPresenter : MonoBehaviour
 {
     private const string SceneName = "Main";
     private const string ResourcePath = "Backgrounds/jangsan_forest_floor";
+    private const string BackgroundResourcePath =
+        "Backgrounds/battlefield_courtyard_pixel";
     private const int GridRadius = 2;
 
     // Keep the authored forest floor, but push it slightly darker and cooler so

@@ -87,7 +87,31 @@ public class NetworkStageBootstrap : MonoBehaviour
 
     private void EnsureOfflinePlayer()
     {
-        GameObject existingPlayer = GameObject.FindGameObjectWithTag("Player");
+        GameObject[] existingPlayers = GameObject.FindGameObjectsWithTag("Player");
+        GameObject existingPlayer = null;
+
+        foreach (GameObject candidate in existingPlayers)
+        {
+            NetworkObject networkObject = candidate.GetComponent<NetworkObject>();
+            if (networkObject == null || !networkObject.IsSpawned)
+            {
+                existingPlayer = candidate;
+                break;
+            }
+        }
+
+        existingPlayer ??= existingPlayers.Length > 0 ? existingPlayers[0] : null;
+
+        // 멀티 세션 종료 직후 싱글로 돌아오면 DontDestroyOnLoad 영역의
+        // 이전 네트워크 플레이어가 잠시 남을 수 있다. 싱글에서는 선택한
+        // 한 명만 유지해 HUD와 피격 판정이 중복되지 않도록 정리한다.
+        foreach (GameObject candidate in existingPlayers)
+        {
+            if (candidate != existingPlayer)
+            {
+                Destroy(candidate);
+            }
+        }
 
         if (existingPlayer != null)
         {
