@@ -1,6 +1,4 @@
-from pathlib import Path
-
-content = """name: Deploy Unity WebGL to GitHub Pages
+name: Deploy Unity WebGL to GitHub Pages
 
 on:
   push:
