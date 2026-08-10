@@ -33,11 +33,11 @@ public sealed class StageHudPresenter : MonoBehaviour
         public LoadoutSlot Ultimate;
     }
 
-    private static readonly Color PanelColor = new Color(0.035f, 0.055f, 0.11f, 0.92f);
-    private static readonly Color AccentColor = new Color(0.25f, 0.76f, 0.92f, 1f);
+    private static readonly Color PanelColor = new Color(0.03f, 0.035f, 0.075f, 0.92f);
+    private static readonly Color AccentColor = new Color(0.86f, 0.34f, 0.45f, 1f);
     private static readonly Color HealthColor = new Color(0.95f, 0.25f, 0.28f, 1f);
-    private static readonly Color ExperienceColor = new Color(0.97f, 0.78f, 0.16f, 1f);
-    private static readonly Color LevelPipActiveColor = new Color(1f, 0.76f, 0.16f, 1f);
+    private static readonly Color ExperienceColor = new Color(0.95f, 0.68f, 0.22f, 1f);
+    private static readonly Color LevelPipActiveColor = new Color(0.95f, 0.68f, 0.22f, 1f);
     private static readonly Color LevelPipInactiveColor = new Color(0.12f, 0.16f, 0.24f, 1f);
     private static readonly Color PrimaryTextColor = new Color(0.96f, 0.98f, 1f, 1f);
 
@@ -539,7 +539,7 @@ public sealed class StageHudPresenter : MonoBehaviour
         panel.transform.SetParent(parent, false);
         panel.GetComponent<Image>().color = color;
         Outline outline = panel.GetComponent<Outline>();
-        outline.effectColor = new Color(0.2f, 0.55f, 0.72f, 0.75f);
+        outline.effectColor = new Color(0.72f, 0.26f, 0.38f, 0.72f);
         outline.effectDistance = new Vector2(2f, -2f);
         return panel;
     }

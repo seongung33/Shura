@@ -8,11 +8,11 @@ public sealed class MainMenuSettingsPanel : MonoBehaviour
 {
     private const string FullScreenKey = "settings.fullScreen";
     private static readonly Color PanelColor =
-        new(0.025f, 0.045f, 0.085f, 0.97f);
+        new(0.04f, 0.04f, 0.085f, 0.97f);
     private static readonly Color AccentColor =
-        new(0.08f, 0.72f, 0.88f, 1f);
+        new(0.86f, 0.34f, 0.45f, 1f);
     private static readonly Color TextColor =
-        new(0.92f, 0.97f, 1f, 1f);
+        new(0.95f, 0.92f, 0.84f, 1f);
 
     private static MainMenuSettingsPanel instance;
     private CanvasGroup canvasGroup;

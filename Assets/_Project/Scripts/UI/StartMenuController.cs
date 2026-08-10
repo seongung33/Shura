@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,13 +9,13 @@ using UnityEngine.UI;
 public class StartMenuController : MonoBehaviour
 {
     private const string GameTitle = "무궁";
-    private const string BackgroundResourcePath = "UI/MainMenu/main_menu_city";
+    private const string BackgroundResourcePath = "Backgrounds/jangsan_forest_floor";
     private const string LogoResourcePath = "UI/MainMenu/mugung_logo_pixel";
 
-    private static readonly Color PanelColor = new Color(0.012f, 0.026f, 0.055f, 0.88f);
-    private static readonly Color AccentColor = new Color(0.08f, 0.72f, 0.88f, 1f);
-    private static readonly Color PrimaryButtonColor = new Color(0.055f, 0.39f, 0.55f, 1f);
-    private static readonly Color ButtonColor = new Color(0.035f, 0.15f, 0.27f, 1f);
+    private static readonly Color PanelColor = new Color(0.025f, 0.035f, 0.07f, 0.9f);
+    private static readonly Color AccentColor = new Color(0.82f, 0.32f, 0.42f, 1f);
+    private static readonly Color PrimaryButtonColor = new Color(0.46f, 0.12f, 0.22f, 1f);
+    private static readonly Color ButtonColor = new Color(0.08f, 0.11f, 0.2f, 1f);
     private static readonly Color DisabledColor = new Color(0.12f, 0.17f, 0.24f, 1f);
     private static readonly Color PrimaryTextColor = new Color(0.82f, 0.93f, 1f, 1f);
     private static bool introShownThisSession;
@@ -223,7 +224,7 @@ public class StartMenuController : MonoBehaviour
         artworkRect.offsetMin = Vector2.zero;
         artworkRect.offsetMax = Vector2.zero;
 
-        Image background = new GameObject("CityBackground", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        Image background = new GameObject("JangsanForestBackground", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
         background.transform.SetParent(artwork.transform, false);
         StretchLabel(background.rectTransform);
         background.rectTransform.offsetMin = Vector2.zero;
@@ -470,6 +471,8 @@ public class StartMenuController : MonoBehaviour
         shadeRect.offsetMax = Vector2.zero;
         shadeObject.GetComponent<Image>().color = new Color(0f, 0.01f, 0.035f, 0.62f);
 
+        List<RectTransform> petals = CreateIntroBloom(overlay.transform);
+
         GameObject logoObject = new GameObject(
             "IntroLogo",
             typeof(RectTransform),
@@ -484,8 +487,10 @@ public class StartMenuController : MonoBehaviour
         logoRect.offsetMax = Vector2.zero;
         Image logo = logoObject.GetComponent<Image>();
         logo.sprite = logoSprite;
+        logo.color = new Color(1f, 1f, 1f, 0f);
         logo.preserveAspect = true;
         logo.raycastTarget = false;
+        logoRect.localScale = Vector3.one * 0.86f;
         AspectRatioFitter logoFitter = logoObject.AddComponent<AspectRatioFitter>();
         logoFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         logoFitter.aspectRatio = logoSprite.rect.width / logoSprite.rect.height;
@@ -494,18 +499,106 @@ public class StartMenuController : MonoBehaviour
         group.alpha = 0f;
         group.blocksRaycasts = true;
         skipIntroRequested = false;
-        StartCoroutine(PlayLaunchIntro(group, overlay));
+        StartCoroutine(PlayLaunchIntro(group, overlay, petals, logo, logoRect));
+    }
+
+    private static List<RectTransform> CreateIntroBloom(Transform parent)
+    {
+        GameObject bloom = new GameObject("MugunghwaBloom", typeof(RectTransform));
+        bloom.transform.SetParent(parent, false);
+        RectTransform bloomRect = bloom.GetComponent<RectTransform>();
+        bloomRect.anchorMin = bloomRect.anchorMax = new Vector2(0.5f, 0.58f);
+        bloomRect.sizeDelta = new Vector2(260f, 260f);
+
+        Sprite softSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+        List<RectTransform> petals = new List<RectTransform>();
+        Color petalColor = new Color(0.82f, 0.16f, 0.29f, 0.92f);
+
+        for (int index = 0; index < 5; index++)
+        {
+            GameObject petalObject = new GameObject(
+                $"Petal_{index + 1}",
+                typeof(RectTransform),
+                typeof(Image)
+            );
+            petalObject.transform.SetParent(bloom.transform, false);
+            RectTransform petal = petalObject.GetComponent<RectTransform>();
+            petal.anchorMin = petal.anchorMax = new Vector2(0.5f, 0.5f);
+            petal.pivot = new Vector2(0.5f, 0.08f);
+            petal.anchoredPosition = Vector2.zero;
+            petal.sizeDelta = new Vector2(78f, 124f);
+            petal.localEulerAngles = new Vector3(0f, 0f, index * 72f);
+            petal.localScale = Vector3.zero;
+
+            Image image = petalObject.GetComponent<Image>();
+            image.sprite = softSprite;
+            image.color = petalColor;
+            image.raycastTarget = false;
+            petals.Add(petal);
+        }
+
+        GameObject core = new GameObject("BloomCore", typeof(RectTransform), typeof(Image));
+        core.transform.SetParent(bloom.transform, false);
+        RectTransform coreRect = core.GetComponent<RectTransform>();
+        coreRect.anchorMin = coreRect.anchorMax = new Vector2(0.5f, 0.5f);
+        coreRect.sizeDelta = new Vector2(42f, 42f);
+        coreRect.localScale = Vector3.zero;
+        Image coreImage = core.GetComponent<Image>();
+        coreImage.sprite = softSprite;
+        coreImage.color = new Color(0.98f, 0.72f, 0.28f, 1f);
+        coreImage.raycastTarget = false;
+        petals.Add(coreRect);
+
+        return petals;
     }
 
     private IEnumerator PlayLaunchIntro(
         CanvasGroup group,
-        GameObject overlay
+        GameObject overlay,
+        IReadOnlyList<RectTransform> petals,
+        Image logo,
+        RectTransform logoRect
     )
     {
-        GameAudioController.PlayLogoReveal();
         yield return Fade(group, 0f, 1f, 0.45f);
+
+        float bloomElapsed = 0f;
+        const float bloomDuration = 0.78f;
+        while (bloomElapsed < bloomDuration && !skipIntroRequested)
+        {
+            bloomElapsed += Time.unscaledDeltaTime;
+            for (int index = 0; index < petals.Count; index++)
+            {
+                float delayed = Mathf.Clamp01(
+                    bloomElapsed / bloomDuration * 1.55f - index * 0.09f
+                );
+                float eased = Mathf.SmoothStep(0f, 1f, delayed);
+                petals[index].localScale = Vector3.one * eased;
+            }
+            yield return null;
+        }
+
+        foreach (RectTransform petal in petals)
+        {
+            petal.localScale = Vector3.one;
+        }
+
+        GameAudioController.PlayLogoReveal();
+        float logoElapsed = 0f;
+        const float logoDuration = 0.48f;
+        while (logoElapsed < logoDuration && !skipIntroRequested)
+        {
+            logoElapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.SmoothStep(0f, 1f, logoElapsed / logoDuration);
+            logo.color = new Color(1f, 1f, 1f, progress);
+            logoRect.localScale = Vector3.one * Mathf.Lerp(0.86f, 1f, progress);
+            yield return null;
+        }
+        logo.color = Color.white;
+        logoRect.localScale = Vector3.one;
+
         float holdElapsed = 0f;
-        while (holdElapsed < 0.9f && !skipIntroRequested)
+        while (holdElapsed < 0.72f && !skipIntroRequested)
         {
             holdElapsed += Time.unscaledDeltaTime;
             yield return null;

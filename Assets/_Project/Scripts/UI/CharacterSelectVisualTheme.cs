@@ -4,13 +4,13 @@ using UnityEngine.UI;
 
 public static class CharacterSelectVisualTheme
 {
-    private static readonly Color Background = new(0.035f, 0.055f, 0.10f, 1f);
-    private static readonly Color Panel = new(0.055f, 0.09f, 0.15f, 0.96f);
-    private static readonly Color PanelRaised = new(0.075f, 0.12f, 0.20f, 1f);
-    private static readonly Color Accent = new(0.12f, 0.78f, 0.92f, 1f);
-    private static readonly Color AccentSoft = new(0.12f, 0.78f, 0.92f, 0.24f);
-    private static readonly Color PrimaryText = new(0.94f, 0.97f, 1f, 1f);
-    private static readonly Color SecondaryText = new(0.63f, 0.72f, 0.82f, 1f);
+    private static readonly Color Background = new(0.025f, 0.035f, 0.07f, 1f);
+    private static readonly Color Panel = new(0.07f, 0.075f, 0.13f, 0.96f);
+    private static readonly Color PanelRaised = new(0.11f, 0.095f, 0.16f, 1f);
+    private static readonly Color Accent = new(0.86f, 0.34f, 0.45f, 1f);
+    private static readonly Color AccentSoft = new(0.86f, 0.34f, 0.45f, 0.24f);
+    private static readonly Color PrimaryText = new(0.95f, 0.92f, 0.84f, 1f);
+    private static readonly Color SecondaryText = new(0.68f, 0.70f, 0.78f, 1f);
 
     public static void Apply(Transform source)
     {
