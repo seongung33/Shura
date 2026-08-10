@@ -21,6 +21,11 @@ public sealed class BreakableSupplyObject : NetworkBehaviour, IDamageable
     private void Awake()
     {
         localHealth = maxHealth;
+
+        foreach (Collider2D supplyCollider in GetComponents<Collider2D>())
+        {
+            supplyCollider.isTrigger = true;
+        }
     }
 
     public override void OnNetworkSpawn()
@@ -70,21 +75,16 @@ public sealed class BreakableSupplyObject : NetworkBehaviour, IDamageable
             return;
         }
 
-        float nextHealth = Mathf.Max(0f, CurrentHealth - damage);
-
         if (IsSpawned)
         {
-            networkHealth.Value = nextHealth;
+            networkHealth.Value = 0f;
         }
         else
         {
-            localHealth = nextHealth;
+            localHealth = 0f;
         }
 
-        if (nextHealth <= 0f)
-        {
-            Break();
-        }
+        Break();
     }
 
     private void Break()

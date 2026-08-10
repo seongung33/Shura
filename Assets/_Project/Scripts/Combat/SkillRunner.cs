@@ -1,4 +1,5 @@
 using UnityEngine;
+using Shura.Player;
 
 public class SkillRunner : MonoBehaviour
 {
@@ -10,6 +11,12 @@ public class SkillRunner : MonoBehaviour
         Transform target
     )
     {
+        PlayerHealth playerHealth = GetComponent<PlayerHealth>();
+        if (playerHealth != null && playerHealth.IsDead)
+        {
+            return false;
+        }
+
         if (skillData == null)
         {
             Debug.LogWarning("SkillData가 연결되지 않았습니다.");

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Shura.Player;
 
 public class PlayerAutoAttack : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class PlayerAutoAttack : MonoBehaviour
     private LayerMask enemyLayer;
 
     private float nextAttackTime;
+    private PlayerHealth playerHealth;
 
     private void Awake()
     {
@@ -19,10 +21,17 @@ public class PlayerAutoAttack : MonoBehaviour
         {
             skillRunner = GetComponent<SkillRunner>();
         }
+
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     private void Update()
     {
+        if (playerHealth != null && playerHealth.IsDead)
+        {
+            return;
+        }
+
         if (basicSkill == null)
         {
             return;

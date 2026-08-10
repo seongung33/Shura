@@ -1,4 +1,5 @@
 using UnityEngine;
+using Shura.Player;
 
 /// <summary>
 /// Jumong's basic attack. It aims at the nearest enemy only when firing,
@@ -19,6 +20,7 @@ public sealed class JumongAutoTargetAttack : MonoBehaviour
 
     private PlayerRuntimeGrowth runtimeGrowth;
     private NetworkSkillCastRelay networkRelay;
+    private PlayerHealth playerHealth;
     private float nextAttackTime;
 
     public static bool Supports(CharacterData character)
@@ -39,12 +41,14 @@ public sealed class JumongAutoTargetAttack : MonoBehaviour
     {
         runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
         networkRelay = GetComponent<NetworkSkillCastRelay>();
+        playerHealth = GetComponent<PlayerHealth>();
         runtimeGrowth?.ConfigureBasicSkill(basicSkill);
     }
 
     private void Update()
     {
         if (GameplayPauseState.IsLevelUpActive ||
+            (playerHealth != null && playerHealth.IsDead) ||
             basicSkill == null ||
             Time.time < nextAttackTime)
         {
