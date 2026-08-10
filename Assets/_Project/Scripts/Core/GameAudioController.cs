@@ -28,6 +28,7 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip itemPickupSound;
     private float nextExperienceSoundTime;
     private Coroutine musicFadeRoutine;
+    private bool initialized;
 
     public static float MusicVolume =>
         PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume);
@@ -47,6 +48,8 @@ public sealed class GameAudioController : MonoBehaviour
         {
             instance = new GameObject("GameAudioController").AddComponent<GameAudioController>();
         }
+
+        instance.Initialize();
     }
 
     public static void PlayButtonClick()
@@ -156,7 +159,23 @@ public sealed class GameAudioController : MonoBehaviour
         }
 
         instance = this;
-        DontDestroyOnLoad(gameObject);
+        Initialize();
+    }
+
+    private void Initialize()
+    {
+        if (initialized)
+        {
+            return;
+        }
+
+        initialized = true;
+
+        if (Application.isPlaying)
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         musicSource = gameObject.AddComponent<AudioSource>();
         effectsSource = gameObject.AddComponent<AudioSource>();
         musicSource.loop = true;
@@ -179,8 +198,11 @@ public sealed class GameAudioController : MonoBehaviour
         experiencePickupSound = CreateExperiencePickupCue();
         itemPickupSound = CreateItemPickupCue();
 
-        SceneManager.sceneLoaded += HandleSceneLoaded;
-        PlayMusicForScene(SceneManager.GetActiveScene().name);
+        if (Application.isPlaying)
+        {
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+            PlayMusicForScene(SceneManager.GetActiveScene().name);
+        }
     }
 
     private void OnDestroy()
