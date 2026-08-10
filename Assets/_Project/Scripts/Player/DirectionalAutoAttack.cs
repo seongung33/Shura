@@ -1,4 +1,5 @@
 using UnityEngine;
+using Shura.Player;
 
 /// <summary>
 /// 주몽 기본공격: 유도 없는 단발 화살을 마지막 이동 방향으로 자동 발사한다 (D-013, D-018).
@@ -23,6 +24,7 @@ public class DirectionalAutoAttack : MonoBehaviour
 
     private PlayerAimDirection aim;
     private PlayerRuntimeGrowth runtimeGrowth;
+    private PlayerHealth playerHealth;
     private float nextAttackTime;
 
     public void ConfigureBasicSkill(SkillData skill)
@@ -37,12 +39,14 @@ public class DirectionalAutoAttack : MonoBehaviour
     {
         aim = GetComponent<PlayerAimDirection>();
         runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
+        playerHealth = GetComponent<PlayerHealth>();
         runtimeGrowth?.ConfigureBasicSkill(basicSkill);
     }
 
     private void Update()
     {
-        if (GameplayPauseState.IsLevelUpActive)
+        if (GameplayPauseState.IsLevelUpActive ||
+            (playerHealth != null && playerHealth.IsDead))
         {
             return;
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Shura.Player;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -21,12 +22,14 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         new Dictionary<int, ElementType>();
     private readonly List<SkillData> configuredStartingSkills = new();
     private PlayerRuntimeGrowth runtimeGrowth;
+    private PlayerHealth playerHealth;
     private SkillData configuredBasicSkill;
     private SkillData configuredUltimateSkill;
 
     private void Awake()
     {
         runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     public void ConfigureAllowedSkills(
@@ -76,7 +79,10 @@ public class NetworkSkillCastRelay : NetworkBehaviour
         ElementType element
     )
     {
-        if (!IsSpawned || !IsOwner || skill == null)
+        if (!IsSpawned ||
+            !IsOwner ||
+            skill == null ||
+            (playerHealth != null && playerHealth.IsDead))
         {
             return false;
         }
@@ -126,6 +132,7 @@ public class NetworkSkillCastRelay : NetworkBehaviour
     )
     {
         if (GameplayPauseState.IsLevelUpActive ||
+            (playerHealth != null && playerHealth.IsDead) ||
             !IsValidElement(element) ||
             !TryGetValidatedCast(
                 skillIndex,

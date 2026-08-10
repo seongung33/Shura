@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Shura.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -42,6 +43,7 @@ public class AutoSkillCaster : MonoBehaviour
     private PlayerAimDirection aim;
     private PlayerRuntimeGrowth runtimeGrowth;
     private NetworkSkillCastRelay networkRelay;
+    private PlayerHealth playerHealth;
     private bool hasStarted;
     private readonly HashSet<SkillData> persistentSkills = new();
     private EquippedSkill ultimateSkill;
@@ -74,6 +76,7 @@ public class AutoSkillCaster : MonoBehaviour
         aim = GetComponent<PlayerAimDirection>();
         runtimeGrowth = GetComponent<PlayerRuntimeGrowth>();
         networkRelay = GetComponent<NetworkSkillCastRelay>();
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     private void Start()
@@ -199,7 +202,8 @@ public class AutoSkillCaster : MonoBehaviour
 
     private void Update()
     {
-        if (GameplayPauseState.IsLevelUpActive)
+        if (GameplayPauseState.IsLevelUpActive ||
+            (playerHealth != null && playerHealth.IsDead))
         {
             return;
         }
