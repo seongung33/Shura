@@ -96,6 +96,7 @@ public static class NetworkCharacterApplicationValidator
             target.transform.position = Vector3.right;
             target.AddComponent<BoxCollider2D>();
             EnemyHealth health = target.AddComponent<EnemyHealth>();
+            health.ConfigureRuntime(1f, 0f, null, 1);
             float healthBefore = health.CurrentHealth;
 
             Physics2D.SyncTransforms();

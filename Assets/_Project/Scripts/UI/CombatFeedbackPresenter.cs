@@ -75,16 +75,17 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
 
     private static void EnsureInstance()
     {
-        if (instance != null)
-        {
-            return;
-        }
+        instance ??= FindFirstObjectByType<CombatFeedbackPresenter>();
 
-        instance = FindFirstObjectByType<CombatFeedbackPresenter>();
         if (instance == null)
         {
             GameObject runtime = new GameObject("CombatFeedbackRuntime");
             instance = runtime.AddComponent<CombatFeedbackPresenter>();
+        }
+
+        if (instance.canvas == null)
+        {
+            instance.CreateOverlay();
         }
     }
 
@@ -167,6 +168,11 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
 
     private void CreateOverlay()
     {
+        if (canvas != null)
+        {
+            return;
+        }
+
         GameObject canvasObject = new GameObject("CombatFeedbackCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
         canvasObject.transform.SetParent(transform, false);
         canvas = canvasObject.GetComponent<Canvas>();
