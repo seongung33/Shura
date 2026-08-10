@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -18,14 +19,22 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
     private Color normalColor;
     private Color focusColor;
     private Color targetColor;
+    private TMP_Text targetLabel;
+    private Color normalTextColor;
+    private Color focusTextColor;
+    private Color targetTextColor;
     private bool colorFocusEnabled;
     private bool defaultFocused;
     private bool pointerInside;
+    private bool selected;
 
     public void ConfigureFocusColors(
         Color normal,
         Color focused,
-        bool isDefaultFocused
+        bool isDefaultFocused,
+        TMP_Text label = null,
+        Color? normalLabelColor = null,
+        Color? focusedLabelColor = null
     )
     {
         targetImage = GetComponent<Image>();
@@ -34,10 +43,20 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
         defaultFocused = isDefaultFocused;
         colorFocusEnabled = targetImage != null;
         targetColor = defaultFocused ? focusColor : normalColor;
+        targetLabel = label;
+        normalTextColor = normalLabelColor ?? Color.white;
+        focusTextColor = focusedLabelColor ?? normalTextColor;
+        targetTextColor = defaultFocused ? focusTextColor : normalTextColor;
 
         if (targetImage != null)
         {
             targetImage.color = targetColor;
+        }
+
+        if (targetLabel != null)
+        {
+            targetLabel.color = targetTextColor;
+            targetLabel.faceColor = targetTextColor;
         }
     }
 
@@ -50,6 +69,7 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
 
         transform.localScale = Vector3.one;
         targetScale = Vector3.one;
+        selected = false;
         ApplyDefaultFocus();
     }
 
@@ -74,6 +94,17 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
                 1f - Mathf.Exp(-16f * Time.unscaledDeltaTime)
             );
         }
+
+        if (targetLabel != null)
+        {
+            Color labelColor = Color.Lerp(
+                targetLabel.color,
+                targetTextColor,
+                1f - Mathf.Exp(-16f * Time.unscaledDeltaTime)
+            );
+            targetLabel.color = labelColor;
+            targetLabel.faceColor = labelColor;
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -87,7 +118,10 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
     {
         pointerInside = false;
         targetScale = Vector3.one;
-        RestoreDefaultFocus();
+        if (!selected)
+        {
+            RestoreDefaultFocus();
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -107,11 +141,13 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
 
     public void OnSelect(BaseEventData eventData)
     {
+        selected = true;
         SetFocused(this);
     }
 
     public void OnDeselect(BaseEventData eventData)
     {
+        selected = false;
         if (!pointerInside)
         {
             RestoreDefaultFocus();
@@ -130,11 +166,23 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
             motion.targetColor = motion == focused
                 ? motion.focusColor
                 : motion.normalColor;
+            motion.targetTextColor = motion == focused
+                ? motion.focusTextColor
+                : motion.normalTextColor;
         }
     }
 
     private static void RestoreDefaultFocus()
     {
+        foreach (MainMenuButtonMotion motion in FocusGroup)
+        {
+            if (motion != null && motion.selected && motion.colorFocusEnabled)
+            {
+                SetFocused(motion);
+                return;
+            }
+        }
+
         foreach (MainMenuButtonMotion motion in FocusGroup)
         {
             motion?.ApplyDefaultFocus();
@@ -146,6 +194,79 @@ public sealed class MainMenuButtonMotion : MonoBehaviour,
         if (colorFocusEnabled)
         {
             targetColor = defaultFocused ? focusColor : normalColor;
+        }
+        if (targetLabel != null)
+        {
+            targetTextColor = defaultFocused ? focusTextColor : normalTextColor;
+        }
+    }
+}
+
+/// <summary>
+/// A package-free, soft center vignette used to separate the menu from busy artwork.
+/// </summary>
+public sealed class MainMenuCenterShade : MaskableGraphic
+{
+    private const int Columns = 16;
+    private const int Rows = 12;
+
+    private float strength = 0.24f;
+    private Vector2 radius = new(0.58f, 0.96f);
+
+    public void Configure(float alpha, Vector2 normalizedRadius)
+    {
+        strength = Mathf.Clamp01(alpha);
+        radius = new Vector2(
+            Mathf.Max(0.01f, normalizedRadius.x),
+            Mathf.Max(0.01f, normalizedRadius.y)
+        );
+        color = Color.black;
+        raycastTarget = false;
+        SetVerticesDirty();
+    }
+
+    protected override void OnPopulateMesh(VertexHelper vertexHelper)
+    {
+        vertexHelper.Clear();
+        Rect bounds = GetPixelAdjustedRect();
+
+        for (int row = 0; row <= Rows; row++)
+        {
+            float v = row / (float)Rows;
+            for (int column = 0; column <= Columns; column++)
+            {
+                float u = column / (float)Columns;
+                float normalizedX = (u * 2f - 1f) / radius.x;
+                float normalizedY = (v * 2f - 1f) / radius.y;
+                float distance = Mathf.Sqrt(
+                    normalizedX * normalizedX + normalizedY * normalizedY
+                );
+                float falloff = Mathf.SmoothStep(1f, 0f, distance);
+                Color vertexColor = new(0f, 0f, 0f, strength * falloff);
+
+                vertexHelper.AddVert(
+                    new Vector3(
+                        Mathf.Lerp(bounds.xMin, bounds.xMax, u),
+                        Mathf.Lerp(bounds.yMin, bounds.yMax, v)
+                    ),
+                    vertexColor,
+                    new Vector2(u, v)
+                );
+            }
+        }
+
+        int stride = Columns + 1;
+        for (int row = 0; row < Rows; row++)
+        {
+            for (int column = 0; column < Columns; column++)
+            {
+                int bottomLeft = row * stride + column;
+                int bottomRight = bottomLeft + 1;
+                int topLeft = bottomLeft + stride;
+                int topRight = topLeft + 1;
+                vertexHelper.AddTriangle(bottomLeft, topLeft, topRight);
+                vertexHelper.AddTriangle(bottomLeft, topRight, bottomRight);
+            }
         }
     }
 }
