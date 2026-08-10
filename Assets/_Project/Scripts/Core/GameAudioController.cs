@@ -27,7 +27,12 @@ public sealed class GameAudioController : MonoBehaviour
     private AudioClip upgradeConfirmSound;
     private AudioClip experiencePickupSound;
     private AudioClip itemPickupSound;
+    private AudioClip navigationSound;
+    private AudioClip enemyDefeatedSound;
+    private AudioClip victorySound;
+    private AudioClip defeatSound;
     private float nextExperienceSoundTime;
+    private float nextEnemyDefeatedSoundTime;
     private float nextPlayerHurtSoundTime;
     private Coroutine musicFadeRoutine;
     private bool initialized;
@@ -151,6 +156,42 @@ public sealed class GameAudioController : MonoBehaviour
         instance.effectsSource.PlayOneShot(instance.bossSound, 0.55f);
     }
 
+    public static void PlayCardNavigation()
+    {
+        EnsureExists();
+        instance.effectsSource.PlayOneShot(instance.navigationSound, 0.34f);
+    }
+
+    public static void PlayEnemyDefeated()
+    {
+        EnsureExists();
+        if (Time.unscaledTime < instance.nextEnemyDefeatedSoundTime)
+        {
+            return;
+        }
+
+        instance.nextEnemyDefeatedSoundTime = Time.unscaledTime + 0.045f;
+        instance.effectsSource.pitch = Random.Range(0.92f, 1.08f);
+        instance.effectsSource.PlayOneShot(instance.enemyDefeatedSound, 0.38f);
+        instance.effectsSource.pitch = 1f;
+    }
+
+    public static void PlayGameResult(bool victory)
+    {
+        EnsureExists();
+        AudioClip clip = victory ? instance.victorySound : instance.defeatSound;
+        instance.effectsSource.PlayOneShot(clip, victory ? 0.78f : 0.7f);
+
+        if (instance.musicFadeRoutine != null)
+        {
+            instance.StopCoroutine(instance.musicFadeRoutine);
+        }
+
+        instance.musicFadeRoutine = instance.StartCoroutine(
+            instance.FadeMusic(MusicVolume * 0.38f, 0.35f)
+        );
+    }
+
     public static void SetMusicVolume(float value)
     {
         EnsureExists();
@@ -206,8 +247,10 @@ public sealed class GameAudioController : MonoBehaviour
         effectsSource.playOnAwake = false;
         effectsSource.volume = EffectsVolume;
 
-        menuMusic = Resources.Load<AudioClip>("Audio/Music/EmptyCity");
-        battleMusic = Resources.Load<AudioClip>("Audio/Music/CyberBattle");
+        menuMusic = CreateMugungMenuMusic() ??
+                    Resources.Load<AudioClip>("Audio/Music/EmptyCity");
+        battleMusic = CreateMugungBattleMusic() ??
+                      Resources.Load<AudioClip>("Audio/Music/CyberBattle");
         clickSound = CreateUiClick();
         hitSound = CreateImpact("Hit", false);
         strongHitSound = CreateImpact("StrongHit", true);
@@ -220,6 +263,10 @@ public sealed class GameAudioController : MonoBehaviour
         upgradeConfirmSound = CreateUpgradeConfirmCue();
         experiencePickupSound = CreateExperiencePickupCue();
         itemPickupSound = CreateItemPickupCue();
+        navigationSound = CreateNavigationCue();
+        enemyDefeatedSound = CreateEnemyDefeatedCue();
+        victorySound = CreateResultCue("Victory", true);
+        defeatSound = CreateResultCue("Defeat", false);
 
         if (Application.isPlaying)
         {
@@ -471,6 +518,153 @@ public sealed class GameAudioController : MonoBehaviour
                 return (low * 0.16f + high * 0.2f + sparkle * 0.1f) * envelope;
             }
         );
+    }
+
+    private static AudioClip CreateNavigationCue()
+    {
+        return CreateLayeredClip(
+            "CardNavigation",
+            0.075f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 3f);
+                float tone = Mathf.Sin(2f * Mathf.PI * 560f * time);
+                float shimmer = Mathf.Sin(2f * Mathf.PI * 1120f * time);
+                return (tone * 0.16f + shimmer * 0.07f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateEnemyDefeatedCue()
+    {
+        return CreateLayeredClip(
+            "EnemyDefeated",
+            0.16f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Pow(1f - progress, 2f);
+                float fall = Mathf.Lerp(220f, 72f, progress);
+                float tone = Mathf.Sin(2f * Mathf.PI * fall * time);
+                float dust = Random.Range(-0.5f, 0.5f) * Mathf.Pow(1f - progress, 5f);
+                return (tone * 0.22f + dust * 0.12f) * envelope;
+            }
+        );
+    }
+
+    private static AudioClip CreateResultCue(string name, bool victory)
+    {
+        return CreateLayeredClip(
+            name,
+            victory ? 1.25f : 1.05f,
+            (progress, time) =>
+            {
+                float envelope = Mathf.Sin(Mathf.PI * Mathf.Clamp01(progress * 1.1f));
+                float[] victoryNotes = { 196f, 246.94f, 293.66f, 392f };
+                float[] defeatNotes = { 196f, 164.81f, 146.83f, 98f };
+                float[] notes = victory ? victoryNotes : defeatNotes;
+                int step = Mathf.Min(notes.Length - 1, Mathf.FloorToInt(progress * notes.Length));
+                float core = Mathf.Sin(2f * Mathf.PI * notes[step] * time);
+                float overtone = Mathf.Sin(2f * Mathf.PI * notes[step] * 2f * time);
+                float pulse = victory ? 1f : 0.78f + Mathf.Sin(2f * Mathf.PI * 4f * time) * 0.22f;
+                return (core * 0.3f + overtone * 0.1f) * envelope * pulse;
+            }
+        );
+    }
+
+    private static AudioClip CreateMugungMenuMusic()
+    {
+        const float duration = 12f;
+        const int sampleRate = 22050;
+        float[] notes = { 146.83f, 174.61f, 196f, 220f, 196f, 174.61f };
+        return CreateMusicClip(
+            "MugungMenuTheme",
+            duration,
+            sampleRate,
+            (index, time) =>
+            {
+                float phrase = time / 2f;
+                int noteIndex = Mathf.FloorToInt(phrase) % notes.Length;
+                float noteTime = phrase - Mathf.Floor(phrase);
+                float pluck = Mathf.Exp(-noteTime * 5.5f);
+                float note = Mathf.Sin(2f * Mathf.PI * notes[noteIndex] * time);
+                float overtone = Mathf.Sin(2f * Mathf.PI * notes[noteIndex] * 2f * time);
+                float drone = Mathf.Sin(2f * Mathf.PI * 73.415f * time) * 0.11f +
+                              Mathf.Sin(2f * Mathf.PI * 110f * time) * 0.06f;
+                float breath = PseudoNoise(index / 22) * 0.018f;
+                float slowSwell = 0.72f + Mathf.Sin(2f * Mathf.PI * time / duration) * 0.16f;
+                return (drone + (note * 0.12f + overtone * 0.035f) * pluck + breath) *
+                       slowSwell;
+            }
+        );
+    }
+
+    private static AudioClip CreateMugungBattleMusic()
+    {
+        const float duration = 8f;
+        const int sampleRate = 22050;
+        const float beatDuration = 0.5f;
+        float[] bassNotes = { 73.415f, 73.415f, 98f, 110f, 73.415f, 130.81f, 110f, 98f };
+        float[] leadNotes = { 293.66f, 349.23f, 392f, 440f, 392f, 349.23f, 293.66f, 261.63f };
+        return CreateMusicClip(
+            "MugungBattleTheme",
+            duration,
+            sampleRate,
+            (index, time) =>
+            {
+                float beat = time / beatDuration;
+                int beatIndex = Mathf.FloorToInt(beat) % bassNotes.Length;
+                float beatTime = (beat - Mathf.Floor(beat)) * beatDuration;
+                float kickEnvelope = Mathf.Exp(-beatTime * 15f);
+                float kickFrequency = Mathf.Lerp(92f, 48f, Mathf.Clamp01(beatTime * 8f));
+                float drum = Mathf.Sin(2f * Mathf.PI * kickFrequency * time) *
+                             kickEnvelope * (beatIndex % 2 == 0 ? 0.28f : 0.18f);
+                float snap = PseudoNoise(index) * Mathf.Exp(-beatTime * 34f) *
+                             (beatIndex % 2 == 1 ? 0.11f : 0.035f);
+                float bass = Mathf.Sin(2f * Mathf.PI * bassNotes[beatIndex] * time) * 0.13f;
+                float leadEnvelope = Mathf.Exp(-beatTime * 5.5f);
+                float lead = Mathf.Sin(2f * Mathf.PI * leadNotes[beatIndex] * time) *
+                             leadEnvelope * 0.105f;
+                float metal = Mathf.Sin(2f * Mathf.PI * 1174.66f * time) *
+                              Mathf.Exp(-beatTime * 26f) *
+                              (beatIndex % 4 == 3 ? 0.055f : 0.018f);
+                return drum + snap + bass + lead + metal;
+            }
+        );
+    }
+
+    private static AudioClip CreateMusicClip(
+        string name,
+        float duration,
+        int sampleRate,
+        System.Func<int, float, float> generator
+    )
+    {
+        int sampleCount = Mathf.CeilToInt(duration * sampleRate);
+        float[] samples = new float[sampleCount];
+        const int fadeSamples = 256;
+
+        for (int index = 0; index < sampleCount; index++)
+        {
+            float time = (float)index / sampleRate;
+            float edgeFade = Mathf.Min(
+                1f,
+                Mathf.Min(index, sampleCount - 1 - index) / (float)fadeSamples
+            );
+            samples[index] = Mathf.Clamp(generator(index, time) * edgeFade, -0.82f, 0.82f);
+        }
+
+        AudioClip clip = AudioClip.Create(name, sampleCount, 1, sampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
+
+    private static float PseudoNoise(int value)
+    {
+        uint hash = (uint)value;
+        hash ^= hash << 13;
+        hash ^= hash >> 17;
+        hash ^= hash << 5;
+        return (hash & 0xffff) / 32767.5f - 1f;
     }
 
     private static AudioClip CreateLayeredClip(

@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    private static Sprite groundMarkerSprite;
-
     [SerializeField]
     private Transform target;
 
@@ -45,7 +43,6 @@ public class EnemyController : MonoBehaviour
         movementPhase = (Mathf.Abs(GetInstanceID()) % 997) * 0.017f;
         usesAuthoredAnimation = GetComponent<Animator>() != null;
         CreateWalkFrames();
-        CreateReadabilityMarker();
     }
 
     private void Start()
@@ -244,75 +241,6 @@ public class EnemyController : MonoBehaviour
         }
 
         spriteRenderer.sprite = walkFrames[0];
-    }
-
-    private void CreateReadabilityMarker()
-    {
-        GameObject marker = new GameObject("EnemyReadabilityMarker");
-        marker.transform.SetParent(transform, false);
-        marker.transform.localPosition = new Vector3(0f, -0.42f, 0f);
-        marker.transform.localScale = new Vector3(1.05f, 0.72f, 1f);
-
-        SpriteRenderer markerRenderer = marker.AddComponent<SpriteRenderer>();
-        markerRenderer.sprite = GetOrCreateGroundMarkerSprite();
-        markerRenderer.color = new Color(1f, 0.24f, 0.07f, 0.78f);
-        markerRenderer.sortingLayerID = spriteRenderer != null
-            ? spriteRenderer.sortingLayerID
-            : 0;
-        markerRenderer.sortingOrder = spriteRenderer != null
-            ? spriteRenderer.sortingOrder - 1
-            : -1;
-    }
-
-    private static Sprite GetOrCreateGroundMarkerSprite()
-    {
-        if (groundMarkerSprite != null)
-        {
-            return groundMarkerSprite;
-        }
-
-        const int width = 48;
-        const int height = 24;
-        Texture2D texture = new Texture2D(
-            width,
-            height,
-            TextureFormat.RGBA32,
-            false
-        )
-        {
-            name = "EnemyGroundMarker",
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Clamp
-        };
-        Color32[] pixels = new Color32[width * height];
-
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                float normalizedX = (x - (width - 1) * 0.5f) / (width * 0.5f);
-                float normalizedY = (y - (height - 1) * 0.5f) / (height * 0.5f);
-                float distance = normalizedX * normalizedX +
-                                 normalizedY * normalizedY;
-                bool ring = distance <= 0.92f && distance >= 0.58f;
-                pixels[y * width + x] = ring
-                    ? new Color32(255, 255, 255, 255)
-                    : new Color32(255, 255, 255, 0);
-            }
-        }
-
-        texture.SetPixels32(pixels);
-        texture.Apply(false, true);
-        groundMarkerSprite = Sprite.Create(
-            texture,
-            new Rect(0f, 0f, width, height),
-            new Vector2(0.5f, 0.5f),
-            36f,
-            0,
-            SpriteMeshType.FullRect
-        );
-        groundMarkerSprite.name = "EnemyGroundMarkerSprite";
-        return groundMarkerSprite;
     }
 
     private void UpdateWalkFrame()

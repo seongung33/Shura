@@ -407,6 +407,8 @@ public class NetworkSkillCastRelay : NetworkBehaviour
             Quaternion.identity
         );
 
+        SkillSpawnSafety.DisableUnexpectedSceneComponents(skillObject);
+
         ISkillBehaviour behaviour =
             skillObject.GetComponent<ISkillBehaviour>();
 
