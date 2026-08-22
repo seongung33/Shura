@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public sealed class CombatFeedbackPresenter : MonoBehaviour
 {
     private static CombatFeedbackPresenter instance;
+    private static int playerDamageSequence;
 
     private Canvas canvas;
     private Image[] dangerEdges;
@@ -13,6 +14,7 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
     private TMP_Text bossWarningText;
     private Coroutine bossRoutine;
     private float nextHealthRefresh;
+    private TMP_FontAsset mulmaruFont;
 
     private void Awake()
     {
@@ -55,7 +57,13 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
 
         EnsureInstance();
         instance.StartCoroutine(instance.FlashSprite(target));
-        instance.CreateDamageNumber(target.transform.position, damage, target.IsBoss);
+        instance.CreateDamageNumber(
+            target.transform.position,
+            damage,
+            target.IsBoss,
+            false,
+            0
+        );
 
         Shura.Camera.CameraFollow cameraFollow = FindFirstObjectByType<Shura.Camera.CameraFollow>();
         cameraFollow?.Shake(defeated || target.IsBoss ? 0.12f : 0.05f, defeated ? 0.18f : 0.08f);
@@ -64,6 +72,24 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         {
             GameAudioController.PlayEnemyDefeated();
         }
+    }
+
+    public static void PlayPlayerHit(Transform target, float damage)
+    {
+        if (target == null || damage <= 0f)
+        {
+            return;
+        }
+
+        EnsureInstance();
+        int lane = playerDamageSequence++ % 3 - 1;
+        instance.CreateDamageNumber(
+            target.position,
+            damage,
+            false,
+            true,
+            lane
+        );
     }
 
     public static void ShowBossWarning(string bossName)
@@ -114,32 +140,61 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         }
     }
 
-    private void CreateDamageNumber(Vector3 worldPosition, float damage, bool boss)
+    private void CreateDamageNumber(
+        Vector3 worldPosition,
+        float damage,
+        bool boss,
+        bool playerDamage,
+        int horizontalLane
+    )
     {
         GameObject numberObject = new GameObject("DamageNumber", typeof(RectTransform), typeof(TextMeshProUGUI));
         numberObject.transform.SetParent(canvas.transform, false);
         RectTransform rect = numberObject.GetComponent<RectTransform>();
+        float height = playerDamage ? 1.05f : 0.7f;
         Vector2 screen = Camera.main != null
-            ? Camera.main.WorldToScreenPoint(worldPosition + Vector3.up * 0.7f)
+            ? Camera.main.WorldToScreenPoint(worldPosition + Vector3.up * height)
             : new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+        screen.x += playerDamage ? horizontalLane * 34f : 0f;
         rect.position = screen;
-        rect.sizeDelta = new Vector2(180f, 70f);
+        rect.sizeDelta = playerDamage
+            ? new Vector2(220f, 84f)
+            : new Vector2(180f, 70f);
 
         TMP_Text text = numberObject.GetComponent<TMP_Text>();
         text.text = Mathf.CeilToInt(damage).ToString();
         text.alignment = TextAlignmentOptions.Center;
         text.fontStyle = FontStyles.Bold;
-        text.fontSize = boss ? 34f : 28f;
-        Color numberColor = boss
-            ? new Color(1f, 0.48f, 0.32f)
-            : new Color(1f, 0.94f, 0.9f);
+        text.fontSize = playerDamage ? 34f : boss ? 34f : 28f;
+
+        if (playerDamage)
+        {
+            mulmaruFont ??= Resources.Load<TMP_FontAsset>(
+                "Fonts & Materials/Mulmaru SDF"
+            );
+
+            if (mulmaruFont != null)
+            {
+                text.font = mulmaruFont;
+            }
+        }
+
+        Color numberColor = playerDamage
+            ? new Color(1f, 0.22f, 0.2f)
+            : boss
+                ? new Color(1f, 0.48f, 0.32f)
+                : new Color(1f, 0.94f, 0.9f);
         ApplyReadableColor(text, numberColor);
-        text.outlineWidth = 0.2f;
+        text.outlineWidth = playerDamage ? 0.28f : 0.2f;
         text.outlineColor = Color.black;
-        StartCoroutine(AnimateNumber(rect, text));
+        StartCoroutine(AnimateNumber(rect, text, playerDamage));
     }
 
-    private static IEnumerator AnimateNumber(RectTransform rect, TMP_Text text)
+    private static IEnumerator AnimateNumber(
+        RectTransform rect,
+        TMP_Text text,
+        bool playerDamage
+    )
     {
         float elapsed = 0f;
         const float duration = 0.55f;
@@ -148,7 +203,8 @@ public sealed class CombatFeedbackPresenter : MonoBehaviour
         {
             elapsed += Time.unscaledDeltaTime;
             float progress = Mathf.Clamp01(elapsed / duration);
-            rect.anchoredPosition = start + Vector2.up * (55f * progress);
+            float riseDistance = playerDamage ? 70f : 55f;
+            rect.anchoredPosition = start + Vector2.up * (riseDistance * progress);
             Color color = text.color;
             color.a = 1f - progress;
             text.color = color;
