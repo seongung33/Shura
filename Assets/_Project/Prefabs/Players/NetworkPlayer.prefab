@@ -354,6 +354,7 @@ MonoBehaviour:
   onDeath:
     m_PersistentCalls:
       m_Calls: []
+  hitInvulnerabilityDuration: 0.7
   currentHealth: 0
   isDead: 0
 --- !u!114 &880000000000000006
