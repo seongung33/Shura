@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,8 +11,10 @@ namespace Shura.Player
         [SerializeField] private float maxHealth = 100f;
         [SerializeField] private UnityEvent onDeath;
 
+        [Header("Hit Invulnerability")]
+        [Tooltip("피해를 정상적으로 받은 뒤 모든 추가 피해를 무시하는 시간(초)")]
         [SerializeField, Min(0f)]
-        private float hitInvulnerabilityDuration = 0.4f;
+        private float hitInvulnerabilityDuration = 0.7f;
 
         [Header("Debug (읽기 전용, Play 모드에서 확인용)")]
         [SerializeField] private float currentHealth;
@@ -64,7 +67,11 @@ namespace Shura.Player
                 0f,
                 currentHealth - amount
             );
-            hitFeedback.Play(amount, currentHealth <= 0f);
+            hitFeedback.Play(
+                amount,
+                currentHealth <= 0f,
+                hitInvulnerabilityDuration
+            );
             Debug.Log($"Player 체력: {currentHealth}/ {maxHealth}");
 
             if (currentHealth <= 0f)
@@ -107,7 +114,11 @@ namespace Shura.Player
 
             if (currentHealth < previousHealth)
             {
-                hitFeedback.Play(previousHealth - currentHealth, isDead);
+                hitFeedback.Play(
+                    previousHealth - currentHealth,
+                    isDead,
+                    hitInvulnerabilityDuration
+                );
             }
 
             if (!wasDead && isDead)
@@ -127,15 +138,18 @@ namespace Shura.Player
     {
         private static int recoilSequence;
 
-        private readonly Color hitTint = new Color(1f, 0.38f, 0.32f, 1f);
         private Coroutine feedbackRoutine;
-        private SpriteRenderer[] activeRenderers;
-        private Color[] originalColors;
+        private SpriteRenderer[] sourceRenderers;
+        private SpriteRenderer[] overlayRenderers;
         private Transform motionRoot;
         private Vector3 originalLocalPosition;
         private Vector3 originalLocalScale;
 
-        public void Play(float damage, bool defeated)
+        public void Play(
+            float damage,
+            bool defeated,
+            float invulnerabilityDuration
+        )
         {
             if (!isActiveAndEnabled || damage <= 0f)
             {
@@ -143,12 +157,16 @@ namespace Shura.Player
             }
 
             RestoreVisuals();
-            feedbackRoutine = StartCoroutine(PlayFeedback(defeated));
+            feedbackRoutine = StartCoroutine(
+                PlayFeedback(defeated, invulnerabilityDuration)
+            );
 
             if (!IsLocalPlayer())
             {
                 return;
             }
+
+            CombatFeedbackPresenter.PlayPlayerHit(transform, damage);
 
             Shura.Camera.CameraFollow cameraFollow =
                 FindFirstObjectByType<Shura.Camera.CameraFollow>();
@@ -156,18 +174,12 @@ namespace Shura.Player
             GameAudioController.PlayPlayerHurt(defeated);
         }
 
-        private IEnumerator PlayFeedback(bool defeated)
+        private IEnumerator PlayFeedback(
+            bool defeated,
+            float invulnerabilityDuration
+        )
         {
-            activeRenderers = GetComponentsInChildren<SpriteRenderer>(true);
-            originalColors = new Color[activeRenderers.Length];
-
-            for (int index = 0; index < activeRenderers.Length; index++)
-            {
-                SpriteRenderer renderer = activeRenderers[index];
-                originalColors[index] = renderer != null
-                    ? renderer.color
-                    : Color.white;
-            }
+            CreateSilhouetteOverlays();
 
             motionRoot = ResolveMotionRoot();
 
@@ -177,7 +189,7 @@ namespace Shura.Player
                 originalLocalScale = motionRoot.localScale;
             }
 
-            float duration = defeated ? 0.24f : 0.18f;
+            float duration = Mathf.Max(0.01f, invulnerabilityDuration);
             float elapsed = 0f;
             float recoilDirection = (++recoilSequence & 1) == 0 ? -1f : 1f;
 
@@ -185,31 +197,27 @@ namespace Shura.Player
             {
                 elapsed += Time.unscaledDeltaTime;
                 float progress = Mathf.Clamp01(elapsed / duration);
-                float pulse = Mathf.Sin(progress * Mathf.PI);
-                float tintStrength = pulse * (defeated ? 0.58f : 0.42f);
+                float pulse = Mathf.Abs(
+                    Mathf.Sin(progress * Mathf.PI * 3f)
+                );
+                float fadeOut = Mathf.Clamp01((1f - progress) / 0.15f);
+                float overlayAlpha = (0.2f + pulse *
+                    (defeated ? 0.4f : 0.34f)) * fadeOut;
 
-                for (int index = 0; index < activeRenderers.Length; index++)
+                for (int index = 0; index < sourceRenderers.Length; index++)
                 {
-                    SpriteRenderer renderer = activeRenderers[index];
-
-                    if (renderer != null)
-                    {
-                        renderer.color = Color.Lerp(
-                            originalColors[index],
-                            hitTint,
-                            tintStrength
-                        );
-                    }
+                    UpdateSilhouetteOverlay(index, overlayAlpha);
                 }
 
                 if (motionRoot != null)
                 {
-                    float recoil = Mathf.Sin(progress * Mathf.PI) * 0.065f;
+                    float motionPulse = Mathf.Sin(progress * Mathf.PI);
+                    float recoil = motionPulse * 0.065f;
                     motionRoot.localPosition = originalLocalPosition +
                         Vector3.right * recoil * recoilDirection;
                     motionRoot.localScale = new Vector3(
-                        originalLocalScale.x * (1f + pulse * 0.035f),
-                        originalLocalScale.y * (1f - pulse * 0.055f),
+                        originalLocalScale.x * (1f + motionPulse * 0.035f),
+                        originalLocalScale.y * (1f - motionPulse * 0.055f),
                         originalLocalScale.z
                     );
                 }
@@ -219,6 +227,63 @@ namespace Shura.Player
 
             feedbackRoutine = null;
             RestoreVisuals();
+        }
+
+        private void CreateSilhouetteOverlays()
+        {
+            SpriteRenderer[] renderers =
+                GetComponentsInChildren<SpriteRenderer>(true);
+            List<SpriteRenderer> validRenderers = new();
+
+            foreach (SpriteRenderer renderer in renderers)
+            {
+                if (renderer != null &&
+                    renderer.gameObject.name != "PlayerHitSilhouette")
+                {
+                    validRenderers.Add(renderer);
+                }
+            }
+
+            sourceRenderers = validRenderers.ToArray();
+            overlayRenderers = new SpriteRenderer[sourceRenderers.Length];
+
+            for (int index = 0; index < sourceRenderers.Length; index++)
+            {
+                SpriteRenderer source = sourceRenderers[index];
+                GameObject overlayObject = new GameObject(
+                    "PlayerHitSilhouette",
+                    typeof(SpriteRenderer)
+                );
+                overlayObject.layer = source.gameObject.layer;
+                overlayObject.transform.SetParent(source.transform, false);
+                overlayRenderers[index] =
+                    overlayObject.GetComponent<SpriteRenderer>();
+                UpdateSilhouetteOverlay(index, 0f);
+            }
+        }
+
+        private void UpdateSilhouetteOverlay(int index, float alpha)
+        {
+            SpriteRenderer source = sourceRenderers[index];
+            SpriteRenderer overlay = overlayRenderers[index];
+
+            if (source == null || overlay == null)
+            {
+                return;
+            }
+
+            overlay.enabled = source.enabled &&
+                source.gameObject.activeInHierarchy;
+            overlay.sprite = source.sprite;
+            overlay.flipX = source.flipX;
+            overlay.flipY = source.flipY;
+            overlay.drawMode = source.drawMode;
+            overlay.size = source.size;
+            overlay.maskInteraction = source.maskInteraction;
+            overlay.spriteSortPoint = source.spriteSortPoint;
+            overlay.sortingLayerID = source.sortingLayerID;
+            overlay.sortingOrder = source.sortingOrder + 1;
+            overlay.color = new Color(1f, 0.22f, 0.2f, alpha);
         }
 
         private Transform ResolveMotionRoot()
@@ -259,18 +324,14 @@ namespace Shura.Player
                 feedbackRoutine = null;
             }
 
-            if (activeRenderers != null && originalColors != null)
+            if (overlayRenderers != null)
             {
-                int count = Mathf.Min(
-                    activeRenderers.Length,
-                    originalColors.Length
-                );
-
-                for (int index = 0; index < count; index++)
+                foreach (SpriteRenderer overlay in overlayRenderers)
                 {
-                    if (activeRenderers[index] != null)
+                    if (overlay != null)
                     {
-                        activeRenderers[index].color = originalColors[index];
+                        overlay.gameObject.SetActive(false);
+                        Destroy(overlay.gameObject);
                     }
                 }
             }
@@ -281,8 +342,8 @@ namespace Shura.Player
                 motionRoot.localScale = originalLocalScale;
             }
 
-            activeRenderers = null;
-            originalColors = null;
+            sourceRenderers = null;
+            overlayRenderers = null;
             motionRoot = null;
         }
 
